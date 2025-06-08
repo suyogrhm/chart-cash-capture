@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SpendingChart } from '@/components/SpendingChart';
@@ -8,6 +7,7 @@ import { EnhancedTransactionsList } from '@/components/EnhancedTransactionsList'
 import { CategoriesManager } from '@/components/CategoriesManager';
 import { TransactionFilters } from '@/components/TransactionFilters';
 import { BudgetTracker } from '@/components/BudgetTracker';
+import { TransactionsList } from '@/components/TransactionsList';
 import { parseMessage } from '@/utils/messageParser';
 import { Transaction, Category, Account, Budget } from '@/types/Transaction';
 import { toast } from '@/hooks/use-toast';
@@ -60,7 +60,6 @@ const Index = () => {
     }
   }, []);
 
-  // Save to localStorage
   useEffect(() => {
     localStorage.setItem('expense-tracker-transactions', JSON.stringify(transactions));
   }, [transactions]);
@@ -178,7 +177,7 @@ const Index = () => {
     setAmountRange({ min: '', max: '' });
   };
 
-  // Calculate metrics
+  // Calculate metrics for current month
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
   
@@ -186,6 +185,15 @@ const Index = () => {
     const transactionDate = new Date(t.date);
     return transactionDate.getMonth() === currentMonth && 
            transactionDate.getFullYear() === currentYear;
+  });
+
+  // Filter transactions for last 3 days for dashboard
+  const threeDaysAgo = new Date();
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+  
+  const recentTransactions = transactions.filter(t => {
+    const transactionDate = new Date(t.date);
+    return transactionDate >= threeDaysAgo;
   });
 
   const totalIncome = currentMonthTransactions
@@ -223,7 +231,10 @@ const Index = () => {
 
           <TabsContent value="dashboard" className="space-y-6">
             <MessageInput onMessage={handleMessage} />
-            <SpendingChart transactions={currentMonthTransactions} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <SpendingChart transactions={currentMonthTransactions} />
+              <TransactionsList transactions={recentTransactions} />
+            </div>
             <MetricsCards 
               totalIncome={totalIncome}
               budget={budget}
