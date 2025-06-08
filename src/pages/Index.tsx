@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SpendingChart } from '@/components/SpendingChart';
@@ -231,16 +232,20 @@ const Index = () => {
 
           <TabsContent value="dashboard" className="space-y-6">
             <MessageInput onMessage={handleMessage} />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <SpendingChart transactions={currentMonthTransactions} />
-              <TransactionsList transactions={recentTransactions} />
-            </div>
+            
+            {/* Circular Chart */}
+            <SpendingChart transactions={currentMonthTransactions} />
+            
+            {/* Metrics Cards */}
             <MetricsCards 
               totalIncome={totalIncome}
               budget={budget}
               spentToEarnedRatio={spentToEarnedRatio}
               totalExpenses={totalExpenses}
             />
+            
+            {/* Recent Transactions */}
+            <TransactionsList transactions={recentTransactions} />
           </TabsContent>
 
           <TabsContent value="transactions" className="space-y-6">
