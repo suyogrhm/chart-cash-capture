@@ -67,11 +67,6 @@ export const TransactionsList = ({ transactions }: TransactionsListProps) => {
                           <p className="font-semibold text-card-foreground truncate text-xs">
                             {transaction.description}
                           </p>
-                          {transaction.original_message && (
-                            <p className="text-[8px] text-muted-foreground/70 truncate mt-0.5">
-                              "{transaction.original_message}"
-                            </p>
-                          )}
                         </div>
                         <div className="text-right ml-2 flex-shrink-0">
                           <p className={`font-bold text-xs ${
