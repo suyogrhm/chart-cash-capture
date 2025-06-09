@@ -6,6 +6,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MobileTabNavigation } from '@/components/MobileTabNavigation';
+import { ExpenseTrackerLogo } from '@/components/ExpenseTrackerLogo';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -31,14 +32,17 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         <div className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
           <div className="container mx-auto px-4 py-3 max-w-7xl">
             <div className="flex justify-between items-center">
-              <div className="flex items-center gap-8">
+              <div className="flex items-center gap-3">
+                <ExpenseTrackerLogo className="h-8 w-8" />
                 <h1 className="text-xl font-bold text-foreground">
                   Expense Tracker Pro
                 </h1>
-                
-                {/* Desktop Navigation Tabs */}
+              </div>
+              
+              {/* Centered Desktop Navigation Tabs */}
+              <div className="flex-1 flex justify-center">
                 <Tabs value={currentTab} onValueChange={handleTabChange}>
-                  <TabsList className="grid w-full grid-cols-5">
+                  <TabsList className="grid w-auto grid-cols-5">
                     <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                     <TabsTrigger value="transactions">Transactions</TabsTrigger>
                     <TabsTrigger value="budgets">Budgets</TabsTrigger>
@@ -62,13 +66,16 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         {/* Mobile: Header without Navigation */}
         {isMobile && (
           <div className="mb-4 flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground mb-2">
-                Expense Tracker Pro
-              </h1>
-              <p className="text-muted-foreground text-sm">
-                Track your finances on the go
-              </p>
+            <div className="flex items-center gap-3">
+              <ExpenseTrackerLogo className="h-8 w-8" />
+              <div>
+                <h1 className="text-2xl font-bold text-foreground mb-2">
+                  Expense Tracker Pro
+                </h1>
+                <p className="text-muted-foreground text-sm">
+                  Track your finances on the go
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle />

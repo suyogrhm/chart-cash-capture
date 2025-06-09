@@ -146,7 +146,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                       r="35"
                       fill="none"
                       stroke="rgba(255,255,255,0.1)"
-                      strokeWidth="2"
+                      strokeWidth="1"
                     />
                     
                     {/* Pie segments */}
@@ -156,7 +156,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                         d={segment.path}
                         fill={segment.fill}
                         stroke="white"
-                        strokeWidth="0.5"
+                        strokeWidth="0.2"
                         className="transition-all duration-300"
                       />
                     ))}
@@ -239,7 +239,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                     r="35"
                     fill="#f8fafc"
                     stroke="#e2e8f0"
-                    strokeWidth="0.5"
+                    strokeWidth="0.2"
                   />
                   
                   {/* Pie segments */}
@@ -249,7 +249,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                       d={segment.path}
                       fill={segment.fill}
                       stroke="white"
-                      strokeWidth="0.3"
+                      strokeWidth="0.1"
                       className="transition-all duration-300 hover:brightness-110 cursor-pointer"
                       style={{
                         filter: `drop-shadow(0 2px 4px ${segment.fill}30)`
@@ -264,7 +264,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                     r="18"
                     fill="white"
                     stroke="#e2e8f0"
-                    strokeWidth="0.5"
+                    strokeWidth="0.2"
                   />
                 </svg>
                 
