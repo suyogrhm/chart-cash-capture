@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { DashboardTab } from '@/components/DashboardTab';
@@ -65,15 +66,14 @@ const Index = () => {
     
     setActiveTab(tabFromUrl);
     
-    // If navigating to transactions with a type filter and we're not ignoring URL filters, apply it
+    // Only apply URL filters if we're not explicitly ignoring them
     if (tabFromUrl === 'transactions' && typeFromUrl && !shouldIgnoreUrlFilters) {
       console.log('Setting type filter from URL:', typeFromUrl);
       setSelectedType(typeFromUrl);
       setFromIncomeHistory(true);
-    }
-    
-    // Reset the ignore flag after processing
-    if (shouldIgnoreUrlFilters) {
+    } else if (shouldIgnoreUrlFilters) {
+      console.log('Ignoring URL filters due to flag');
+      // Reset the flag after one cycle
       setShouldIgnoreUrlFilters(false);
     }
   }, [tabFromUrl, typeFromUrl, setSelectedType, shouldIgnoreUrlFilters]);
@@ -89,12 +89,13 @@ const Index = () => {
       console.log('Clearing filters when leaving transactions tab');
       clearFilters();
       setFromIncomeHistory(false);
-      setShouldIgnoreUrlFilters(true); // Prevent URL filters from being reapplied
-      console.log('Filters cleared, fromIncomeHistory set to false');
+      setShouldIgnoreUrlFilters(true);
+      console.log('Filters cleared, fromIncomeHistory set to false, shouldIgnoreUrlFilters set to true');
       
-      // Clear URL parameters immediately
+      // Navigate without any URL parameters
       navigate(`/?tab=${newTab}`, { replace: true });
-      return; // Early return to prevent the tab change from happening twice
+      setActiveTab(newTab);
+      return;
     }
     
     setActiveTab(newTab);
