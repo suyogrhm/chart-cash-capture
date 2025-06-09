@@ -92,6 +92,7 @@ const Index = () => {
             totalExpenses={totalExpenses}
             spentToEarnedRatio={spentToEarnedRatio}
             budget={budget}
+            accounts={accounts}
           />
         </TabsContent>
 

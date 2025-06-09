@@ -1,19 +1,21 @@
 
 import React from 'react';
-import { SpendingChart } from '@/components/SpendingChart';
-import { MetricsCards } from '@/components/MetricsCards';
 import { MessageInput } from '@/components/MessageInput';
 import { TransactionsList } from '@/components/TransactionsList';
-import { Transaction } from '@/types/Transaction';
+import { MetricsCards } from '@/components/MetricsCards';
+import { SpendingChart } from '@/components/SpendingChart';
+import { CircularSpendingChart } from '@/components/CircularSpendingChart';
+import { Transaction, Account } from '@/types/Transaction';
 
 interface DashboardTabProps {
-  onMessage: (message: string) => void;
+  onMessage: (message: string, accountId?: string) => void;
   currentMonthTransactions: Transaction[];
   recentTransactions: Transaction[];
   totalIncome: number;
   totalExpenses: number;
   spentToEarnedRatio: number;
   budget: number;
+  accounts: Account[];
 }
 
 export const DashboardTab = ({
@@ -23,24 +25,25 @@ export const DashboardTab = ({
   totalIncome,
   totalExpenses,
   spentToEarnedRatio,
-  budget
+  budget,
+  accounts
 }: DashboardTabProps) => {
   return (
-    <div className="space-y-6">
-      <MessageInput onMessage={onMessage} />
+    <div className="space-y-8">
+      <MessageInput onMessage={onMessage} accounts={accounts} />
       
-      {/* Circular Chart */}
-      <SpendingChart transactions={currentMonthTransactions} />
-      
-      {/* Metrics Cards */}
-      <MetricsCards 
+      <MetricsCards
         totalIncome={totalIncome}
-        budget={budget}
-        spentToEarnedRatio={spentToEarnedRatio}
         totalExpenses={totalExpenses}
+        spentToEarnedRatio={spentToEarnedRatio}
+        budget={budget}
       />
-      
-      {/* Recent Transactions */}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <SpendingChart transactions={currentMonthTransactions} />
+        <CircularSpendingChart transactions={currentMonthTransactions} />
+      </div>
+
       <TransactionsList transactions={recentTransactions} />
     </div>
   );

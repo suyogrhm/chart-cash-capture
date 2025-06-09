@@ -101,7 +101,7 @@ export const useExpenseTrackerData = () => {
     setFilteredTransactions(filtered);
   }, [transactions, searchTerm, selectedCategory, selectedAccount, selectedType, dateRange, amountRange]);
 
-  const handleMessage = (message: string) => {
+  const handleMessage = (message: string, accountId?: string) => {
     const parsedTransaction = parseMessage(message);
     if (parsedTransaction) {
       const newTransaction: Transaction = {
@@ -109,7 +109,7 @@ export const useExpenseTrackerData = () => {
         ...parsedTransaction,
         date: new Date().toISOString(),
         originalMessage: message,
-        accountId: accounts[0]?.id
+        accountId: accountId || accounts[0]?.id
       };
       setTransactions(prev => [newTransaction, ...prev]);
     }

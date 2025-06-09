@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -65,6 +64,12 @@ export const EnhancedTransactionsList = ({
     return account ? account.name : 'Unknown';
   };
 
+  const getAccountColor = (accountId?: string) => {
+    if (!accountId) return '#6B7280';
+    const account = accounts.find(a => a.id === accountId);
+    return account ? account.color : '#6B7280';
+  };
+
   return (
     <>
       <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
@@ -122,7 +127,15 @@ export const EnhancedTransactionsList = ({
                         {getCategoryName(transaction.category)}
                       </Badge>
                     </TableCell>
-                    <TableCell>{getAccountName(transaction.accountId)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: getAccountColor(transaction.accountId) }}
+                        />
+                        {getAccountName(transaction.accountId)}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <span className={`font-semibold ${
                         transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
@@ -219,7 +232,13 @@ export const EnhancedTransactionsList = ({
               <SelectContent>
                 {accounts.map((account) => (
                   <SelectItem key={account.id} value={account.id}>
-                    {account.name}
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: account.color }}
+                      />
+                      {account.name}
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
