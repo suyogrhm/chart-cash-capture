@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -123,7 +124,7 @@ export const MessageInput = ({ onMessage, accounts }: MessageInputProps) => {
           )}
         </form>
         
-        <div className={`${isMobile ? 'mt-2' : 'mt-3'} ${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
+        <div className={`${isMobile ? 'mt-3' : 'mt-3'} ${isMobile ? 'text-xs leading-relaxed' : 'text-sm'} text-muted-foreground`}>
           💡 Try: "Bought coffee for ₹150", "Received salary ₹30000", "Paid rent ₹12000"
         </div>
       </div>
