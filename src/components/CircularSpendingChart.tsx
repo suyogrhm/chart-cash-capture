@@ -1,9 +1,9 @@
-
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Transaction } from '@/types/Transaction';
 import { getCategoryInfo } from '@/utils/categoryUtils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SpendingData {
   name: string;
@@ -38,6 +38,8 @@ export const CircularSpendingChart = ({
   transactions, 
   title = "Spending by Category" 
 }: CircularSpendingChartProps) => {
+  const isMobile = useIsMobile();
+
   const chartData = useMemo(() => {
     console.log('CircularSpendingChart - Processing data');
     console.log('Provided data:', data);
@@ -111,6 +113,23 @@ export const CircularSpendingChart = ({
   // Get current month name
   const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long' });
 
+  // Dynamic sizing based on screen size
+  const chartConfig = useMemo(() => {
+    if (isMobile) {
+      return {
+        outerRadius: 80,
+        innerRadius: 55,  // Thinner circle for mobile
+        height: 250
+      };
+    } else {
+      return {
+        outerRadius: 100,
+        innerRadius: 75,  // Thinner circle for desktop
+        height: 300
+      };
+    }
+  }, [isMobile]);
+
   if (!chartData || chartData.length === 0) {
     return (
       <Card className="bg-card border-chart-border">
@@ -165,15 +184,15 @@ export const CircularSpendingChart = ({
         <CardTitle className="text-chart-foreground">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="relative h-[300px]">
+        <div className="relative" style={{ height: `${chartConfig.height}px` }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={chartData}
                 cx="50%"
                 cy="50%"
-                outerRadius={100}
-                innerRadius={60}
+                outerRadius={chartConfig.outerRadius}
+                innerRadius={chartConfig.innerRadius}
                 strokeWidth={2}
                 stroke="hsl(var(--border))"
                 dataKey="value"
@@ -188,10 +207,14 @@ export const CircularSpendingChart = ({
           </ResponsiveContainer>
           
           {/* Absolutely centered text content */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
             <div className="text-center">
-              <p className="text-2xl font-bold text-foreground">₹{totalSpending.toLocaleString()}</p>
-              <p className="text-sm text-muted-foreground">Spent in {currentMonth}</p>
+              <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-foreground`}>
+                ₹{totalSpending.toLocaleString()}
+              </p>
+              <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
+                Spent in {currentMonth}
+              </p>
             </div>
           </div>
         </div>
