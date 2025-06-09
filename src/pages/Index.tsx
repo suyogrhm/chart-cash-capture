@@ -23,6 +23,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = React.useState(tabFromUrl);
   const [recurringTransactions, setRecurringTransactions] = React.useState([]);
   const [fromIncomeHistory, setFromIncomeHistory] = React.useState(false);
+  const [shouldIgnoreUrlFilters, setShouldIgnoreUrlFilters] = React.useState(false);
   
   const {
     transactions,
@@ -60,15 +61,22 @@ const Index = () => {
 
   React.useEffect(() => {
     console.log('URL changed - tab:', tabFromUrl, 'type:', typeFromUrl);
+    console.log('shouldIgnoreUrlFilters:', shouldIgnoreUrlFilters);
+    
     setActiveTab(tabFromUrl);
     
-    // If navigating to transactions with a type filter, apply it
-    if (tabFromUrl === 'transactions' && typeFromUrl) {
+    // If navigating to transactions with a type filter and we're not ignoring URL filters, apply it
+    if (tabFromUrl === 'transactions' && typeFromUrl && !shouldIgnoreUrlFilters) {
       console.log('Setting type filter from URL:', typeFromUrl);
       setSelectedType(typeFromUrl);
       setFromIncomeHistory(true);
     }
-  }, [tabFromUrl, typeFromUrl, setSelectedType]);
+    
+    // Reset the ignore flag after processing
+    if (shouldIgnoreUrlFilters) {
+      setShouldIgnoreUrlFilters(false);
+    }
+  }, [tabFromUrl, typeFromUrl, setSelectedType, shouldIgnoreUrlFilters]);
 
   // Update URL when tab changes and reset filters when leaving transactions
   const handleTabChange = (newTab: string) => {
@@ -81,7 +89,12 @@ const Index = () => {
       console.log('Clearing filters when leaving transactions tab');
       clearFilters();
       setFromIncomeHistory(false);
+      setShouldIgnoreUrlFilters(true); // Prevent URL filters from being reapplied
       console.log('Filters cleared, fromIncomeHistory set to false');
+      
+      // Clear URL parameters immediately
+      navigate(`/?tab=${newTab}`, { replace: true });
+      return; // Early return to prevent the tab change from happening twice
     }
     
     setActiveTab(newTab);
@@ -93,10 +106,8 @@ const Index = () => {
       setFromIncomeHistory(false);
     }
     
-    // Clear URL params when changing tabs manually (but don't clear type when coming from income history)
-    if (newTab !== 'transactions' || !typeFromUrl) {
-      navigate(`/?tab=${newTab}`, { replace: true });
-    }
+    // Update URL for other tab changes
+    navigate(`/?tab=${newTab}`, { replace: true });
   };
 
   // Calculate metrics for current month
