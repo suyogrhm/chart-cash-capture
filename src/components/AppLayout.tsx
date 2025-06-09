@@ -5,6 +5,7 @@ import { UserMenu } from '@/components/UserMenu';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { MobileTabNavigation } from '@/components/MobileTabNavigation';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -58,7 +59,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
       {/* Content Container */}
       <div className={`container mx-auto ${isMobile ? 'px-2 py-4 pb-20' : 'px-4 py-6'} max-w-7xl`}>
-        {/* Mobile: Header without Navigation (handled by MobileTabNavigation) */}
+        {/* Mobile: Header without Navigation */}
         {isMobile && (
           <div className="mb-4 flex justify-between items-center">
             <div>
@@ -77,6 +78,11 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         )}
         {children}
       </div>
+
+      {/* Mobile: Bottom Navigation */}
+      {isMobile && (
+        <MobileTabNavigation value={currentTab} onValueChange={handleTabChange} />
+      )}
     </div>
   );
 };
