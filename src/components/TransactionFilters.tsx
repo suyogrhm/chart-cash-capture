@@ -46,13 +46,13 @@ export const TransactionFilters = ({
   onClearFilters
 }: TransactionFiltersProps) => {
   return (
-    <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+    <Card className="p-6 bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <Filter className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Filters</h3>
+          <h3 className="text-lg font-semibold text-foreground">Filters</h3>
         </div>
-        <Button variant="outline" size="sm" onClick={onClearFilters}>
+        <Button variant="outline" size="sm" onClick={onClearFilters} className="border-border/50 bg-background/50 hover:bg-accent/50">
           <X className="h-4 w-4 mr-2" />
           Clear All
         </Button>
@@ -66,16 +66,16 @@ export const TransactionFilters = ({
             placeholder="Search transactions..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-background/50 border-border/50 focus:border-primary/50"
           />
         </div>
 
         {/* Type Filter */}
         <Select value={selectedType} onValueChange={onTypeChange}>
-          <SelectTrigger>
+          <SelectTrigger className="bg-background/50 border-border/50 focus:border-primary/50">
             <SelectValue placeholder="All Types" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-popover/95 backdrop-blur-sm border-border/50">
             <SelectItem value="all">All Types</SelectItem>
             <SelectItem value="income">Income</SelectItem>
             <SelectItem value="expense">Expense</SelectItem>
@@ -84,10 +84,10 @@ export const TransactionFilters = ({
 
         {/* Category Filter */}
         <Select value={selectedCategory} onValueChange={onCategoryChange}>
-          <SelectTrigger>
+          <SelectTrigger className="bg-background/50 border-border/50 focus:border-primary/50">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-popover/95 backdrop-blur-sm border-border/50">
             <SelectItem value="all">All Categories</SelectItem>
             {categories.map((category) => (
               <SelectItem key={category.id} value={category.id}>
@@ -99,10 +99,10 @@ export const TransactionFilters = ({
 
         {/* Account Filter */}
         <Select value={selectedAccount} onValueChange={onAccountChange}>
-          <SelectTrigger>
+          <SelectTrigger className="bg-background/50 border-border/50 focus:border-primary/50">
             <SelectValue placeholder="All Accounts" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-popover/95 backdrop-blur-sm border-border/50">
             <SelectItem value="all">All Accounts</SelectItem>
             {accounts.map((account) => (
               <SelectItem key={account.id} value={account.id}>
@@ -115,7 +115,7 @@ export const TransactionFilters = ({
         {/* Date Range */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="justify-start text-left font-normal">
+            <Button variant="outline" className="justify-start text-left font-normal bg-background/50 border-border/50 hover:bg-accent/50">
               <CalendarIcon className="mr-2 h-4 w-4" />
               {dateRange.from ? (
                 dateRange.to ? (
@@ -131,7 +131,7 @@ export const TransactionFilters = ({
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto p-0 bg-popover/95 backdrop-blur-sm border-border/50" align="start">
             <Calendar
               initialFocus
               mode="range"
@@ -139,6 +139,7 @@ export const TransactionFilters = ({
               selected={{ from: dateRange.from, to: dateRange.to }}
               onSelect={(range) => onDateRangeChange(range || {})}
               numberOfMonths={2}
+              className="p-3 pointer-events-auto"
             />
           </PopoverContent>
         </Popover>
@@ -150,12 +151,14 @@ export const TransactionFilters = ({
             value={amountRange.min}
             onChange={(e) => onAmountRangeChange({ ...amountRange, min: e.target.value })}
             type="number"
+            className="bg-background/50 border-border/50 focus:border-primary/50"
           />
           <Input
             placeholder="Max amount"
             value={amountRange.max}
             onChange={(e) => onAmountRangeChange({ ...amountRange, max: e.target.value })}
             type="number"
+            className="bg-background/50 border-border/50 focus:border-primary/50"
           />
         </div>
       </div>
