@@ -33,15 +33,21 @@ export const parseMessage = (message: string): Omit<Transaction, 'id' | 'date' |
     type = 'expense';
   }
 
-  // Determine category based on keywords
+  // Determine category based on keywords - but prioritize transaction type
   let category = 'other';
   
   if (type === 'income') {
-    if (lowerMessage.includes('salary') || lowerMessage.includes('job')) category = 'salary';
-    else if (lowerMessage.includes('freelance') || lowerMessage.includes('contract')) category = 'freelance';
-    else if (lowerMessage.includes('bonus')) category = 'bonus';
-    else if (lowerMessage.includes('investment') || lowerMessage.includes('dividend')) category = 'investment';
+    // For income, focus on income-specific categories
+    if (lowerMessage.includes('salary') || lowerMessage.includes('job') || lowerMessage.includes('wage')) category = 'salary';
+    else if (lowerMessage.includes('freelance') || lowerMessage.includes('contract') || lowerMessage.includes('consulting')) category = 'freelance';
+    else if (lowerMessage.includes('bonus') || lowerMessage.includes('tip')) category = 'bonus';
+    else if (lowerMessage.includes('investment') || lowerMessage.includes('dividend') || lowerMessage.includes('interest')) category = 'investment';
+    else if (lowerMessage.includes('rent') || lowerMessage.includes('rental')) category = 'rental income';
+    else if (lowerMessage.includes('refund') || lowerMessage.includes('return')) category = 'refund';
+    // Default income category
+    else category = 'other income';
   } else {
+    // For expenses, use the existing expense categorization
     if (lowerMessage.includes('food') || lowerMessage.includes('lunch') || lowerMessage.includes('dinner') || lowerMessage.includes('coffee')) category = 'food';
     else if (lowerMessage.includes('gas') || lowerMessage.includes('uber') || lowerMessage.includes('transport')) category = 'transport';
     else if (lowerMessage.includes('movie') || lowerMessage.includes('game') || lowerMessage.includes('entertainment')) category = 'entertainment';
