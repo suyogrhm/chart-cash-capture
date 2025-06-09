@@ -144,16 +144,6 @@ export const CircularSpendingChart = ({
     );
   };
 
-  // Custom center content
-  const CenterContent = () => (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-      <div className="text-center">
-        <p className="text-2xl font-bold text-foreground">₹{totalSpending.toLocaleString()}</p>
-        <p className="text-sm text-muted-foreground">{currentMonth} Spending</p>
-      </div>
-    </div>
-  );
-
   return (
     <Card className="bg-card border-chart-border">
       <CardHeader>
@@ -181,7 +171,14 @@ export const CircularSpendingChart = ({
               <Legend content={<CustomLegend />} />
             </PieChart>
           </ResponsiveContainer>
-          <CenterContent />
+          
+          {/* Centered text content */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-foreground">₹{totalSpending.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground">Spent in {currentMonth}</p>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

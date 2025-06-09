@@ -35,30 +35,12 @@ export const MessageInput = ({ onMessage, accounts }: MessageInputProps) => {
     }
   };
 
-  const handleQuickAction = (quickMessage: string) => {
-    setMessage(quickMessage);
-    // Optionally submit immediately
-    onMessage(quickMessage, selectedAccount, selectedPaymentMethod);
-    setMessage('');
-    toast({
-      title: "Transaction recorded!",
-      description: "Your quick action has been added to your transactions.",
-    });
-  };
-
   const paymentMethods = [
     { value: 'cash', label: '💵 Cash' },
     { value: 'upi', label: '📱 UPI' },
     { value: 'card', label: '💳 Card' },
     { value: 'bank_transfer', label: '🏦 Bank Transfer' },
     { value: 'other', label: '📝 Other' },
-  ];
-
-  const quickActions = [
-    { label: '☕ Coffee', amount: '₹150', message: 'Spent ₹150 on coffee' },
-    { label: '🚗 Fuel', amount: '₹2000', message: 'Spent ₹2000 on fuel' },
-    { label: '🍔 Lunch', amount: '₹300', message: 'Spent ₹300 on lunch' },
-    { label: '🎬 Movie', amount: '₹500', message: 'Spent ₹500 on movie' },
   ];
 
   return (
@@ -95,24 +77,6 @@ export const MessageInput = ({ onMessage, accounts }: MessageInputProps) => {
               <Send className="h-4 w-4" />
             </Button>
           </div>
-
-          {/* Quick Actions */}
-          {!isExpanded && !isMobile && (
-            <div className="flex gap-2 flex-wrap">
-              {quickActions.map((action) => (
-                <Button
-                  key={action.label}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAction(action.message)}
-                  className="text-xs hover:bg-primary/10"
-                >
-                  {action.label} {action.amount}
-                </Button>
-              ))}
-            </div>
-          )}
 
           {/* Expanded Options */}
           {isExpanded && (

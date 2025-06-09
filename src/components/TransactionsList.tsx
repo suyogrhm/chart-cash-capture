@@ -3,8 +3,9 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Transaction } from '@/types/Transaction';
-import { ArrowUp, ArrowDown, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getCategoryInfo } from '@/utils/categoryUtils';
 
 interface TransactionsListProps {
   transactions: Transaction[];
@@ -29,20 +30,6 @@ export const TransactionsList = ({ transactions }: TransactionsListProps) => {
     });
   };
 
-  const getCategoryInfo = (categoryId: string) => {
-    const categories: { [key: string]: { name: string; icon: string } } = {
-      '1': { name: 'Food & Dining', icon: '🍽️' },
-      '2': { name: 'Transportation', icon: '🚗' },
-      '3': { name: 'Entertainment', icon: '🎮' },
-      '4': { name: 'Bills & Utilities', icon: '⚡' },
-      '5': { name: 'Shopping', icon: '🛒' },
-      '6': { name: 'Fuel', icon: '⛽' },
-      '7': { name: 'Salary', icon: '💰' },
-      '8': { name: 'Freelance', icon: '💼' },
-    };
-    return categories[categoryId] || { name: 'Other', icon: '💳' };
-  };
-
   if (isMobile) {
     return (
       <Card className="bg-card border-border shadow-sm overflow-hidden">
@@ -60,9 +47,8 @@ export const TransactionsList = ({ transactions }: TransactionsListProps) => {
               return (
                 <div key={transaction.id} className="p-4 hover:bg-muted/50 transition-colors">
                   <div className="flex items-start gap-3">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      transaction.type === 'income' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'
-                    }`}>
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0`}
+                         style={{ backgroundColor: `${categoryInfo.color}20` }}>
                       <span className="text-xl">{categoryInfo.icon}</span>
                     </div>
                     
@@ -127,9 +113,8 @@ export const TransactionsList = ({ transactions }: TransactionsListProps) => {
                 className="flex items-center justify-between p-4 bg-muted/30 dark:bg-muted/20 rounded-xl hover:shadow-md hover:bg-muted/50 dark:hover:bg-muted/30 transition-all border border-border/50"
               >
                 <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                    transaction.type === 'income' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted dark:bg-muted/40'
-                  }`}>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center`}
+                       style={{ backgroundColor: `${categoryInfo.color}20` }}>
                     <span className="text-xl">{categoryInfo.icon}</span>
                   </div>
                   
