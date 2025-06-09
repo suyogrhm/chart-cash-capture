@@ -185,7 +185,7 @@ export const CircularSpendingChart = ({
         <CardTitle className="text-chart-foreground">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="relative flex items-center justify-center" style={{ height: `${chartConfig.height}px` }}>
+        <div className="relative w-full flex items-center justify-center" style={{ height: `${chartConfig.height}px` }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -207,10 +207,19 @@ export const CircularSpendingChart = ({
             </PieChart>
           </ResponsiveContainer>
           
-          {/* Perfectly centered text content using flexbox */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          {/* Center text positioned at exact center of the chart */}
+          <div 
+            className="absolute pointer-events-none flex items-center justify-center"
+            style={{
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: `${chartConfig.innerRadius * 2}px`,
+              height: `${chartConfig.innerRadius * 2}px`
+            }}
+          >
             <div className="text-center">
-              <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-foreground leading-tight`}>
+              <p className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-foreground leading-tight`}>
                 ₹{totalSpending.toLocaleString()}
               </p>
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground mt-1`}>
