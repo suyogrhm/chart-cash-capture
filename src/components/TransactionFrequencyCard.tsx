@@ -69,11 +69,11 @@ export const TransactionFrequencyCard = ({ transactions }: TransactionFrequencyC
   if (frequencyData.length === 0) {
     return (
       <Card className="bg-card border-border/50">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold text-foreground">Frequent Expenses</CardTitle>
+        <CardHeader className="pb-2 px-3 pt-3">
+          <CardTitle className="text-sm font-semibold text-foreground">Frequent Expenses</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">No recurring patterns found this month</p>
+        <CardContent className="px-3 pb-3">
+          <p className="text-xs text-muted-foreground">No recurring patterns found this month</p>
         </CardContent>
       </Card>
     );
@@ -81,23 +81,23 @@ export const TransactionFrequencyCard = ({ transactions }: TransactionFrequencyC
 
   return (
     <Card className="bg-card border-border/50">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold text-foreground">Frequent Expenses This Month</CardTitle>
+      <CardHeader className="pb-2 px-3 pt-3">
+        <CardTitle className="text-sm font-semibold text-foreground">Frequent Expenses This Month</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-2 px-3 pb-3">
         {frequencyData.map((item, index) => (
-          <div key={item.category} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-            <div className="flex items-center gap-3">
-              <span className="text-lg">{item.icon}</span>
-              <div>
-                <p className="font-medium text-foreground">{item.category}</p>
-                <p className="text-xs text-muted-foreground">
+          <div key={item.category} className="flex items-center justify-between p-2 rounded-lg bg-muted/30">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <span className="text-sm flex-shrink-0">{item.icon}</span>
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-foreground text-xs truncate">{item.category}</p>
+                <p className="text-[10px] text-muted-foreground truncate">
                   ₹{item.totalAmount.toLocaleString()} total
                 </p>
               </div>
             </div>
-            <Badge variant="secondary" className="bg-primary/10 text-primary">
-              {item.count} times
+            <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px] px-2 py-0.5 flex-shrink-0 ml-2">
+              {item.count}x
             </Badge>
           </div>
         ))}

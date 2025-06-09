@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { MessageInput } from '@/components/MessageInput';
 import { TransactionsList } from '@/components/TransactionsList';
@@ -112,40 +113,40 @@ export const DashboardTab = ({
             </div>
           </div>
 
-          {/* Quick Actions - Income, Categories, and Frequent Expenses */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          {/* Quick Actions - Fixed spacing and text overflow */}
+          <div className="grid grid-cols-3 gap-2 mb-4">
             <Button 
               onClick={handleIncomeClick}
               variant="outline" 
               size="sm"
-              className="justify-start p-3 h-auto text-xs"
+              className="justify-center p-2 h-auto text-[10px] flex-col gap-1"
             >
-              <DollarSign className="h-3 w-3 mr-2 text-green-500" />
-              <span>Income</span>
+              <DollarSign className="h-3 w-3 text-green-500" />
+              <span className="truncate w-full">Income</span>
             </Button>
             <Button 
               onClick={handleCategoriesClick}
               variant="outline" 
               size="sm"
-              className="justify-start p-3 h-auto text-xs"
+              className="justify-center p-2 h-auto text-[10px] flex-col gap-1"
             >
-              <PieChart className="h-3 w-3 mr-2 text-purple-500" />
-              <span>Categories</span>
+              <PieChart className="h-3 w-3 text-purple-500" />
+              <span className="truncate w-full">Categories</span>
             </Button>
             <Sheet open={isFrequencySheetOpen} onOpenChange={setIsFrequencySheetOpen}>
               <SheetTrigger asChild>
                 <Button 
                   variant="outline" 
                   size="sm"
-                  className="justify-start p-3 h-auto text-xs"
+                  className="justify-center p-2 h-auto text-[10px] flex-col gap-1"
                 >
-                  <BarChart3 className="h-3 w-3 mr-2 text-orange-500" />
-                  <span>Frequent</span>
+                  <BarChart3 className="h-3 w-3 text-orange-500" />
+                  <span className="truncate w-full">Frequent</span>
                 </Button>
               </SheetTrigger>
               <SheetContent side="bottom" className="h-[80vh]">
                 <SheetHeader>
-                  <SheetTitle>Frequent Expenses</SheetTitle>
+                  <SheetTitle className="text-base">Frequent Expenses</SheetTitle>
                 </SheetHeader>
                 <div className="mt-6">
                   <TransactionFrequencyCard transactions={allTransactions} />
