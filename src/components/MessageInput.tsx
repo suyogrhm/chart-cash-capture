@@ -45,14 +45,14 @@ export const MessageInput = ({ onMessage, accounts }: MessageInputProps) => {
 
   return (
     <Card className="bg-card border-border shadow-lg overflow-hidden">
-      <div className="p-6">
-        <div className="flex items-center gap-3 mb-4">
+      <div className={`${isMobile ? 'p-4' : 'p-6'}`}>
+        <div className={`flex items-center gap-3 ${isMobile ? 'mb-3' : 'mb-4'}`}>
           <div className="p-2 bg-primary/10 rounded-lg">
             <MessageCircle className="h-5 w-5 text-primary" />
           </div>
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">Add Transaction</h2>
-            <p className="text-sm text-muted-foreground">Describe your expense or income</p>
+          <div className="flex-1">
+            <h2 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-foreground`}>Add Transaction</h2>
+            <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>Describe your expense or income</p>
           </div>
           <Button
             type="button"
@@ -65,22 +65,22 @@ export const MessageInput = ({ onMessage, accounts }: MessageInputProps) => {
           </Button>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex gap-3">
+        <form onSubmit={handleSubmit} className={`space-y-${isMobile ? '3' : '4'}`}>
+          <div className={`flex gap-${isMobile ? '2' : '3'}`}>
             <Input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="e.g., 'Spent ₹150 on coffee' or 'Earned ₹5000 salary'"
-              className="flex-1 text-base border-border focus:border-primary"
+              className={`flex-1 ${isMobile ? 'text-sm h-10' : 'text-base'} border-border focus:border-primary`}
             />
-            <Button type="submit" className="px-6 bg-primary hover:bg-primary/90">
+            <Button type="submit" className={`${isMobile ? 'px-4' : 'px-6'} bg-primary hover:bg-primary/90`}>
               <Send className="h-4 w-4" />
             </Button>
           </div>
 
           {/* Expanded Options */}
           {isExpanded && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-${isMobile ? '3' : '4'} pt-${isMobile ? '3' : '4'} border-t border-border`}>
               <div className="flex items-center gap-3">
                 <Wallet className="h-4 w-4 text-muted-foreground" />
                 <Select value={selectedAccount} onValueChange={setSelectedAccount}>
@@ -122,7 +122,7 @@ export const MessageInput = ({ onMessage, accounts }: MessageInputProps) => {
           )}
         </form>
         
-        <div className="mt-3 text-sm text-muted-foreground">
+        <div className={`${isMobile ? 'mt-2' : 'mt-3'} ${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
           💡 Try: "Bought coffee for ₹150", "Received salary ₹30000", "Paid rent ₹12000"
         </div>
       </div>

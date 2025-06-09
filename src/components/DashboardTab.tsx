@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MessageInput } from '@/components/MessageInput';
 import { TransactionsList } from '@/components/TransactionsList';
@@ -76,39 +75,36 @@ export const DashboardTab = ({
     return (
       <div className="min-h-screen bg-background pb-20">
         {/* Optimized Mobile Header */}
-        <div className="bg-card p-4 border-b border-border">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <ExpenseTrackerLogo className="w-8 h-8" />
-              <div>
-                <h1 className="text-lg font-semibold text-foreground">ExpenseTracker</h1>
-                <p className="text-xs text-muted-foreground">Hi {getUserName()}</p>
-              </div>
-            </div>
-            <Search className="h-5 w-5 text-muted-foreground" />
+        <div className="bg-card p-3 border-b border-border">
+          {/* Simplified Header */}
+          <div className="mb-4">
+            <h1 className="text-sm font-medium text-foreground mb-1">
+              Expense Tracker Pro
+            </h1>
+            <p className="text-lg font-semibold text-foreground">Hi {getUserName()}</p>
           </div>
           
           {/* Circular Chart */}
-          <div className="mb-6">
+          <div className="mb-4">
             <CircularSpendingChart transactions={currentMonthTransactions} />
           </div>
 
           {/* Metrics Row */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-3 gap-3 mb-4">
             <div className="text-center">
               <p className="text-muted-foreground text-xs mb-1">Income</p>
               <div className="flex items-center justify-center gap-1">
-                <p className="text-foreground font-medium">₹{currentMonthIncome.toLocaleString()}</p>
+                <p className="text-foreground font-medium text-sm">₹{currentMonthIncome.toLocaleString()}</p>
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               </div>
             </div>
             <div className="text-center">
               <p className="text-muted-foreground text-xs mb-1">Budget</p>
-              <p className="text-foreground font-medium">₹{actualBudget.toLocaleString()}</p>
+              <p className="text-foreground font-medium text-sm">₹{actualBudget.toLocaleString()}</p>
             </div>
             <div className="text-center">
               <p className="text-muted-foreground text-xs mb-1">Spent/Earned</p>
-              <p className={`text-foreground font-medium ${
+              <p className={`text-foreground font-medium text-sm ${
                 actualSpentToEarnedRatio > 100 ? 'text-red-500' : 
                 actualSpentToEarnedRatio > 80 ? 'text-yellow-500' : 'text-green-500'
               }`}>
@@ -118,7 +114,7 @@ export const DashboardTab = ({
           </div>
 
           {/* Quick Actions - Only Income and Categories */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-2 gap-3 mb-4">
             <Button 
               onClick={handleIncomeClick}
               variant="outline" 
@@ -140,20 +136,20 @@ export const DashboardTab = ({
           </div>
         </div>
 
-        {/* Quick Add Input */}
-        <div className="px-4 py-4">
+        {/* Quick Add Input - Better Spacing */}
+        <div className="px-3 py-4">
           <MessageInput onMessage={onMessage} accounts={accounts} />
         </div>
 
         {/* Frequent Expenses Card */}
-        <div className="px-4 mb-4">
+        <div className="px-3 mb-4">
           <TransactionFrequencyCard transactions={allTransactions} />
         </div>
 
         {/* Recent Transactions */}
         <div className="bg-card rounded-t-3xl min-h-[300px] flex-1">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-foreground text-lg">Recent transactions</h3>
             </div>
             <TransactionsList transactions={recentTransactions.slice(0, 5)} />
