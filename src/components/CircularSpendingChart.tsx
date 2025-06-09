@@ -59,76 +59,81 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
 
   if (isMobile) {
     return (
-      <Card className="bg-slate-900 border-slate-800 text-white">
-        <CardContent className="p-6">
-          {chartData.length > 0 ? (
-            <div className="flex flex-col items-center">
-              <div className="relative mb-6">
-                <ChartContainer
-                  config={chartConfig}
-                  className="aspect-square w-48 h-48"
-                >
-                  <PieChart>
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent hideLabel />}
-                    />
-                    <Pie
-                      data={chartData}
-                      dataKey="amount"
-                      nameKey="category"
-                      innerRadius={50}
-                      outerRadius={80}
-                      strokeWidth={0}
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ChartContainer>
+      <div className="bg-slate-900 rounded-3xl p-6 text-white">
+        {chartData.length > 0 ? (
+          <div className="flex flex-col items-center">
+            <div className="relative mb-6">
+              <div className="w-48 h-48 relative">
+                {/* Background circle */}
+                <div className="absolute inset-0 rounded-full border-4 border-slate-700"></div>
                 
-                {/* Center text */}
+                {/* Progress ring */}
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    fill="none"
+                    stroke="#1e293b"
+                    strokeWidth="8"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    fill="none"
+                    stroke="#3b82f6"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={`${(totalExpenses / 50000) * 283} 283`}
+                    className="transition-all duration-1000 ease-out"
+                  />
+                </svg>
+                
+                {/* Center content */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <p className="text-xs text-slate-400">Total</p>
-                  <p className="text-lg font-bold text-white">
+                  <div className="text-blue-400 mb-1">
+                    <TrendingUp className="h-4 w-4" />
+                  </div>
+                  <p className="text-2xl font-bold text-white">
                     ₹{totalExpenses.toLocaleString()}
                   </p>
+                  <p className="text-xs text-slate-400 mt-1">49%</p>
                 </div>
               </div>
-              
-              {/* Compact legend for mobile */}
-              <div className="grid grid-cols-2 gap-2 w-full text-xs">
-                {chartData.slice(0, 4).map((item) => {
-                  const categoryInfo = Object.values(categoryMapping).find(cat => cat.name === item.category);
-                  return (
-                    <div key={item.category} className="flex items-center gap-2">
-                      <div 
-                        className="w-2 h-2 rounded-full flex-shrink-0" 
-                        style={{ backgroundColor: item.fill }}
-                      />
-                      <span className="text-slate-300 truncate">{categoryInfo?.icon} {item.category}</span>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
-          ) : (
-            <div className="text-center py-8 text-slate-400">
-              <TrendingUp className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>No expense data</p>
+            
+            {/* Compact legend for mobile */}
+            <div className="grid grid-cols-2 gap-2 w-full text-xs">
+              {chartData.slice(0, 4).map((item) => {
+                const categoryInfo = Object.values(categoryMapping).find(cat => cat.name === item.category);
+                return (
+                  <div key={item.category} className="flex items-center gap-2">
+                    <div 
+                      className="w-2 h-2 rounded-full flex-shrink-0" 
+                      style={{ backgroundColor: item.fill }}
+                    />
+                    <span className="text-slate-300 truncate">{categoryInfo?.icon} {item.category}</span>
+                  </div>
+                );
+              })}
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-slate-400">
+            <TrendingUp className="h-12 w-12 mx-auto mb-3 opacity-50" />
+            <p>No expense data</p>
+          </div>
+        )}
+      </div>
     );
   }
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+    <Card className="bg-slate-900 border-slate-800 text-white">
       <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-primary" />
+        <CardTitle className="text-lg font-semibold flex items-center gap-2 text-white">
+          <TrendingUp className="h-5 w-5 text-blue-400" />
           Expenses by Category
         </CardTitle>
       </CardHeader>
@@ -136,37 +141,44 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
         {chartData.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
             {/* Chart */}
-            <div className="relative">
-              <ChartContainer
-                config={chartConfig}
-                className="aspect-square max-h-[280px]"
-              >
-                <PieChart>
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent hideLabel />}
+            <div className="relative flex justify-center">
+              <div className="w-64 h-64 relative">
+                {/* Background circle */}
+                <div className="absolute inset-0 rounded-full border-8 border-slate-700"></div>
+                
+                {/* Progress ring */}
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    fill="none"
+                    stroke="#1e293b"
+                    strokeWidth="12"
                   />
-                  <Pie
-                    data={chartData}
-                    dataKey="amount"
-                    nameKey="category"
-                    innerRadius={60}
-                    outerRadius={100}
-                    strokeWidth={2}
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ChartContainer>
-              
-              {/* Center text */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <p className="text-sm text-muted-foreground">Total Spent</p>
-                <p className="text-2xl font-bold text-red-600">
-                  ₹{totalExpenses.toLocaleString()}
-                </p>
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    fill="none"
+                    stroke="#3b82f6"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                    strokeDasharray={`${(totalExpenses / 50000) * 264} 264`}
+                    className="transition-all duration-1000 ease-out"
+                  />
+                </svg>
+                
+                {/* Center content */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <div className="text-blue-400 mb-2">
+                    <TrendingUp className="h-6 w-6" />
+                  </div>
+                  <p className="text-3xl font-bold text-white">
+                    ₹{totalExpenses.toLocaleString()}
+                  </p>
+                  <p className="text-sm text-slate-400 mt-1">49%</p>
+                </div>
               </div>
             </div>
             
@@ -176,7 +188,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                 const categoryInfo = Object.values(categoryMapping).find(cat => cat.name === item.category);
                 const percentage = ((item.amount / totalExpenses) * 100).toFixed(1);
                 return (
-                  <div key={item.category} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                  <div key={item.category} className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
                     <div className="flex items-center gap-3">
                       <div 
                         className="w-4 h-4 rounded-full" 
@@ -184,12 +196,12 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                       />
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{categoryInfo?.icon}</span>
-                        <span className="font-medium">{item.category}</span>
+                        <span className="font-medium text-white">{item.category}</span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">₹{item.amount.toLocaleString()}</p>
-                      <p className="text-sm text-muted-foreground">{percentage}%</p>
+                      <p className="font-semibold text-white">₹{item.amount.toLocaleString()}</p>
+                      <p className="text-sm text-slate-400">{percentage}%</p>
                     </div>
                   </div>
                 );
@@ -197,7 +209,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
             </div>
           </div>
         ) : (
-          <div className="text-center py-12 text-muted-foreground">
+          <div className="text-center py-12 text-slate-400">
             <TrendingUp className="h-12 w-12 mx-auto mb-3 opacity-50" />
             <p>No expense data available</p>
             <p className="text-sm">Add some expenses to see the breakdown</p>
