@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Transaction, Category, Account, Budget } from '@/types/Transaction';
 import { parseMessage } from '@/utils/messageParser';
@@ -161,6 +160,26 @@ export const useExpenseTrackerData = () => {
     setBudgets(prev => [...prev, newBudget]);
   };
 
+  const handleAddAccount = (account: Omit<Account, 'id'>) => {
+    const newAccount: Account = {
+      id: Date.now().toString(),
+      ...account
+    };
+    setAccounts(prev => [...prev, newAccount]);
+    toast({
+      title: "Account added",
+      description: `${account.name} has been added to your accounts.`,
+    });
+  };
+
+  const handleEditAccount = (id: string, updates: Partial<Account>) => {
+    setAccounts(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a));
+  };
+
+  const handleDeleteAccount = (id: string) => {
+    setAccounts(prev => prev.filter(a => a.id !== id));
+  };
+
   const clearFilters = () => {
     setSearchTerm('');
     setSelectedCategory('all');
@@ -189,6 +208,7 @@ export const useExpenseTrackerData = () => {
     setDateRange,
     setAmountRange,
     setCategories,
+    setAccounts,
     setBudgets,
     handleMessage,
     handleAddCategory,
@@ -196,6 +216,9 @@ export const useExpenseTrackerData = () => {
     handleDeleteTransaction,
     handleExportData,
     handleAddBudget,
+    handleAddAccount,
+    handleEditAccount,
+    handleDeleteAccount,
     clearFilters,
   };
 };

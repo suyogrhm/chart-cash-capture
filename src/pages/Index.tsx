@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardTab } from '@/components/DashboardTab';
@@ -7,6 +6,7 @@ import { CategoriesManager } from '@/components/CategoriesManager';
 import { BudgetTracker } from '@/components/BudgetTracker';
 import { AppLayout } from '@/components/AppLayout';
 import { useExpenseTrackerData } from '@/hooks/useExpenseTrackerData';
+import { AccountsManager } from '@/components/AccountsManager';
 
 const Index = () => {
   const {
@@ -28,6 +28,7 @@ const Index = () => {
     setDateRange,
     setAmountRange,
     setCategories,
+    setAccounts,
     setBudgets,
     handleMessage,
     handleAddCategory,
@@ -35,6 +36,9 @@ const Index = () => {
     handleDeleteTransaction,
     handleExportData,
     handleAddBudget,
+    handleAddAccount,
+    handleEditAccount,
+    handleDeleteAccount,
     clearFilters,
   } = useExpenseTrackerData();
 
@@ -135,10 +139,12 @@ const Index = () => {
         </TabsContent>
 
         <TabsContent value="accounts">
-          <div className="text-center py-12 text-muted-foreground">
-            <p>Account management coming soon!</p>
-            <p className="text-sm">Multiple account support will be available in the next update.</p>
-          </div>
+          <AccountsManager
+            accounts={accounts}
+            onAddAccount={handleAddAccount}
+            onEditAccount={handleEditAccount}
+            onDeleteAccount={handleDeleteAccount}
+          />
         </TabsContent>
       </Tabs>
     </AppLayout>
