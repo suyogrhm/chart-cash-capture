@@ -1,4 +1,6 @@
+
 import { Transaction } from '@/types/Transaction';
+import { parseSMSTransaction } from './smsParser';
 
 const incomeKeywords = ['earned', 'salary', 'paid', 'received', 'income', 'bonus', 'freelance', 'sold'];
 const expenseKeywords = ['spent', 'bought', 'paid for', 'purchased', 'cost', 'bill', 'food', 'gas', 'fuel'];
@@ -8,7 +10,14 @@ const categories = {
   expense: ['food', 'transport', 'entertainment', 'bills', 'shopping', 'health', 'fuel', 'other']
 };
 
-export const parseMessage = (message: string): Omit<Transaction, 'id' | 'date' | 'originalMessage'> | null => {
+export const parseMessage = (message: string, isSMS: boolean = false): Omit<Transaction, 'id' | 'date' | 'original_message'> | null => {
+  // If it's an SMS, try the SMS parser first
+  if (isSMS) {
+    const smsResult = parseSMSTransaction(message);
+    if (smsResult) return smsResult;
+  }
+
+  // Fall back to regular parsing
   const lowerMessage = message.toLowerCase();
   
   // Extract amount using regex - look for numbers (including those with commas)
