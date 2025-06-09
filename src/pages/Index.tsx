@@ -69,9 +69,16 @@ const Index = () => {
     }
   }, [tabFromUrl, typeFromUrl, setSelectedType]);
 
-  // Update URL when tab changes (but not when filters change to avoid infinite loops)
+  // Update URL when tab changes and reset filters when leaving transactions
   const handleTabChange = (newTab: string) => {
+    const previousTab = activeTab;
     setActiveTab(newTab);
+    
+    // Clear filters when switching away from transactions tab
+    if (previousTab === 'transactions' && newTab !== 'transactions') {
+      clearFilters();
+      setFromIncomeHistory(false);
+    }
     
     // If coming from income history and going to transactions normally, clear filters
     if (newTab === 'transactions' && fromIncomeHistory && !searchParams.get('type')) {
@@ -81,12 +88,6 @@ const Index = () => {
     
     // Clear URL params when changing tabs manually
     navigate(`/?tab=${newTab}`, { replace: true });
-    
-    // Clear filters when switching away from transactions
-    if (newTab !== 'transactions') {
-      clearFilters();
-      setFromIncomeHistory(false);
-    }
   };
 
   // Calculate metrics for current month
