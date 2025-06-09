@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -118,13 +119,13 @@ export const CircularSpendingChart = ({
     if (isMobile) {
       return {
         outerRadius: 80,
-        innerRadius: 55,  // Thinner circle for mobile
+        innerRadius: 55,
         height: 250
       };
     } else {
       return {
         outerRadius: 100,
-        innerRadius: 75,  // Thinner circle for desktop
+        innerRadius: 75,
         height: 300
       };
     }
@@ -184,7 +185,7 @@ export const CircularSpendingChart = ({
         <CardTitle className="text-chart-foreground">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="relative" style={{ height: `${chartConfig.height}px` }}>
+        <div className="relative flex items-center justify-center" style={{ height: `${chartConfig.height}px` }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -206,13 +207,13 @@ export const CircularSpendingChart = ({
             </PieChart>
           </ResponsiveContainer>
           
-          {/* Absolutely centered text content */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+          {/* Perfectly centered text content using flexbox */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="text-center">
-              <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-foreground`}>
+              <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-foreground leading-tight`}>
                 ₹{totalSpending.toLocaleString()}
               </p>
-              <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
+              <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground mt-1`}>
                 Spent in {currentMonth}
               </p>
             </div>
