@@ -57,18 +57,22 @@ export const DashboardTab = ({
 
   const actualBudget = budget || 50000; // Default budget if not set
   const safeToSpend = Math.max(0, actualBudget - currentMonthExpenses);
-  const dailySafeToSpend = Math.floor(safeToSpend / new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate());
+  const remainingDays = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() - new Date().getDate();
+  const dailySafeToSpend = remainingDays > 0 ? Math.floor(safeToSpend / remainingDays) : 0;
 
   const handleIncomeClick = () => {
     console.log('Income button clicked - navigating to transactions with income filter');
-    // Navigate to transactions tab with income filter
     navigate('/?tab=transactions&type=income');
   };
 
   const handleCategoriesClick = () => {
     console.log('Categories button clicked - navigating to categories management');
-    // Navigate to categories management (you might need to create this route)
     navigate('/?tab=categories');
+  };
+
+  // Quick action handlers for message input
+  const handleQuickAction = (message: string) => {
+    onMessage(message);
   };
 
   if (isMobile) {
@@ -179,7 +183,7 @@ export const DashboardTab = ({
             </div>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
             {/* Enhanced Metrics */}
             <div className="lg:col-span-1 space-y-6">
               <div className="grid gap-4">
@@ -192,7 +196,7 @@ export const DashboardTab = ({
                     <span className="text-sm font-medium text-muted-foreground">Monthly Income</span>
                   </div>
                   <p className="text-2xl font-bold text-foreground">₹{currentMonthIncome.toLocaleString()}</p>
-                  <p className="text-xs text-green-600 mt-1">+{((currentMonthIncome / (currentMonthIncome || 1)) * 100).toFixed(0)}% this month</p>
+                  <p className="text-xs text-green-600 mt-1">+100% this month</p>
                 </div>
 
                 {/* Budget Card */}
@@ -233,7 +237,7 @@ export const DashboardTab = ({
             </div>
 
             {/* Chart */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-3">
               <CircularSpendingChart transactions={currentMonthTransactions} />
             </div>
           </div>

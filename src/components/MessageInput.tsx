@@ -35,6 +35,17 @@ export const MessageInput = ({ onMessage, accounts }: MessageInputProps) => {
     }
   };
 
+  const handleQuickAction = (quickMessage: string) => {
+    setMessage(quickMessage);
+    // Optionally submit immediately
+    onMessage(quickMessage, selectedAccount, selectedPaymentMethod);
+    setMessage('');
+    toast({
+      title: "Transaction recorded!",
+      description: "Your quick action has been added to your transactions.",
+    });
+  };
+
   const paymentMethods = [
     { value: 'cash', label: '💵 Cash' },
     { value: 'upi', label: '📱 UPI' },
@@ -44,10 +55,10 @@ export const MessageInput = ({ onMessage, accounts }: MessageInputProps) => {
   ];
 
   const quickActions = [
-    { label: '☕ Coffee', amount: '₹150' },
-    { label: '🚗 Fuel', amount: '₹2000' },
-    { label: '🍔 Lunch', amount: '₹300' },
-    { label: '🎬 Movie', amount: '₹500' },
+    { label: '☕ Coffee', amount: '₹150', message: 'Spent ₹150 on coffee' },
+    { label: '🚗 Fuel', amount: '₹2000', message: 'Spent ₹2000 on fuel' },
+    { label: '🍔 Lunch', amount: '₹300', message: 'Spent ₹300 on lunch' },
+    { label: '🎬 Movie', amount: '₹500', message: 'Spent ₹500 on movie' },
   ];
 
   return (
@@ -94,8 +105,8 @@ export const MessageInput = ({ onMessage, accounts }: MessageInputProps) => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setMessage(`Spent ${action.amount} on ${action.label.split(' ')[1]}`)}
-                  className="text-xs"
+                  onClick={() => handleQuickAction(action.message)}
+                  className="text-xs hover:bg-primary/10"
                 >
                   {action.label} {action.amount}
                 </Button>
