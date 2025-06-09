@@ -1,29 +1,36 @@
 
 import React, { useState } from 'react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Calendar, Repeat, Edit2, Trash2, Play, Pause } from 'lucide-react';
-import { Transaction, Category, Account } from '@/types/Transaction';
-import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Calendar, Plus, Repeat, Edit2, Trash2, Play, Pause } from 'lucide-react';
+import { Category, Account } from '@/types/Transaction';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-interface RecurringTransaction extends Omit<Transaction, 'id' | 'date'> {
+interface RecurringTransaction {
   id: string;
+  description: string;
+  amount: number;
+  type: 'income' | 'expense';
+  category_id: string;
+  account_id: string;
   frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
-  next_due_date: string;
-  is_active: boolean;
   start_date: string;
   end_date?: string;
+  is_active: boolean;
+  next_execution: string;
+  payment_method?: 'cash' | 'upi' | 'card' | 'bank_transfer' | 'other';
 }
 
 interface RecurringTransactionsManagerProps {
   recurringTransactions: RecurringTransaction[];
   categories: Category[];
   accounts: Account[];
-  onAddRecurring: (transaction: Omit<RecurringTransaction, 'id'>) => void;
+  onAddRecurring: (recurring: Omit<RecurringTransaction, 'id'>) => void;
   onEditRecurring: (id: string, updates: Partial<RecurringTransaction>) => void;
   onDeleteRecurring: (id: string) => void;
   onToggleActive: (id: string, active: boolean) => void;
@@ -39,185 +46,176 @@ export const RecurringTransactionsManager = ({
   onToggleActive
 }: RecurringTransactionsManagerProps) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingRecurring, setEditingRecurring] = useState<RecurringTransaction | null>(null);
   const [newRecurring, setNewRecurring] = useState({
     description: '',
-    amount: '',
-    type: 'expense' as 'income' | 'expense',
-    category: '',
+    amount: 0,
+    type: 'expense' as const,
+    category_id: '',
     account_id: '',
-    frequency: 'monthly' as 'daily' | 'weekly' | 'monthly' | 'yearly',
+    frequency: 'monthly' as const,
     start_date: new Date().toISOString().split('T')[0],
-    end_date: '',
-    is_active: true
+    is_active: true,
+    payment_method: 'upi' as const
   });
+  const isMobile = useIsMobile();
 
   const handleAddRecurring = () => {
-    if (newRecurring.description.trim() && newRecurring.amount && newRecurring.category && newRecurring.account_id) {
-      const nextDueDate = calculateNextDueDate(newRecurring.start_date, newRecurring.frequency);
-      
+    if (newRecurring.description && newRecurring.amount > 0 && newRecurring.category_id && newRecurring.account_id) {
+      const nextExecution = calculateNextExecution(newRecurring.start_date, newRecurring.frequency);
       onAddRecurring({
         ...newRecurring,
-        amount: parseFloat(newRecurring.amount),
-        next_due_date: nextDueDate,
-        start_date: newRecurring.start_date,
-        end_date: newRecurring.end_date || undefined
+        next_execution: nextExecution
       });
-      
       setNewRecurring({
         description: '',
-        amount: '',
+        amount: 0,
         type: 'expense',
-        category: '',
+        category_id: '',
         account_id: '',
         frequency: 'monthly',
         start_date: new Date().toISOString().split('T')[0],
-        end_date: '',
-        is_active: true
+        is_active: true,
+        payment_method: 'upi'
       });
       setIsAddDialogOpen(false);
     }
   };
 
-  const calculateNextDueDate = (startDate: string, frequency: string) => {
+  const calculateNextExecution = (startDate: string, frequency: string) => {
     const date = new Date(startDate);
-    const today = new Date();
+    const now = new Date();
     
-    // If start date is in the future, return it
-    if (date > today) return startDate;
-    
-    // Calculate next occurrence
-    switch (frequency) {
-      case 'daily':
-        date.setDate(date.getDate() + 1);
-        break;
-      case 'weekly':
-        date.setDate(date.getDate() + 7);
-        break;
-      case 'monthly':
-        date.setMonth(date.getMonth() + 1);
-        break;
-      case 'yearly':
-        date.setFullYear(date.getFullYear() + 1);
-        break;
+    while (date <= now) {
+      switch (frequency) {
+        case 'daily':
+          date.setDate(date.getDate() + 1);
+          break;
+        case 'weekly':
+          date.setDate(date.getDate() + 7);
+          break;
+        case 'monthly':
+          date.setMonth(date.getMonth() + 1);
+          break;
+        case 'yearly':
+          date.setFullYear(date.getFullYear() + 1);
+          break;
+      }
     }
     
     return date.toISOString().split('T')[0];
   };
 
-  const formatFrequency = (frequency: string) => {
-    const map = {
-      daily: 'Daily',
-      weekly: 'Weekly',
-      monthly: 'Monthly',
-      yearly: 'Yearly'
-    };
-    return map[frequency as keyof typeof map] || frequency;
-  };
-
-  const getCategoryInfo = (categoryId: string) => {
+  const getCategoryName = (categoryId: string) => {
     const category = categories.find(c => c.id === categoryId);
-    return category || { name: 'Unknown', icon: '❓' };
+    return category ? category.name : 'Unknown';
   };
 
-  const getAccountInfo = (accountId: string) => {
+  const getCategoryIcon = (categoryId: string) => {
+    const category = categories.find(c => c.id === categoryId);
+    return category ? category.icon : '📊';
+  };
+
+  const getAccountName = (accountId: string) => {
     const account = accounts.find(a => a.id === accountId);
-    return account || { name: 'Unknown Account' };
+    return account ? account.name : 'Unknown';
+  };
+
+  const getAccountColor = (accountId: string) => {
+    const account = accounts.find(a => a.id === accountId);
+    return account ? account.color : '#6B7280';
+  };
+
+  const formatNextExecution = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = date.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Tomorrow';
+    if (diffDays < 7) return `In ${diffDays} days`;
+    
+    return date.toLocaleDateString();
   };
 
   return (
-    <Card className="p-6 bg-card border-border shadow-lg">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Repeat className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold text-card-foreground">Recurring Transactions</h2>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-card-foreground">Recurring Transactions</h3>
+          <p className="text-sm text-muted-foreground">Automate your regular income and expenses</p>
         </div>
-        
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
+            <Button size="sm" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Add Recurring
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className={isMobile ? 'w-[95vw] max-w-md' : ''}>
             <DialogHeader>
-              <DialogTitle>Add Recurring Transaction</DialogTitle>
+              <DialogTitle>Create Recurring Transaction</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
-              <div>
-                <Label htmlFor="description">Description</Label>
+              <Input
+                placeholder="Description"
+                value={newRecurring.description}
+                onChange={(e) => setNewRecurring({ ...newRecurring, description: e.target.value })}
+              />
+              
+              <div className="grid grid-cols-2 gap-2">
                 <Input
-                  id="description"
-                  placeholder="Transaction description"
-                  value={newRecurring.description}
-                  onChange={(e) => setNewRecurring({ ...newRecurring, description: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="amount">Amount</Label>
-                <Input
-                  id="amount"
                   type="number"
-                  placeholder="0.00"
-                  value={newRecurring.amount}
-                  onChange={(e) => setNewRecurring({ ...newRecurring, amount: e.target.value })}
+                  placeholder="Amount"
+                  value={newRecurring.amount || ''}
+                  onChange={(e) => setNewRecurring({ ...newRecurring, amount: parseFloat(e.target.value) || 0 })}
                 />
+                <Select value={newRecurring.type} onValueChange={(value: 'income' | 'expense') => setNewRecurring({ ...newRecurring, type: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="expense">Expense</SelectItem>
+                    <SelectItem value="income">Income</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
-              <div>
-                <Label>Type</Label>
-                <div className="flex gap-2 mt-2">
-                  <Button
-                    variant={newRecurring.type === 'expense' ? 'default' : 'outline'}
-                    onClick={() => setNewRecurring({ ...newRecurring, type: 'expense' })}
-                  >
-                    Expense
-                  </Button>
-                  <Button
-                    variant={newRecurring.type === 'income' ? 'default' : 'outline'}
-                    onClick={() => setNewRecurring({ ...newRecurring, type: 'income' })}
-                  >
-                    Income
-                  </Button>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <Select value={newRecurring.category} onValueChange={(value) => setNewRecurring({ ...newRecurring, category: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.filter(c => c.type === newRecurring.type).map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.icon} {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="account">Account</Label>
-                <Select value={newRecurring.account_id} onValueChange={(value) => setNewRecurring({ ...newRecurring, account_id: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select account" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
+              <Select value={newRecurring.category_id} onValueChange={(value) => setNewRecurring({ ...newRecurring, category_id: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.icon} {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Select value={newRecurring.account_id} onValueChange={(value) => setNewRecurring({ ...newRecurring, account_id: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select account" />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: account.color }}
+                        />
                         {account.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="frequency">Frequency</Label>
-                <Select value={newRecurring.frequency} onValueChange={(value) => setNewRecurring({ ...newRecurring, frequency: value as any })}>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <Select value={newRecurring.frequency} onValueChange={(value: any) => setNewRecurring({ ...newRecurring, frequency: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -228,118 +226,122 @@ export const RecurringTransactionsManager = ({
                     <SelectItem value="yearly">Yearly</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="start_date">Start Date</Label>
                 <Input
-                  id="start_date"
                   type="date"
                   value={newRecurring.start_date}
                   onChange={(e) => setNewRecurring({ ...newRecurring, start_date: e.target.value })}
                 />
               </div>
-
-              <div>
-                <Label htmlFor="end_date">End Date (Optional)</Label>
-                <Input
-                  id="end_date"
-                  type="date"
-                  value={newRecurring.end_date}
-                  onChange={(e) => setNewRecurring({ ...newRecurring, end_date: e.target.value })}
-                />
-              </div>
-
+              
               <Button onClick={handleAddRecurring} className="w-full">
-                Add Recurring Transaction
+                Create Recurring Transaction
               </Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="space-y-4">
-        {recurringTransactions.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p>No recurring transactions set up</p>
-            <p className="text-sm">Create automated transactions for regular income or expenses</p>
-          </div>
-        ) : (
-          recurringTransactions.map((recurring) => {
-            const categoryInfo = getCategoryInfo(recurring.category);
-            const accountInfo = getAccountInfo(recurring.account_id);
-            
-            return (
-              <div
-                key={recurring.id}
-                className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold"
-                    style={{ backgroundColor: categoryInfo.color || '#666' }}
-                  >
-                    {categoryInfo.icon}
-                  </div>
-                  
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium text-card-foreground">{recurring.description}</p>
-                      <Badge variant={recurring.type === 'income' ? 'default' : 'secondary'}>
-                        {recurring.type}
-                      </Badge>
-                      <Badge variant="outline">
-                        {formatFrequency(recurring.frequency)}
-                      </Badge>
-                      {!recurring.is_active && (
-                        <Badge variant="destructive">Paused</Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{categoryInfo.name}</span>
-                      <span>•</span>
-                      <span>{accountInfo.name}</span>
-                      <span>•</span>
-                      <span>Next: {new Date(recurring.next_due_date).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className={`text-lg font-semibold ${
-                      recurring.type === 'income' ? 'text-green-600' : 'text-card-foreground'
+      {recurringTransactions.length > 0 ? (
+        <div className="space-y-4">
+          {recurringTransactions.map((recurring) => (
+            <Card key={recurring.id} className={`bg-card border-border ${!recurring.is_active ? 'opacity-60' : ''}`}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                      recurring.type === 'income' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-slate-100 dark:bg-slate-800'
                     }`}>
-                      ₹{recurring.amount.toLocaleString()}
-                    </p>
+                      <span className="text-xl">{getCategoryIcon(recurring.category_id)}</span>
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-medium text-card-foreground truncate">
+                          {recurring.description}
+                        </h4>
+                        <Badge variant="outline" className="text-xs">
+                          {getCategoryName(recurring.category_id)}
+                        </Badge>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <div 
+                            className="w-2 h-2 rounded-full" 
+                            style={{ backgroundColor: getAccountColor(recurring.account_id) }}
+                          />
+                          <span>{getAccountName(recurring.account_id)}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Repeat className="h-3 w-3" />
+                          <span className="capitalize">{recurring.frequency}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          <span>{formatNextExecution(recurring.next_execution)}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onToggleActive(recurring.id, !recurring.is_active)}
-                    >
-                      {recurring.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => onDeleteRecurring(recurring.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <p className={`text-lg font-semibold ${
+                        recurring.type === 'income' ? 'text-green-600' : 'text-card-foreground'
+                      }`}>
+                        ₹{recurring.amount.toLocaleString()}
+                      </p>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Switch
+                          checked={recurring.is_active}
+                          onCheckedChange={(checked) => onToggleActive(recurring.id, checked)}
+                          size="sm"
+                        />
+                        <span className="text-xs text-muted-foreground">
+                          {recurring.is_active ? 'Active' : 'Paused'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => setEditingRecurring(recurring)}
+                      >
+                        <Edit2 className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => onDeleteRecurring(recurring.id)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })
-        )}
-      </div>
-    </Card>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card className="bg-card border-border">
+          <CardContent className="text-center py-8">
+            <Repeat className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <h3 className="text-lg font-medium text-card-foreground mb-2">No recurring transactions</h3>
+            <p className="text-muted-foreground mb-4">
+              Set up automatic transactions for regular income and expenses
+            </p>
+            <Button onClick={() => setIsAddDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Recurring Transaction
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };

@@ -24,8 +24,8 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--app-bg))]">
-      {/* Sticky Header for Desktop Only */}
+    <div className="min-h-screen bg-background">
+      {/* Desktop: Sticky Header with Navigation */}
       {!isMobile && (
         <div className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
           <div className="container mx-auto px-4 py-3 max-w-7xl">
@@ -56,8 +56,9 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         </div>
       )}
 
+      {/* Content Container */}
       <div className={`container mx-auto ${isMobile ? 'px-2 py-4' : 'px-4 py-6'} max-w-7xl`}>
-        {/* Header for Mobile Only */}
+        {/* Mobile: Header without Navigation (handled by MobileTabNavigation) */}
         {isMobile && (
           <div className="mb-4 flex justify-between items-center">
             <div>

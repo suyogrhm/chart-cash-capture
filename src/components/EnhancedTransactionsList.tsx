@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -102,20 +103,20 @@ export const EnhancedTransactionsList = ({
   const MobileTransactionCard = ({ transaction }: { transaction: Transaction }) => {
     const categoryInfo = getCategoryInfo(transaction.category);
     return (
-      <div className="bg-white rounded-xl border border-slate-100 p-4 hover:shadow-md transition-shadow">
+      <div className="bg-card rounded-xl border border-border p-4 hover:shadow-md transition-shadow">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3 flex-1">
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-              transaction.type === 'income' ? 'bg-green-100' : 'bg-slate-100'
+              transaction.type === 'income' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'
             }`}>
               <span className="text-xl">{categoryInfo.icon}</span>
             </div>
             
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-slate-900 text-sm mb-1">{transaction.description}</p>
-              <p className="text-xs text-slate-600 mb-1">{categoryInfo.name}</p>
+              <p className="font-medium text-card-foreground text-xs mb-1">{categoryInfo.name}</p>
+              <p className="font-semibold text-card-foreground text-sm mb-1">{transaction.description}</p>
               {transaction.original_message && (
-                <p className="text-xs text-slate-500 truncate">
+                <p className="text-xs text-muted-foreground truncate">
                   "{transaction.original_message}"
                 </p>
               )}
@@ -124,7 +125,7 @@ export const EnhancedTransactionsList = ({
 
           <div className="text-right">
             <p className={`text-lg font-bold ${
-              transaction.type === 'income' ? 'text-green-600' : 'text-slate-900'
+              transaction.type === 'income' ? 'text-green-600' : 'text-card-foreground'
             }`}>
               ₹{transaction.amount.toLocaleString()}
             </p>
@@ -134,17 +135,17 @@ export const EnhancedTransactionsList = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
           <span>{formatDate(transaction.date)}</span>
         </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+        <div className="flex items-center justify-between pt-3 border-t border-border">
           <div className="flex items-center gap-2">
             <div 
               className="w-2 h-2 rounded-full" 
               style={{ backgroundColor: getAccountColor(transaction.account_id) }}
             />
-            <span className="text-xs text-slate-600">
+            <span className="text-xs text-muted-foreground">
               {getAccountName(transaction.account_id)}
             </span>
             {transaction.is_recurring && (
@@ -159,7 +160,7 @@ export const EnhancedTransactionsList = ({
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 hover:bg-slate-100"
+              className="h-8 w-8 p-0 hover:bg-muted"
               onClick={() => handleEdit(transaction)}
             >
               <Edit2 className="h-3 w-3" />
@@ -167,7 +168,7 @@ export const EnhancedTransactionsList = ({
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+              className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
               onClick={() => onDeleteTransaction(transaction.id)}
             >
               <Trash2 className="h-3 w-3" />
@@ -180,11 +181,11 @@ export const EnhancedTransactionsList = ({
 
   return (
     <>
-      <Card className="bg-white border-0 shadow-lg overflow-hidden">
-        <div className="p-6 border-b border-slate-100">
+      <Card className="bg-card border-border shadow-lg overflow-hidden">
+        <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
             <Clock className="h-5 w-5 text-primary" />
-            <h2 className={`font-semibold ${isMobile ? 'text-base' : 'text-lg'}`}>
+            <h2 className={`font-semibold text-card-foreground ${isMobile ? 'text-base' : 'text-lg'}`}>
               Transaction History
             </h2>
           </div>
@@ -204,44 +205,39 @@ export const EnhancedTransactionsList = ({
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-slate-200">
-                      <TableHead className="text-slate-600">Type</TableHead>
-                      <TableHead className="text-slate-600">Description</TableHead>
-                      <TableHead className="text-slate-600">Category</TableHead>
-                      <TableHead className="text-slate-600">Account</TableHead>
-                      <TableHead className="text-slate-600">Payment Method</TableHead>
-                      <TableHead className="text-slate-600">Amount</TableHead>
-                      <TableHead className="text-slate-600">Date</TableHead>
-                      <TableHead className="text-slate-600">Status</TableHead>
-                      <TableHead className="text-slate-600">Actions</TableHead>
+                    <TableRow className="border-border hover:bg-muted/50">
+                      <TableHead className="text-muted-foreground bg-muted/30">Type</TableHead>
+                      <TableHead className="text-muted-foreground bg-muted/30">Category & Description</TableHead>
+                      <TableHead className="text-muted-foreground bg-muted/30">Account</TableHead>
+                      <TableHead className="text-muted-foreground bg-muted/30">Payment Method</TableHead>
+                      <TableHead className="text-muted-foreground bg-muted/30">Amount</TableHead>
+                      <TableHead className="text-muted-foreground bg-muted/30">Date</TableHead>
+                      <TableHead className="text-muted-foreground bg-muted/30">Status</TableHead>
+                      <TableHead className="text-muted-foreground bg-muted/30">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {transactions.map((transaction) => {
                       const categoryInfo = getCategoryInfo(transaction.category);
                       return (
-                        <TableRow key={transaction.id} className="border-slate-100 hover:bg-slate-50">
+                        <TableRow key={transaction.id} className="border-border hover:bg-muted/50">
                           <TableCell>
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                              transaction.type === 'income' ? 'bg-green-100' : 'bg-slate-100'
+                              transaction.type === 'income' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'
                             }`}>
                               <span className="text-lg">{categoryInfo.icon}</span>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div>
-                              <p className="font-medium text-slate-900">{transaction.description}</p>
+                              <p className="font-medium text-card-foreground text-xs mb-1">{categoryInfo.name}</p>
+                              <p className="font-semibold text-card-foreground">{transaction.description}</p>
                               {transaction.original_message && (
-                                <p className="text-sm text-slate-500 truncate max-w-xs">
+                                <p className="text-sm text-muted-foreground truncate max-w-xs">
                                   "{transaction.original_message}"
                                 </p>
                               )}
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="secondary" className="text-xs">
-                              {categoryInfo.name}
-                            </Badge>
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
@@ -249,20 +245,20 @@ export const EnhancedTransactionsList = ({
                                 className="w-3 h-3 rounded-full" 
                                 style={{ backgroundColor: getAccountColor(transaction.account_id) }}
                               />
-                              <span className="text-sm">{getAccountName(transaction.account_id)}</span>
+                              <span className="text-sm text-card-foreground">{getAccountName(transaction.account_id)}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-sm">
+                          <TableCell className="text-sm text-card-foreground">
                             {getPaymentMethodDisplay(transaction.payment_method)}
                           </TableCell>
                           <TableCell>
                             <span className={`font-semibold text-lg ${
-                              transaction.type === 'income' ? 'text-green-600' : 'text-slate-900'
+                              transaction.type === 'income' ? 'text-green-600' : 'text-card-foreground'
                             }`}>
                               ₹{transaction.amount.toLocaleString()}
                             </span>
                           </TableCell>
-                          <TableCell className="text-sm text-slate-600">
+                          <TableCell className="text-sm text-muted-foreground">
                             {formatDate(transaction.date)}
                           </TableCell>
                           <TableCell>
@@ -274,7 +270,7 @@ export const EnhancedTransactionsList = ({
                                 </Badge>
                               )}
                               {transaction.type === 'income' && (
-                                <Badge className="bg-green-100 text-green-800 text-xs">
+                                <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 text-xs">
                                   ✓ Received
                                 </Badge>
                               )}
@@ -285,7 +281,7 @@ export const EnhancedTransactionsList = ({
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="hover:bg-slate-100"
+                                className="hover:bg-muted"
                                 onClick={() => handleEdit(transaction)}
                               >
                                 <Edit2 className="h-4 w-4" />
@@ -293,7 +289,7 @@ export const EnhancedTransactionsList = ({
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="hover:bg-red-50 hover:text-red-600"
+                                className="hover:bg-destructive/10 hover:text-destructive"
                                 onClick={() => onDeleteTransaction(transaction.id)}
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -309,7 +305,7 @@ export const EnhancedTransactionsList = ({
             )}
           </div>
         ) : (
-          <div className="text-center py-12 text-slate-500">
+          <div className="text-center py-12 text-muted-foreground">
             <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
             <p>No transactions yet</p>
             <p className="text-sm">Your transaction history will appear here</p>
