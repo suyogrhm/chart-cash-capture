@@ -82,12 +82,12 @@ export const parseMessage = (message: string): Omit<Transaction, 'id' | 'date' |
     .replace(/\s+/g, ' ')
     .trim();
 
-  // For rent transactions, clean up specific patterns
+  // Special handling for rent transactions - remove "rent" from description
   if (lowerMessage.includes('rent')) {
     description = description
       .replace(/\brent\s+(received|paid)\b/gi, '')
       .replace(/\b(received|paid)\s+rent\b/gi, '')
-      .replace(/\brent\b/gi, '')
+      .replace(/\brent\b/gi, '') // Remove any remaining "rent" word
       .replace(/\s+/g, ' ')
       .trim();
   }
