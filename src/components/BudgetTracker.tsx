@@ -27,15 +27,15 @@ export const BudgetTracker = ({
 }: BudgetTrackerProps) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newBudget, setNewBudget] = useState({
-    categoryId: '',
+    category_id: '',
     amount: 0,
     period: 'monthly' as 'monthly' | 'weekly' | 'yearly'
   });
 
   const handleAddBudget = () => {
-    if (newBudget.categoryId && newBudget.amount > 0) {
+    if (newBudget.category_id && newBudget.amount > 0) {
       onAddBudget(newBudget);
-      setNewBudget({ categoryId: '', amount: 0, period: 'monthly' });
+      setNewBudget({ category_id: '', amount: 0, period: 'monthly' });
       setIsAddDialogOpen(false);
     }
   };
@@ -74,8 +74,8 @@ export const BudgetTracker = ({
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <Select 
-                  value={newBudget.categoryId} 
-                  onValueChange={(value) => setNewBudget({ ...newBudget, categoryId: value })}
+                  value={newBudget.category_id} 
+                  onValueChange={(value) => setNewBudget({ ...newBudget, category_id: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
@@ -128,7 +128,7 @@ export const BudgetTracker = ({
                 <div key={budget.id} className="p-4 bg-white rounded-lg border border-gray-100">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <h3 className="font-medium">{getCategoryName(budget.categoryId)}</h3>
+                      <h3 className="font-medium">{getCategoryName(budget.category_id)}</h3>
                       <Badge variant="outline">{budget.period}</Badge>
                       {status === 'exceeded' && (
                         <AlertTriangle className="h-4 w-4 text-red-500" />

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Transaction, Category, Account, Budget } from '@/types/Transaction';
 import { parseMessage } from '@/utils/messageParser';
@@ -167,12 +166,15 @@ export const useSupabaseExpenseTracker = () => {
 
     const parsedTransaction = parseMessage(message);
     if (parsedTransaction) {
+      // Handle payment method - if empty string, set to null
+      const validPaymentMethod = paymentMethod && paymentMethod.trim() !== '' ? paymentMethod : null;
+      
       const newTransaction = {
         ...parsedTransaction,
         user_id: user.id,
         original_message: message,
         account_id: accountId || accounts[0]?.id,
-        payment_method: paymentMethod as 'cash' | 'upi' | 'card' | 'bank_transfer' | 'other' | undefined
+        payment_method: validPaymentMethod as 'cash' | 'upi' | 'card' | 'bank_transfer' | 'other' | null
       };
 
       const { data, error } = await supabase
@@ -182,6 +184,7 @@ export const useSupabaseExpenseTracker = () => {
         .single();
 
       if (error) {
+        console.error('Transaction error:', error);
         toast({
           title: "Error",
           description: "Failed to add transaction",
