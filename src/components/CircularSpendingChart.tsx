@@ -12,6 +12,8 @@ interface CircularSpendingChartProps {
 export const CircularSpendingChart = ({ transactions }: CircularSpendingChartProps) => {
   const isMobile = useIsMobile();
 
+  console.log('CircularSpendingChart rendered with transactions:', transactions.length);
+
   // Category mappings with proper names and colors
   const categoryMapping = {
     '1': { name: 'Food & Dining', color: '#EF4444', icon: '🍽️' },
@@ -48,20 +50,20 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
   });
 
   const totalExpenses = chartData.reduce((sum, item) => sum + item.amount, 0);
-  const maxBudget = 50000; // Set a reasonable max for the progress calculation
+  const maxBudget = 50000;
   const progressPercentage = Math.min((totalExpenses / maxBudget) * 100, 100);
+
+  console.log('Chart data:', chartData);
+  console.log('Total expenses:', totalExpenses);
 
   if (isMobile) {
     return (
-      <Card className="bg-[hsl(var(--chart-bg))] border-[hsl(var(--chart-border))] overflow-hidden">
+      <Card className="bg-card border-border overflow-hidden">
         <CardContent className="p-6">
           {chartData.length > 0 ? (
             <div className="flex flex-col items-center">
               <div className="relative mb-6">
-                <div className="w-48 h-48 relative">
-                  {/* Background circle */}
-                  <div className="absolute inset-0 rounded-full border-8 border-muted"></div>
-                  
+                <div className="w-48 h-48 relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-full p-4">
                   {/* Progress ring */}
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                     <circle
@@ -69,16 +71,16 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                       cy="50"
                       r="42"
                       fill="none"
-                      stroke="hsl(var(--muted))"
-                      strokeWidth="8"
+                      stroke="rgba(255,255,255,0.1)"
+                      strokeWidth="6"
                     />
                     <circle
                       cx="50"
                       cy="50"
                       r="42"
                       fill="none"
-                      stroke="hsl(217 91% 60%)"
-                      strokeWidth="8"
+                      stroke="#3B82F6"
+                      strokeWidth="6"
                       strokeLinecap="round"
                       strokeDasharray={`${(progressPercentage / 100) * 264} 264`}
                       className="transition-all duration-1000 ease-out"
@@ -86,14 +88,14 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                   </svg>
                   
                   {/* Center content */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <div className="text-primary mb-1">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+                    <div className="text-blue-400 mb-1">
                       <TrendingUp className="h-4 w-4" />
                     </div>
-                    <p className="text-2xl font-bold text-foreground">
+                    <p className="text-2xl font-bold">
                       ₹{totalExpenses.toLocaleString()}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">{progressPercentage.toFixed(0)}%</p>
+                    <p className="text-xs opacity-70 mt-1">{progressPercentage.toFixed(0)}%</p>
                   </div>
                 </div>
               </div>
@@ -120,7 +122,9 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              <TrendingUp className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <div className="w-48 h-48 mx-auto bg-gradient-to-br from-slate-900 to-slate-800 rounded-full flex items-center justify-center mb-4">
+                <TrendingUp className="h-12 w-12 text-white/20" />
+              </div>
               <p>No expense data</p>
             </div>
           )}
@@ -130,7 +134,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
   }
 
   return (
-    <Card className="bg-[hsl(var(--chart-bg))] border-[hsl(var(--chart-border))]">
+    <Card className="bg-card border-border">
       <CardHeader className="pb-4">
         <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
           <TrendingUp className="h-5 w-5 text-primary" />
@@ -142,10 +146,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             {/* Chart */}
             <div className="relative flex justify-center">
-              <div className="w-64 h-64 relative">
-                {/* Background circle */}
-                <div className="absolute inset-0 rounded-full border-8 border-muted"></div>
-                
+              <div className="w-64 h-64 relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-full p-6">
                 {/* Progress ring */}
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                   <circle
@@ -153,16 +154,16 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                     cy="50"
                     r="42"
                     fill="none"
-                    stroke="hsl(var(--muted))"
-                    strokeWidth="8"
+                    stroke="rgba(255,255,255,0.1)"
+                    strokeWidth="6"
                   />
                   <circle
                     cx="50"
                     cy="50"
                     r="42"
                     fill="none"
-                    stroke="hsl(217 91% 60%)"
-                    strokeWidth="8"
+                    stroke="#3B82F6"
+                    strokeWidth="6"
                     strokeLinecap="round"
                     strokeDasharray={`${(progressPercentage / 100) * 264} 264`}
                     className="transition-all duration-1000 ease-out"
@@ -170,14 +171,14 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                 </svg>
                 
                 {/* Center content */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <div className="text-primary mb-2">
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+                  <div className="text-blue-400 mb-2">
                     <TrendingUp className="h-6 w-6" />
                   </div>
-                  <p className="text-3xl font-bold text-foreground">
+                  <p className="text-3xl font-bold">
                     ₹{totalExpenses.toLocaleString()}
                   </p>
-                  <p className="text-sm text-muted-foreground mt-1">{progressPercentage.toFixed(0)}%</p>
+                  <p className="text-sm opacity-70 mt-1">{progressPercentage.toFixed(0)}%</p>
                 </div>
               </div>
             </div>
@@ -210,7 +211,9 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
-            <TrendingUp className="h-12 w-12 mx-auto mb-3 opacity-50" />
+            <div className="w-64 h-64 mx-auto bg-gradient-to-br from-slate-900 to-slate-800 rounded-full flex items-center justify-center mb-4">
+              <TrendingUp className="h-12 w-12 text-white/20" />
+            </div>
             <p>No expense data available</p>
             <p className="text-sm">Add some expenses to see the breakdown</p>
           </div>
