@@ -7,9 +7,10 @@ import { Transaction, Account } from '@/types/Transaction';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
-import { TrendingUp, PieChart, Clock, Plus, Search, DollarSign } from 'lucide-react';
+import { TrendingUp, PieChart, Search, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { ExpenseTrackerLogo } from '@/components/ExpenseTrackerLogo';
 
 interface DashboardTabProps {
   onMessage: (message: string, accountId?: string, paymentMethod?: string) => void;
@@ -62,58 +63,32 @@ export const DashboardTab = ({
 
   const handleIncomeClick = () => {
     console.log('Income button clicked - navigating to transactions with income filter');
-    // Navigate to transactions tab with income filter applied
     navigate('/?tab=transactions&type=income');
   };
 
   const handleCategoriesClick = () => {
     console.log('Categories button clicked - navigating to categories management');
-    // Navigate to categories tab
     navigate('/?tab=categories');
-  };
-
-  // Quick action handlers for quick buttons
-  const handleQuickCoffee = () => {
-    onMessage('Spent ₹150 on coffee');
-  };
-
-  const handleQuickFuel = () => {
-    onMessage('Spent ₹2000 on fuel');
-  };
-
-  const handleQuickLunch = () => {
-    onMessage('Spent ₹300 on lunch');
-  };
-
-  const handleQuickMovie = () => {
-    onMessage('Spent ₹500 on movie');
   };
 
   if (isMobile) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        {/* Header Section */}
-        <div className="bg-card p-6 border-b border-border">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <div className="flex flex-col gap-1">
-                <div className="flex gap-1">
-                  <div className="w-1 h-4 bg-green-500 rounded"></div>
-                  <div className="w-1 h-4 bg-yellow-500 rounded"></div>
-                  <div className="w-1 h-4 bg-red-500 rounded"></div>
-                </div>
+        {/* Optimized Mobile Header */}
+        <div className="bg-card p-4 border-b border-border">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <ExpenseTrackerLogo className="w-8 h-8" />
+              <div>
+                <h1 className="text-lg font-semibold text-foreground">ExpenseTracker</h1>
+                <p className="text-xs text-muted-foreground">Hi {getUserName()}</p>
               </div>
-              <h1 className="text-lg font-medium ml-2 text-foreground">Hi {getUserName()}</h1>
             </div>
             <Search className="h-5 w-5 text-muted-foreground" />
           </div>
           
-          <p className="text-muted-foreground text-sm mb-8">
-            Spent in {new Date().toLocaleDateString('en-US', { month: 'long' })}
-          </p>
-          
           {/* Circular Chart */}
-          <div className="mb-8">
+          <div className="mb-6">
             <CircularSpendingChart transactions={currentMonthTransactions} />
           </div>
 
@@ -136,7 +111,7 @@ export const DashboardTab = ({
             </div>
           </div>
 
-          {/* Quick Actions */}
+          {/* Quick Actions - Only Income and Categories */}
           <div className="grid grid-cols-2 gap-3 mb-6">
             <Button 
               onClick={handleIncomeClick}
@@ -157,26 +132,10 @@ export const DashboardTab = ({
               <span>Categories</span>
             </Button>
           </div>
-
-          {/* Quick Transaction Buttons */}
-          <div className="grid grid-cols-2 gap-2 mb-6">
-            <Button onClick={handleQuickCoffee} variant="outline" size="sm" className="text-xs">
-              ☕ Coffee ₹150
-            </Button>
-            <Button onClick={handleQuickFuel} variant="outline" size="sm" className="text-xs">
-              🚗 Fuel ₹2000
-            </Button>
-            <Button onClick={handleQuickLunch} variant="outline" size="sm" className="text-xs">
-              🍔 Lunch ₹300
-            </Button>
-            <Button onClick={handleQuickMovie} variant="outline" size="sm" className="text-xs">
-              🎬 Movie ₹500
-            </Button>
-          </div>
         </div>
 
         {/* Quick Add Input */}
-        <div className="px-6 py-4">
+        <div className="px-4 py-4">
           <MessageInput onMessage={onMessage} accounts={accounts} />
         </div>
 
@@ -185,10 +144,6 @@ export const DashboardTab = ({
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-semibold text-foreground text-lg">Recent transactions</h3>
-              <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white rounded-full">
-                <Plus className="h-4 w-4 mr-1" />
-                Add
-              </Button>
             </div>
             <TransactionsList transactions={recentTransactions.slice(0, 5)} />
           </div>
@@ -197,7 +152,7 @@ export const DashboardTab = ({
     );
   }
 
-  // Desktop version
+  // Desktop version - remove quick transaction buttons
   return (
     <div className="space-y-8 bg-background min-h-screen">
       {/* Header */}
@@ -258,29 +213,13 @@ export const DashboardTab = ({
                 <div className="p-6 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-xl border border-purple-200/20">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="p-2 bg-purple-500/20 rounded-lg">
-                      <Clock className="h-5 w-5 text-purple-600" />
+                      <TrendingUp className="h-5 w-5 text-purple-600" />
                     </div>
                     <span className="text-sm font-medium text-muted-foreground">Safe to Spend</span>
                   </div>
                   <p className="text-2xl font-bold text-foreground">₹{dailySafeToSpend.toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground mt-1">per day remaining</p>
                 </div>
-              </div>
-
-              {/* Quick Transaction Buttons */}
-              <div className="grid grid-cols-2 gap-3">
-                <Button onClick={handleQuickCoffee} variant="outline" size="sm" className="text-xs hover:bg-primary/10">
-                  ☕ Coffee ₹150
-                </Button>
-                <Button onClick={handleQuickFuel} variant="outline" size="sm" className="text-xs hover:bg-primary/10">
-                  🚗 Fuel ₹2000
-                </Button>
-                <Button onClick={handleQuickLunch} variant="outline" size="sm" className="text-xs hover:bg-primary/10">
-                  🍔 Lunch ₹300
-                </Button>
-                <Button onClick={handleQuickMovie} variant="outline" size="sm" className="text-xs hover:bg-primary/10">
-                  🎬 Movie ₹500
-                </Button>
               </div>
             </div>
 

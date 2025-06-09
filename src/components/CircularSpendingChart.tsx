@@ -1,7 +1,9 @@
+
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Transaction } from '@/types/Transaction';
+import { getCategoryInfo } from '@/utils/categoryUtils';
 
 interface SpendingData {
   name: string;
@@ -14,78 +16,6 @@ interface CircularSpendingChartProps {
   transactions?: Transaction[];
   title?: string;
 }
-
-// More vibrant colors for different categories
-const categoryColors: Record<string, string> = {
-  'Food & Dining': '#FF4081',     // Vibrant pink
-  'Transportation': '#00BCD4',    // Cyan
-  'Shopping': '#9C27B0',          // Purple
-  'Entertainment': '#FF5722',     // Deep orange
-  'Bills & Utilities': '#FFC107', // Amber
-  'Healthcare': '#E91E63',        // Pink
-  'Education': '#3F51B5',         // Indigo
-  'Travel': '#795548',            // Brown
-  'Personal Care': '#607D8B',     // Blue grey
-  'Groceries': '#8BC34A',         // Light green
-  'Fuel': '#FF9800',              // Orange
-  'Salary': '#4CAF50',            // Green
-  'Freelance': '#2196F3',         // Blue
-  'Rental Income': '#009688',     // Teal
-  'Other': '#9E9E9E'              // Grey
-};
-
-// Improved category name mapping that handles actual data
-const getCategoryName = (categoryId: string) => {
-  // Handle numbered categories (legacy support)
-  const numberedCategories: { [key: string]: string } = {
-    '1': 'Food & Dining',
-    '2': 'Transportation',
-    '3': 'Entertainment',
-    '4': 'Bills & Utilities',
-    '5': 'Shopping',
-    '6': 'Fuel',
-    '7': 'Salary',
-    '8': 'Freelance',
-  };
-
-  // If it's a numbered category, use the mapping
-  if (numberedCategories[categoryId]) {
-    return numberedCategories[categoryId];
-  }
-
-  // Handle string category names directly
-  const stringCategoryMapping: { [key: string]: string } = {
-    'food': 'Food & Dining',
-    'entertainment': 'Entertainment',
-    'fuel': 'Fuel',
-    'rental income': 'Rental Income',
-    'transportation': 'Transportation',
-    'shopping': 'Shopping',
-    'bills': 'Bills & Utilities',
-    'healthcare': 'Healthcare',
-    'education': 'Education',
-    'travel': 'Travel',
-    'personal care': 'Personal Care',
-    'groceries': 'Groceries',
-    'salary': 'Salary',
-    'freelance': 'Freelance',
-  };
-
-  // Check if it's a known string category
-  const lowerCaseCategory = categoryId.toLowerCase();
-  if (stringCategoryMapping[lowerCaseCategory]) {
-    return stringCategoryMapping[lowerCaseCategory];
-  }
-
-  // If it's a UUID or unknown category, return a cleaned up version or "Other"
-  if (categoryId.length > 20) {
-    // Likely a UUID, return "Other"
-    return 'Other';
-  }
-
-  // Capitalize first letter for unknown but short category names
-  return categoryId.charAt(0).toUpperCase() + categoryId.slice(1);
-};
 
 export const CircularSpendingChart = ({ 
   data, 
@@ -124,18 +54,18 @@ export const CircularSpendingChart = ({
 
     // Group transactions by category and calculate totals
     const categoryTotals = expenseTransactions.reduce((acc, transaction) => {
-      const categoryName = getCategoryName(transaction.category);
+      const categoryInfo = getCategoryInfo(transaction.category);
       console.log('Processing transaction:', {
         id: transaction.id,
         categoryId: transaction.category,
-        categoryName,
+        categoryName: categoryInfo.name,
         amount: transaction.amount
       });
       
-      if (!acc[categoryName]) {
-        acc[categoryName] = 0;
+      if (!acc[categoryInfo.name]) {
+        acc[categoryInfo.name] = 0;
       }
-      acc[categoryName] += Number(transaction.amount) || 0;
+      acc[categoryInfo.name] += Number(transaction.amount) || 0;
       return acc;
     }, {} as Record<string, number>);
 
@@ -144,16 +74,27 @@ export const CircularSpendingChart = ({
     // Convert to chart data format
     const result = Object.entries(categoryTotals)
       .filter(([_, amount]) => amount > 0) // Only include categories with spending
-      .map(([category, amount]) => ({
-        name: category,
-        value: amount,
-        color: categoryColors[category] || categoryColors['Other']
-      }))
+      .map(([category, amount]) => {
+        const categoryInfo = getCategoryInfo(category);
+        return {
+          name: category,
+          value: amount,
+          color: categoryInfo.color
+        };
+      })
       .sort((a, b) => b.value - a.value); // Sort by amount descending
 
     console.log('Final chart data:', result);
     return result;
   }, [data, transactions]);
+
+  // Calculate total spending for center display
+  const totalSpending = useMemo(() => {
+    return chartData.reduce((sum, item) => sum + item.value, 0);
+  }, [chartData]);
+
+  // Get current month name
+  const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long' });
 
   if (!chartData || chartData.length === 0) {
     return (
@@ -203,32 +144,45 @@ export const CircularSpendingChart = ({
     );
   };
 
+  // Custom center content
+  const CenterContent = () => (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div className="text-center">
+        <p className="text-2xl font-bold text-foreground">₹{totalSpending.toLocaleString()}</p>
+        <p className="text-sm text-muted-foreground">{currentMonth} Spending</p>
+      </div>
+    </div>
+  );
+
   return (
     <Card className="bg-card border-chart-border">
       <CardHeader>
         <CardTitle className="text-chart-foreground">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              outerRadius={100}
-              innerRadius={60}
-              strokeWidth={2}
-              stroke="hsl(var(--border))"
-              dataKey="value"
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            <Legend content={<CustomLegend />} />
-          </PieChart>
-        </ResponsiveContainer>
+        <div className="relative">
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                innerRadius={60}
+                strokeWidth={2}
+                stroke="hsl(var(--border))"
+                dataKey="value"
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+              <Legend content={<CustomLegend />} />
+            </PieChart>
+          </ResponsiveContainer>
+          <CenterContent />
+        </div>
       </CardContent>
     </Card>
   );
