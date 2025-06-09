@@ -150,8 +150,8 @@ export const CircularSpendingChart = ({
         <CardTitle className="text-chart-foreground">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="relative">
-          <ResponsiveContainer width="100%" height={300}>
+        <div className="relative h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={chartData}
@@ -172,11 +172,11 @@ export const CircularSpendingChart = ({
             </PieChart>
           </ResponsiveContainer>
           
-          {/* Centered text content with proper positioning */}
+          {/* Absolutely centered text content */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="text-center">
               <p className="text-2xl font-bold text-foreground">₹{totalSpending.toLocaleString()}</p>
-              <p className="text-sm text-muted-foreground mt-1">Spent in {currentMonth}</p>
+              <p className="text-sm text-muted-foreground">Spent in {currentMonth}</p>
             </div>
           </div>
         </div>
