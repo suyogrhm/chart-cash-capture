@@ -1,5 +1,4 @@
 
-import { Device } from '@capacitor/device';
 import { Capacitor } from '@capacitor/core';
 import { parseMessage } from '@/utils/messageParser';
 import { Transaction } from '@/types/Transaction';
