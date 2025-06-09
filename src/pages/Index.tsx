@@ -6,7 +6,7 @@ import { TransactionsTab } from '@/components/TransactionsTab';
 import { CategoriesManager } from '@/components/CategoriesManager';
 import { BudgetTracker } from '@/components/BudgetTracker';
 import { AppLayout } from '@/components/AppLayout';
-import { useExpenseTracker } from '@/hooks/useExpenseTracker';
+import { useExpenseTrackerData } from '@/hooks/useExpenseTrackerData';
 
 const Index = () => {
   const {
@@ -36,7 +36,7 @@ const Index = () => {
     handleExportData,
     handleAddBudget,
     clearFilters,
-  } = useExpenseTracker();
+  } = useExpenseTrackerData();
 
   // Calculate metrics for current month
   const currentMonth = new Date().getMonth();
