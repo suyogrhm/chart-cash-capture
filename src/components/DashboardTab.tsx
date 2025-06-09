@@ -3,6 +3,7 @@ import React from 'react';
 import { MessageInput } from '@/components/MessageInput';
 import { TransactionsList } from '@/components/TransactionsList';
 import { CircularSpendingChart } from '@/components/CircularSpendingChart';
+import { TransactionFrequencyCard } from '@/components/TransactionFrequencyCard';
 import { Transaction, Account } from '@/types/Transaction';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,6 +22,7 @@ interface DashboardTabProps {
   spentToEarnedRatio: number;
   budget: number;
   accounts: Account[];
+  allTransactions: Transaction[];
 }
 
 export const DashboardTab = ({
@@ -31,7 +33,8 @@ export const DashboardTab = ({
   totalExpenses,
   spentToEarnedRatio,
   budget,
-  accounts
+  accounts,
+  allTransactions
 }: DashboardTabProps) => {
   const isMobile = useIsMobile();
   const { user } = useAuth();
@@ -139,6 +142,11 @@ export const DashboardTab = ({
           <MessageInput onMessage={onMessage} accounts={accounts} />
         </div>
 
+        {/* Frequent Expenses Card */}
+        <div className="px-4 mb-4">
+          <TransactionFrequencyCard transactions={allTransactions} />
+        </div>
+
         {/* Recent Transactions */}
         <div className="bg-card rounded-t-3xl min-h-[300px] flex-1">
           <div className="p-6">
@@ -152,7 +160,7 @@ export const DashboardTab = ({
     );
   }
 
-  // Desktop version - remove quick transaction buttons
+  // Desktop version
   return (
     <div className="space-y-8 bg-background min-h-screen">
       {/* Header */}
@@ -233,40 +241,48 @@ export const DashboardTab = ({
 
       <MessageInput onMessage={onMessage} accounts={accounts} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Button
-          variant="outline"
-          className="p-4 h-auto text-left bg-card hover:bg-accent/50 border-border/50 transition-all duration-200"
-          onClick={handleIncomeClick}
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-500/10 rounded-lg">
-              <DollarSign className="h-5 w-5 text-green-600" />
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-foreground">Income History</h3>
-              <p className="text-xs text-muted-foreground">View all your income transactions</p>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Button
+              variant="outline"
+              className="p-4 h-auto text-left bg-card hover:bg-accent/50 border-border/50 transition-all duration-200"
+              onClick={handleIncomeClick}
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-500/10 rounded-lg">
+                  <DollarSign className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-foreground">Income History</h3>
+                  <p className="text-xs text-muted-foreground">View all your income transactions</p>
+                </div>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="p-4 h-auto text-left bg-card hover:bg-accent/50 border-border/50 transition-all duration-200"
+              onClick={handleCategoriesClick}
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-500/10 rounded-lg">
+                  <PieChart className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-foreground">Categories</h3>
+                  <p className="text-xs text-muted-foreground">Manage spending categories</p>
+                </div>
+              </div>
+            </Button>
           </div>
-        </Button>
-        <Button
-          variant="outline"
-          className="p-4 h-auto text-left bg-card hover:bg-accent/50 border-border/50 transition-all duration-200"
-          onClick={handleCategoriesClick}
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-500/10 rounded-lg">
-              <PieChart className="h-5 w-5 text-purple-600" />
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-foreground">Categories</h3>
-              <p className="text-xs text-muted-foreground">Manage spending categories</p>
-            </div>
-          </div>
-        </Button>
+          
+          <TransactionFrequencyCard transactions={allTransactions} />
+        </div>
+        
+        <div>
+          <TransactionsList transactions={recentTransactions} />
+        </div>
       </div>
-
-      <TransactionsList transactions={recentTransactions} />
     </div>
   );
 };

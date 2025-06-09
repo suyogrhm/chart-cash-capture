@@ -69,68 +69,6 @@ const Index = () => {
     }
   }, [tabFromUrl, typeFromUrl, setSelectedType]);
 
-  // Process recurring transactions when app loads
-  React.useEffect(() => {
-    const processRecurringTransactions = () => {
-      const now = new Date();
-      const newTransactions = [];
-
-      recurringTransactions.forEach(recurring => {
-        if (!recurring.is_active) return;
-        
-        const nextDueDate = new Date(recurring.next_due_date);
-        if (nextDueDate <= now) {
-          // Create new transaction
-          const newTransaction = {
-            id: Date.now().toString() + Math.random().toString(),
-            description: recurring.description,
-            amount: recurring.amount,
-            type: recurring.type,
-            category: recurring.category,
-            account_id: recurring.account_id,
-            payment_method: recurring.payment_method,
-            date: now.toISOString(),
-            is_recurring: true,
-            recurring_frequency: recurring.frequency,
-            original_message: `Auto-generated from recurring: ${recurring.description}`
-          };
-          
-          newTransactions.push(newTransaction);
-          
-          // Update next due date
-          const nextDate = new Date(nextDueDate);
-          switch (recurring.frequency) {
-            case 'daily':
-              nextDate.setDate(nextDate.getDate() + 1);
-              break;
-            case 'weekly':
-              nextDate.setDate(nextDate.getDate() + 7);
-              break;
-            case 'monthly':
-              nextDate.setMonth(nextDate.getMonth() + 1);
-              break;
-            case 'yearly':
-              nextDate.setFullYear(nextDate.getFullYear() + 1);
-              break;
-          }
-          
-          // Update recurring transaction with new due date
-          setRecurringTransactions(prev => prev.map(r => 
-            r.id === recurring.id 
-              ? { ...r, next_due_date: nextDate.toISOString() }
-              : r
-          ));
-        }
-      });
-
-      if (newTransactions.length > 0) {
-        setTransactions(prev => [...newTransactions, ...prev]);
-      }
-    };
-
-    processRecurringTransactions();
-  }, [recurringTransactions, setTransactions]);
-
   // Update URL when tab changes (but not when filters change to avoid infinite loops)
   const handleTabChange = (newTab: string) => {
     setActiveTab(newTab);
@@ -217,6 +155,7 @@ const Index = () => {
               spentToEarnedRatio={spentToEarnedRatio}
               budget={budget}
               accounts={accounts}
+              allTransactions={transactions}
             />
           </TabsContent>
 
