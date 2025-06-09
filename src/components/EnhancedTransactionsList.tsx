@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -136,10 +137,18 @@ export const EnhancedTransactionsList = ({
       <div className="bg-card rounded-xl border border-border p-4 hover:shadow-md transition-shadow">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3 flex-1">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-              transaction.type === 'income' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'
-            }`} style={{ backgroundColor: `${categoryInfo.color}20` }}>
-              <span className="text-xl">{categoryInfo.icon}</span>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm border border-border/20`}
+                 style={{ 
+                   backgroundColor: transaction.type === 'income' 
+                     ? 'hsl(var(--success)/0.1)' 
+                     : `${categoryInfo.color}15`
+                 }}>
+              <span className="text-xl" style={{ 
+                filter: 'contrast(1.2) brightness(0.9)',
+                color: transaction.type === 'income' ? 'hsl(var(--success))' : categoryInfo.color
+              }}>
+                {categoryInfo.icon}
+              </span>
             </div>
             
             <div className="flex-1 min-w-0">
@@ -155,12 +164,12 @@ export const EnhancedTransactionsList = ({
 
           <div className="text-right">
             <p className={`text-lg font-bold ${
-              transaction.type === 'income' ? 'text-green-600' : 'text-card-foreground'
+              transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-card-foreground'
             }`}>
               ₹{transaction.amount.toLocaleString()}
             </p>
             {transaction.type === 'income' && (
-              <div className="text-green-600 text-xs flex justify-end mt-1">✓</div>
+              <div className="text-green-600 dark:text-green-400 text-xs flex justify-end mt-1">✓</div>
             )}
           </div>
         </div>
@@ -252,9 +261,18 @@ export const EnhancedTransactionsList = ({
                       return (
                         <TableRow key={transaction.id} className="border-border hover:bg-muted/50">
                           <TableCell>
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center`} 
-                                 style={{ backgroundColor: `${categoryInfo.color}20` }}>
-                              <span className="text-lg">{categoryInfo.icon}</span>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm border border-border/20`} 
+                                 style={{ 
+                                   backgroundColor: transaction.type === 'income' 
+                                     ? 'hsl(var(--success)/0.1)' 
+                                     : `${categoryInfo.color}15`
+                                 }}>
+                              <span className="text-lg" style={{ 
+                                filter: 'contrast(1.2) brightness(0.9)',
+                                color: transaction.type === 'income' ? 'hsl(var(--success))' : categoryInfo.color
+                              }}>
+                                {categoryInfo.icon}
+                              </span>
                             </div>
                           </TableCell>
                           <TableCell>
@@ -282,7 +300,7 @@ export const EnhancedTransactionsList = ({
                           </TableCell>
                           <TableCell>
                             <span className={`font-semibold text-lg ${
-                              transaction.type === 'income' ? 'text-green-600' : 'text-card-foreground'
+                              transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-card-foreground'
                             }`}>
                               ₹{transaction.amount.toLocaleString()}
                             </span>

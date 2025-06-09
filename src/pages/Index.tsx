@@ -23,6 +23,7 @@ const Index = () => {
   
   const [activeTab, setActiveTab] = React.useState(tabFromUrl);
   const [recurringTransactions, setRecurringTransactions] = React.useState([]);
+  const [fromIncomeHistory, setFromIncomeHistory] = React.useState(false);
   
   const {
     transactions,
@@ -45,6 +46,7 @@ const Index = () => {
     setCategories,
     setAccounts,
     setBudgets,
+    setTransactions,
     handleMessage,
     handleAddCategory,
     handleEditTransaction,
@@ -63,18 +65,89 @@ const Index = () => {
     // If navigating to transactions with a type filter, apply it
     if (tabFromUrl === 'transactions' && typeFromUrl) {
       setSelectedType(typeFromUrl);
+      setFromIncomeHistory(true);
     }
   }, [tabFromUrl, typeFromUrl, setSelectedType]);
+
+  // Process recurring transactions when app loads
+  React.useEffect(() => {
+    const processRecurringTransactions = () => {
+      const now = new Date();
+      const newTransactions = [];
+
+      recurringTransactions.forEach(recurring => {
+        if (!recurring.is_active) return;
+        
+        const nextDueDate = new Date(recurring.next_due_date);
+        if (nextDueDate <= now) {
+          // Create new transaction
+          const newTransaction = {
+            id: Date.now().toString() + Math.random().toString(),
+            description: recurring.description,
+            amount: recurring.amount,
+            type: recurring.type,
+            category: recurring.category,
+            account_id: recurring.account_id,
+            payment_method: recurring.payment_method,
+            date: now.toISOString(),
+            is_recurring: true,
+            recurring_frequency: recurring.frequency,
+            original_message: `Auto-generated from recurring: ${recurring.description}`
+          };
+          
+          newTransactions.push(newTransaction);
+          
+          // Update next due date
+          const nextDate = new Date(nextDueDate);
+          switch (recurring.frequency) {
+            case 'daily':
+              nextDate.setDate(nextDate.getDate() + 1);
+              break;
+            case 'weekly':
+              nextDate.setDate(nextDate.getDate() + 7);
+              break;
+            case 'monthly':
+              nextDate.setMonth(nextDate.getMonth() + 1);
+              break;
+            case 'yearly':
+              nextDate.setFullYear(nextDate.getFullYear() + 1);
+              break;
+          }
+          
+          // Update recurring transaction with new due date
+          setRecurringTransactions(prev => prev.map(r => 
+            r.id === recurring.id 
+              ? { ...r, next_due_date: nextDate.toISOString() }
+              : r
+          ));
+        }
+      });
+
+      if (newTransactions.length > 0) {
+        setTransactions(prev => [...newTransactions, ...prev]);
+      }
+    };
+
+    processRecurringTransactions();
+  }, [recurringTransactions, setTransactions]);
 
   // Update URL when tab changes (but not when filters change to avoid infinite loops)
   const handleTabChange = (newTab: string) => {
     setActiveTab(newTab);
+    
+    // If coming from income history and going to transactions normally, clear filters
+    if (newTab === 'transactions' && fromIncomeHistory && !searchParams.get('type')) {
+      clearFilters();
+      setFromIncomeHistory(false);
+    }
+    
     // Clear URL params when changing tabs manually
     navigate(`/?tab=${newTab}`, { replace: true });
     
     // Clear filters when switching away from transactions
     if (newTab !== 'transactions') {
       clearFilters();
+      setFromIncomeHistory(false);
     }
   };
 
@@ -112,7 +185,8 @@ const Index = () => {
   const handleAddRecurring = (recurring: any) => {
     const newRecurring = {
       id: Date.now().toString(),
-      ...recurring
+      ...recurring,
+      next_due_date: new Date().toISOString() // Set initial due date to now
     };
     setRecurringTransactions(prev => [...prev, newRecurring]);
   };
