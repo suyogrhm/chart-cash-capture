@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Transaction } from '@/types/Transaction';
@@ -87,7 +88,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
   // Calculate segments for the pie chart
   let cumulativePercentage = 0;
   const segments = chartData.map((item) => {
-    const percentage = (item.amount / totalExpenses) * 100;
+    const percentage = totalExpenses > 0 ? (item.amount / totalExpenses) * 100 : 0;
     const startAngle = (cumulativePercentage / 100) * 360;
     const endAngle = ((cumulativePercentage + percentage) / 100) * 360;
     cumulativePercentage += percentage;
@@ -172,7 +173,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
               {/* Compact legend for mobile */}
               <div className="grid grid-cols-2 gap-3 w-full text-sm">
                 {chartData.slice(0, 4).map((item) => {
-                  const percentage = ((item.amount / totalExpenses) * 100).toFixed(1);
+                  const percentage = totalExpenses > 0 ? ((item.amount / totalExpenses) * 100).toFixed(1) : '0';
                   return (
                     <div key={item.category} className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
                       <div 
@@ -217,14 +218,14 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
             {/* Enhanced Pie Chart */}
             <div className="relative flex justify-center">
               <div className="relative">
-                <svg width="280" height="280" viewBox="0 0 100 100" className="drop-shadow-2xl">
+                <svg width="320" height="320" viewBox="0 0 100 100" className="drop-shadow-2xl">
                   {/* Background circle */}
                   <circle
                     cx="50"
                     cy="50"
                     r="35"
-                    fill="hsl(var(--muted))"
-                    stroke="hsl(var(--border))"
+                    fill="#f8fafc"
+                    stroke="#e2e8f0"
                     strokeWidth="0.5"
                   />
                   
@@ -248,21 +249,21 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                     cx="50"
                     cy="50"
                     r="18"
-                    fill="hsl(var(--background))"
-                    stroke="hsl(var(--border))"
+                    fill="white"
+                    stroke="#e2e8f0"
                     strokeWidth="0.5"
                   />
                 </svg>
                 
                 {/* Center content */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <div className="text-primary mb-2">
+                  <div className="text-blue-600 mb-2">
                     <TrendingUp className="h-8 w-8" />
                   </div>
-                  <p className="text-3xl font-bold text-foreground">
+                  <p className="text-3xl font-bold text-gray-900">
                     ₹{totalExpenses.toLocaleString()}
                   </p>
-                  <p className="text-sm text-muted-foreground mt-1">Total Spent</p>
+                  <p className="text-sm text-gray-600 mt-1">Total Spent</p>
                 </div>
               </div>
             </div>
@@ -271,7 +272,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-foreground mb-4">Categories</h3>
               {chartData.map((item) => {
-                const percentage = ((item.amount / totalExpenses) * 100).toFixed(1);
+                const percentage = totalExpenses > 0 ? ((item.amount / totalExpenses) * 100).toFixed(1) : '0';
                 return (
                   <div key={item.category} className="group">
                     <div className="flex items-center justify-between p-4 bg-gradient-to-r from-muted/30 to-muted/10 rounded-xl border border-border/50 hover:border-border transition-all duration-200 hover:shadow-md">
@@ -296,7 +297,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                           className="h-2 rounded-full mt-1 transition-all duration-300"
                           style={{ 
                             backgroundColor: item.fill,
-                            width: `${Math.max(percentage * 2, 20)}px`,
+                            width: `${Math.max(Number(percentage) * 2, 20)}px`,
                             opacity: 0.3
                           }}
                         />
