@@ -11,13 +11,8 @@ export const ChartCenterText = ({ totalSpending, isMobile }: ChartCenterTextProp
 
   return (
     <div 
-      className="absolute pointer-events-none"
-      style={{
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 10
-      }}
+      className="absolute inset-0 flex items-center justify-center pointer-events-none"
+      style={{ zIndex: 10 }}
     >
       <div className="text-center">
         <p className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-foreground leading-tight`}>
