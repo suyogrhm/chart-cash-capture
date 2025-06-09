@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { MessageInput } from '@/components/MessageInput';
 import { TransactionsList } from '@/components/TransactionsList';
 import { CircularSpendingChart } from '@/components/CircularSpendingChart';
@@ -7,10 +8,11 @@ import { Transaction, Account } from '@/types/Transaction';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
-import { TrendingUp, PieChart, Search, DollarSign } from 'lucide-react';
+import { TrendingUp, PieChart, Search, DollarSign, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ExpenseTrackerLogo } from '@/components/ExpenseTrackerLogo';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 interface DashboardTabProps {
   onMessage: (message: string, accountId?: string, paymentMethod?: string) => void;
@@ -38,6 +40,7 @@ export const DashboardTab = ({
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isFrequencySheetOpen, setIsFrequencySheetOpen] = useState(false);
 
   const getUserName = () => {
     if (user?.user_metadata?.full_name) {
@@ -110,8 +113,8 @@ export const DashboardTab = ({
             </div>
           </div>
 
-          {/* Quick Actions - Only Income and Categories */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
+          {/* Quick Actions - Income, Categories, and Frequent Expenses */}
+          <div className="grid grid-cols-3 gap-3 mb-4">
             <Button 
               onClick={handleIncomeClick}
               variant="outline" 
@@ -130,17 +133,32 @@ export const DashboardTab = ({
               <PieChart className="h-3 w-3 mr-2 text-purple-500" />
               <span>Categories</span>
             </Button>
+            <Sheet open={isFrequencySheetOpen} onOpenChange={setIsFrequencySheetOpen}>
+              <SheetTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="justify-start p-3 h-auto text-xs"
+                >
+                  <BarChart3 className="h-3 w-3 mr-2 text-orange-500" />
+                  <span>Frequent</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="h-[80vh]">
+                <SheetHeader>
+                  <SheetTitle>Frequent Expenses</SheetTitle>
+                </SheetHeader>
+                <div className="mt-6">
+                  <TransactionFrequencyCard transactions={allTransactions} />
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
 
         {/* Quick Add Input - Better Spacing */}
         <div className="px-4 py-6">
           <MessageInput onMessage={onMessage} accounts={accounts} />
-        </div>
-
-        {/* Frequent Expenses Card */}
-        <div className="px-4 mb-6">
-          <TransactionFrequencyCard transactions={allTransactions} />
         </div>
 
         {/* Recent Transactions */}
@@ -280,6 +298,7 @@ export const DashboardTab = ({
             </Button>
           </div>
           
+          {/* Frequent Expenses Card moved below the spending chart */}
           <TransactionFrequencyCard transactions={allTransactions} />
         </div>
         
