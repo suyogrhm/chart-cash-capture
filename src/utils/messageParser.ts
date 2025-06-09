@@ -12,33 +12,39 @@ const categories = {
 export const parseMessage = (message: string): Omit<Transaction, 'id' | 'date' | 'originalMessage'> | null => {
   const lowerMessage = message.toLowerCase();
   
-  // Extract amount using regex - look for numbers at the end or standalone
-  const amountMatches = message.match(/\b(\d+(?:,\d{3})*(?:\.\d{2})?)\b/g);
+  // Extract amount using regex - look for numbers (including those with commas)
+  const amountMatches = message.match(/\b(\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\d+)\b/g);
   if (!amountMatches || amountMatches.length === 0) return null;
   
-  // Take the last number as the amount (most likely to be the transaction amount)
-  const lastAmount = amountMatches[amountMatches.length - 1];
-  const amount = parseFloat(lastAmount.replace(/[,\s]/g, ''));
+  // Take the last/largest number as the amount (most likely to be the transaction amount)
+  const amounts = amountMatches.map(match => parseFloat(match.replace(/,/g, '')));
+  const amount = Math.max(...amounts);
   if (amount <= 0) return null;
 
-  // Remove the amount from the message to get clean description
-  let cleanMessage = message.replace(new RegExp(`\\b${lastAmount.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g'), '').trim();
+  // Remove all amount occurrences from the message to get clean description
+  let cleanMessage = message;
+  amountMatches.forEach(amountStr => {
+    cleanMessage = cleanMessage.replace(new RegExp(`\\b${amountStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g'), '');
+  });
   
-  // Remove extra whitespace
-  cleanMessage = cleanMessage.replace(/\s+/g, ' ').trim();
+  // Clean up extra whitespace and common words
+  cleanMessage = cleanMessage
+    .replace(/\b(₹|rupees?|rs\.?)\b/gi, '') // Remove currency symbols
+    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+    .trim();
 
-  // Determine if it's income or expense with better logic for rent
+  // Determine if it's income or expense
   const hasIncomeKeyword = incomeKeywords.some(keyword => lowerMessage.includes(keyword));
   const hasExpenseKeyword = expenseKeywords.some(keyword => lowerMessage.includes(keyword));
   
-  // Special handling for rent - check context more carefully
+  // Special handling for rent
   const isRentIncome = lowerMessage.includes('received rent') || 
                       lowerMessage.includes('rent received') ||
-                      (lowerMessage.includes('rent') && (lowerMessage.includes('received') || lowerMessage.includes('income') || lowerMessage.includes('earned')));
+                      (lowerMessage.includes('rent') && lowerMessage.includes('received'));
   
   const isRentExpense = lowerMessage.includes('paid rent') || 
                        lowerMessage.includes('rent paid') ||
-                       (lowerMessage.includes('rent') && (lowerMessage.includes('paid') || lowerMessage.includes('bill')));
+                       (lowerMessage.includes('rent') && lowerMessage.includes('paid'));
   
   let type: 'income' | 'expense';
   if (isRentIncome || (hasIncomeKeyword && !hasExpenseKeyword && !isRentExpense)) {
@@ -46,7 +52,6 @@ export const parseMessage = (message: string): Omit<Transaction, 'id' | 'date' |
   } else if (hasExpenseKeyword && !hasIncomeKeyword) {
     type = 'expense';
   } else {
-    // Default to expense if ambiguous, unless it's clearly rent income
     type = isRentIncome ? 'income' : 'expense';
   }
 
@@ -62,33 +67,36 @@ export const parseMessage = (message: string): Omit<Transaction, 'id' | 'date' |
     else if (lowerMessage.includes('refund') || lowerMessage.includes('return')) category = 'refund';
     else category = 'other income';
   } else {
-    if (lowerMessage.includes('food') || lowerMessage.includes('lunch') || lowerMessage.includes('dinner') || lowerMessage.includes('coffee') || lowerMessage.includes('movie')) category = lowerMessage.includes('movie') ? 'entertainment' : 'food';
+    if (lowerMessage.includes('food') || lowerMessage.includes('lunch') || lowerMessage.includes('dinner') || lowerMessage.includes('coffee')) category = 'food';
+    else if (lowerMessage.includes('movie') || lowerMessage.includes('game') || lowerMessage.includes('entertainment')) category = 'entertainment';
     else if (lowerMessage.includes('fuel') || lowerMessage.includes('petrol') || lowerMessage.includes('gasoline')) category = 'fuel';
     else if (lowerMessage.includes('gas') || lowerMessage.includes('uber') || lowerMessage.includes('transport')) category = 'transport';
-    else if (lowerMessage.includes('movie') || lowerMessage.includes('game') || lowerMessage.includes('entertainment')) category = 'entertainment';
     else if (lowerMessage.includes('rent') || lowerMessage.includes('electricity') || lowerMessage.includes('bill')) category = 'bills';
     else if (lowerMessage.includes('shopping') || lowerMessage.includes('clothes') || lowerMessage.includes('bought')) category = 'shopping';
     else if (lowerMessage.includes('doctor') || lowerMessage.includes('health') || lowerMessage.includes('medicine')) category = 'health';
   }
 
-  // Create clean description
-  let description = cleanMessage;
-  
-  // Remove common transaction words and clean up
-  description = description
-    .replace(/\b(spent|earned|paid|for|on|the|a|an|i|my|from|to|₹|rupees?|rs\.?)\b/gi, '')
+  // Create clean description by removing common transaction words and cleaning up
+  let description = cleanMessage
+    .replace(/\b(spent|earned|paid|for|on|the|a|an|i|my|from|to)\b/gi, '')
     .replace(/\s+/g, ' ')
     .trim();
 
-  // For simple cases like "movie 230", extract just the main word
-  if (description.split(' ').length === 1 && description.length > 0) {
-    // Single word case, use it as is
-    description = description.charAt(0).toUpperCase() + description.slice(1);
-  } else if (description.length === 0) {
-    // If no description, create a meaningful one based on category
+  // For rent transactions, clean up specific patterns
+  if (lowerMessage.includes('rent')) {
+    description = description
+      .replace(/\brent\s+(received|paid)\b/gi, '')
+      .replace(/\b(received|paid)\s+rent\b/gi, '')
+      .replace(/\brent\b/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  // If description is empty or just a single word, create a meaningful one
+  if (description.length === 0) {
     description = category === 'other' ? (type === 'income' ? 'Income' : 'Expense') : category.charAt(0).toUpperCase() + category.slice(1);
-  } else {
-    // Multi-word case, clean and capitalize
+  } else if (description.length > 0) {
+    // Capitalize first letter and clean up
     description = description.charAt(0).toUpperCase() + description.slice(1);
   }
 

@@ -133,11 +133,6 @@ export const TransactionsList = ({ transactions }: TransactionsListProps) => {
                     <p className="font-medium truncate text-card-foreground">
                       {transaction.description}
                     </p>
-                    {transaction.original_message && (
-                      <p className="text-muted-foreground truncate text-sm mt-1">
-                        "{transaction.original_message}"
-                      </p>
-                    )}
                   </div>
                 </div>
 
