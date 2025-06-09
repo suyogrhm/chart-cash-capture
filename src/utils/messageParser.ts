@@ -71,7 +71,8 @@ export const parseMessage = (message: string): Omit<Transaction, 'id' | 'date' |
     else if (lowerMessage.includes('movie') || lowerMessage.includes('game') || lowerMessage.includes('entertainment')) category = 'entertainment';
     else if (lowerMessage.includes('fuel') || lowerMessage.includes('petrol') || lowerMessage.includes('gasoline')) category = 'fuel';
     else if (lowerMessage.includes('gas') || lowerMessage.includes('uber') || lowerMessage.includes('transport')) category = 'transport';
-    else if (lowerMessage.includes('rent') || lowerMessage.includes('electricity') || lowerMessage.includes('bill')) category = 'bills';
+    else if (lowerMessage.includes('rent') || lowerMessage.includes('rental')) category = 'Rent';
+    else if (lowerMessage.includes('electricity') || lowerMessage.includes('bill')) category = 'bills';
     else if (lowerMessage.includes('shopping') || lowerMessage.includes('clothes') || lowerMessage.includes('bought')) category = 'shopping';
     else if (lowerMessage.includes('doctor') || lowerMessage.includes('health') || lowerMessage.includes('medicine')) category = 'health';
   }
