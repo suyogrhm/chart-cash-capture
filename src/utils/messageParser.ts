@@ -12,12 +12,23 @@ const categories = {
 export const parseMessage = (message: string): Omit<Transaction, 'id' | 'date' | 'originalMessage'> | null => {
   const lowerMessage = message.toLowerCase();
   
-  // Extract amount using regex
-  const amountMatch = message.match(/\$?(\d+(?:\.\d{2})?)/);
-  if (!amountMatch) return null;
+  // Extract amount using regex - look for numbers (with optional rupee symbol)
+  const amountMatches = message.match(/(?:₹\s*)?(\d+(?:,\d{3})*(?:\.\d{2})?)/g);
+  if (!amountMatches || amountMatches.length === 0) return null;
   
-  const amount = parseFloat(amountMatch[1]);
+  // Take the last number as the amount (most likely to be the transaction amount)
+  const lastAmount = amountMatches[amountMatches.length - 1];
+  const amount = parseFloat(lastAmount.replace(/[₹,\s]/g, ''));
   if (amount <= 0) return null;
+
+  // Remove the amount from the message to get clean description
+  let cleanMessage = message;
+  amountMatches.forEach(match => {
+    cleanMessage = cleanMessage.replace(new RegExp(match.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
+  });
+  
+  // Clean up the message
+  cleanMessage = cleanMessage.trim().replace(/\s+/g, ' ');
 
   // Determine if it's income or expense with better logic for rent
   const hasIncomeKeyword = incomeKeywords.some(keyword => lowerMessage.includes(keyword));
@@ -66,17 +77,25 @@ export const parseMessage = (message: string): Omit<Transaction, 'id' | 'date' |
     else if (lowerMessage.includes('doctor') || lowerMessage.includes('health') || lowerMessage.includes('medicine')) category = 'health';
   }
 
-  // Create description by removing amount and common words
-  const description = message
-    .replace(/\$?(\d+(?:\.\d{2})?)/g, '')
-    .replace(/\b(spent|earned|paid|for|on|the|a|an|i|my)\b/gi, '')
+  // Create description by cleaning up the message
+  let description = cleanMessage
+    .replace(/\b(spent|earned|paid|for|on|the|a|an|i|my|from|to)\b/gi, '')
+    .replace(/\b(₹|rupees?|rs\.?)\b/gi, '')
     .trim()
-    .replace(/\s+/g, ' ') || `${type === 'income' ? 'Income' : 'Expense'} - ${category}`;
+    .replace(/\s+/g, ' ');
+
+  // If description is empty or too short, create a meaningful one
+  if (!description || description.length < 3) {
+    description = `${type === 'income' ? 'Income' : 'Expense'} - ${category}`;
+  } else {
+    // Capitalize first letter
+    description = description.charAt(0).toUpperCase() + description.slice(1);
+  }
 
   return {
     type,
     amount,
     category,
-    description: description.charAt(0).toUpperCase() + description.slice(1)
+    description
   };
 };

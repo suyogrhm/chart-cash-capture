@@ -130,20 +130,20 @@ export const EnhancedTransactionsList = ({
     return paymentMethod ? methods[paymentMethod as keyof typeof methods] || paymentMethod : '—';
   };
 
-  // Mobile card view for better UX
+  // Enhanced mobile card view with better UI
   const MobileTransactionCard = ({ transaction }: { transaction: Transaction }) => {
     const categoryInfo = getCategoryInfo(transaction.category);
     return (
-      <div className="bg-card rounded-xl border border-border p-4 hover:shadow-md transition-shadow">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3 flex-1">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm border border-border/20`}
+      <div className="bg-card rounded-lg border border-border/30 p-3 hover:shadow-sm transition-all">
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex items-start gap-2 flex-1 min-w-0">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm border border-border/20`}
                  style={{ 
                    backgroundColor: transaction.type === 'income' 
                      ? 'hsl(var(--success)/0.1)' 
                      : `${categoryInfo.color}15`
                  }}>
-              <span className="text-xl" style={{ 
+              <span className="text-sm" style={{ 
                 filter: 'contrast(1.2) brightness(0.9)',
                 color: transaction.type === 'income' ? 'hsl(var(--success))' : categoryInfo.color
               }}>
@@ -152,46 +152,57 @@ export const EnhancedTransactionsList = ({
             </div>
             
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-card-foreground text-xs mb-1">{categoryInfo.name}</p>
-              <p className="font-semibold text-card-foreground text-sm mb-1">{transaction.description}</p>
+              <div className="flex items-center gap-1 mb-1">
+                <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 bg-muted/50 text-muted-foreground border-border/50">
+                  {categoryInfo.name}
+                </Badge>
+              </div>
+              <p className="font-medium text-card-foreground text-sm leading-tight mb-1">
+                {transaction.description}
+              </p>
               {transaction.original_message && (
-                <p className="text-xs text-muted-foreground truncate">
+                <p className="text-[10px] text-muted-foreground/70 leading-tight">
                   "{transaction.original_message}"
                 </p>
               )}
             </div>
           </div>
 
-          <div className="text-right">
-            <p className={`text-lg font-bold ${
+          <div className="text-right flex-shrink-0 ml-2">
+            <p className={`font-bold text-base ${
               transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-card-foreground'
             }`}>
               ₹{transaction.amount.toLocaleString()}
             </p>
             {transaction.type === 'income' && (
-              <div className="text-green-600 dark:text-green-400 text-xs flex justify-end mt-1">✓</div>
+              <div className="text-green-600 dark:text-green-400 text-[10px] flex justify-end">✓</div>
             )}
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
-          <span>{formatDate(transaction.date)}</span>
-        </div>
-
-        <div className="flex items-center justify-between pt-3 border-t border-border">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-2">
+          <div className="flex items-center gap-1">
             <div 
               className="w-2 h-2 rounded-full" 
               style={{ backgroundColor: getAccountColor(transaction.account_id) }}
             />
-            <span className="text-xs text-muted-foreground">
-              {getAccountName(transaction.account_id)}
-            </span>
+            <span>{getAccountName(transaction.account_id)}</span>
+          </div>
+          <span>{formatDate(transaction.date)}</span>
+        </div>
+
+        <div className="flex items-center justify-between pt-2 border-t border-border/30">
+          <div className="flex items-center gap-1">
             {transaction.is_recurring && (
-              <Badge variant="outline" className="text-xs ml-2">
-                <Repeat className="h-2 w-2 mr-1" />
+              <Badge variant="outline" className="text-[9px] px-1 py-0 h-4">
+                <Repeat className="h-2 w-2 mr-0.5" />
                 {transaction.recurring_frequency}
               </Badge>
+            )}
+            {transaction.payment_method && (
+              <span className="text-[10px] text-muted-foreground">
+                {getPaymentMethodDisplay(transaction.payment_method)}
+              </span>
             )}
           </div>
           
@@ -199,7 +210,7 @@ export const EnhancedTransactionsList = ({
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 hover:bg-muted"
+              className="h-6 w-6 p-0 hover:bg-muted"
               onClick={() => handleEdit(transaction)}
             >
               <Edit2 className="h-3 w-3" />
@@ -207,7 +218,7 @@ export const EnhancedTransactionsList = ({
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+              className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
               onClick={() => onDeleteTransaction(transaction.id)}
             >
               <Trash2 className="h-3 w-3" />
@@ -221,20 +232,20 @@ export const EnhancedTransactionsList = ({
   return (
     <>
       <Card className="bg-card border-border shadow-lg overflow-hidden">
-        <div className="p-6 border-b border-border">
+        <div className={`${isMobile ? 'p-3' : 'p-6'} border-b border-border`}>
           <div className="flex items-center gap-3">
-            <Clock className="h-5 w-5 text-primary" />
-            <h2 className={`font-semibold text-card-foreground ${isMobile ? 'text-base' : 'text-lg'}`}>
+            <Clock className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-primary`} />
+            <h2 className={`font-semibold text-card-foreground ${isMobile ? 'text-sm' : 'text-lg'}`}>
               Transaction History
             </h2>
           </div>
         </div>
 
         {transactions.length > 0 ? (
-          <div className="p-6">
+          <div className={isMobile ? 'p-2' : 'p-6'}>
             {isMobile ? (
-              // Mobile: Card layout
-              <div className="space-y-4">
+              // Mobile: Enhanced card layout
+              <div className="space-y-2">
                 {transactions.map((transaction) => (
                   <MobileTransactionCard key={transaction.id} transaction={transaction} />
                 ))}
