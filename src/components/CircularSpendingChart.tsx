@@ -27,6 +27,9 @@ const categoryColors: Record<string, string> = {
   'Travel': '#5F27CD',
   'Personal Care': '#00D2D3',
   'Groceries': '#FF9F43',
+  'Fuel': '#FF6348',
+  'Salary': '#2ECC71',
+  'Freelance': '#3498DB',
   'Other': '#C7ECEE'
 };
 
@@ -51,28 +54,44 @@ export const CircularSpendingChart = ({
   title = "Spending by Category" 
 }: CircularSpendingChartProps) => {
   const chartData = useMemo(() => {
-    if (data) {
+    console.log('CircularSpendingChart - data:', data);
+    console.log('CircularSpendingChart - transactions:', transactions);
+    
+    if (data && Array.isArray(data) && data.length > 0) {
+      console.log('Using provided data:', data);
       return data;
     }
 
-    if (transactions && Array.isArray(transactions)) {
+    if (transactions && Array.isArray(transactions) && transactions.length > 0) {
+      console.log('Processing transactions:', transactions);
+      
       // Group transactions by category and calculate totals
       const categoryTotals = transactions
-        .filter(t => t.type === 'expense')
+        .filter(t => {
+          console.log('Transaction:', t, 'Type:', t.type);
+          return t.type === 'expense';
+        })
         .reduce((acc, transaction) => {
           const categoryName = getCategoryName(transaction.category);
+          console.log('Category mapping:', transaction.category, '->', categoryName);
           acc[categoryName] = (acc[categoryName] || 0) + transaction.amount;
           return acc;
         }, {} as Record<string, number>);
 
+      console.log('Category totals:', categoryTotals);
+
       // Convert to chart data format
-      return Object.entries(categoryTotals).map(([category, amount]) => ({
+      const result = Object.entries(categoryTotals).map(([category, amount]) => ({
         name: category,
         value: amount,
         color: categoryColors[category] || categoryColors['Other']
       }));
+      
+      console.log('Final chart data:', result);
+      return result;
     }
 
+    console.log('No valid data or transactions found');
     return [];
   }, [data, transactions]);
 
@@ -104,7 +123,7 @@ export const CircularSpendingChart = ({
               cx="50%"
               cy="50%"
               outerRadius={100}
-              innerRadius={75}
+              innerRadius={80}
               strokeWidth={0.5}
               dataKey="value"
             >

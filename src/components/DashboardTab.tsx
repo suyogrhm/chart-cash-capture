@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { MessageInput } from '@/components/MessageInput';
 import { TransactionsList } from '@/components/TransactionsList';
@@ -140,18 +141,20 @@ export const DashboardTab = ({
             <Button 
               onClick={handleIncomeClick}
               variant="outline" 
-              className="justify-start p-4 h-auto"
+              size="sm"
+              className="justify-start p-3 h-auto text-xs"
             >
-              <DollarSign className="h-4 w-4 mr-2 text-green-500" />
-              <span className="text-sm">Income</span>
+              <DollarSign className="h-3 w-3 mr-2 text-green-500" />
+              <span>Income</span>
             </Button>
             <Button 
               onClick={handleCategoriesClick}
               variant="outline" 
-              className="justify-start p-4 h-auto"
+              size="sm"
+              className="justify-start p-3 h-auto text-xs"
             >
-              <PieChart className="h-4 w-4 mr-2 text-purple-500" />
-              <span className="text-sm">Categories</span>
+              <PieChart className="h-3 w-3 mr-2 text-purple-500" />
+              <span>Categories</span>
             </Button>
           </div>
 
@@ -291,35 +294,37 @@ export const DashboardTab = ({
 
       <MessageInput onMessage={onMessage} accounts={accounts} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card 
-          className="p-6 bg-gradient-to-br from-green-500 to-green-600 text-white border-0 cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105"
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Button
+          variant="outline"
+          className="p-4 h-auto text-left bg-card hover:bg-accent/50 border-border/50 transition-all duration-200"
           onClick={handleIncomeClick}
         >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-white/20 rounded-xl">
-              <DollarSign className="h-8 w-8" />
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-500/10 rounded-lg">
+              <DollarSign className="h-5 w-5 text-green-600" />
             </div>
             <div>
-              <h3 className="text-xl font-bold">Income History</h3>
-              <p className="text-sm opacity-90">View all your income transactions</p>
+              <h3 className="text-sm font-medium text-foreground">Income History</h3>
+              <p className="text-xs text-muted-foreground">View all your income transactions</p>
             </div>
           </div>
-        </Card>
-        <Card 
-          className="p-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105"
+        </Button>
+        <Button
+          variant="outline"
+          className="p-4 h-auto text-left bg-card hover:bg-accent/50 border-border/50 transition-all duration-200"
           onClick={handleCategoriesClick}
         >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-white/20 rounded-xl">
-              <PieChart className="h-8 w-8" />
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-purple-500/10 rounded-lg">
+              <PieChart className="h-5 w-5 text-purple-600" />
             </div>
             <div>
-              <h3 className="text-xl font-bold">Categories</h3>
-              <p className="text-sm opacity-90">Manage spending categories</p>
+              <h3 className="text-sm font-medium text-foreground">Categories</h3>
+              <p className="text-xs text-muted-foreground">Manage spending categories</p>
             </div>
           </div>
-        </Card>
+        </Button>
       </div>
 
       <TransactionsList transactions={recentTransactions} />
