@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -159,11 +160,6 @@ export const EnhancedTransactionsList = ({
               <p className="font-medium text-card-foreground text-sm leading-tight mb-1">
                 {transaction.description}
               </p>
-              {transaction.original_message && (
-                <p className="text-[10px] text-muted-foreground/70 leading-tight">
-                  "{transaction.original_message}"
-                </p>
-              )}
             </div>
           </div>
 
@@ -261,7 +257,6 @@ export const EnhancedTransactionsList = ({
                       <TableHead className="text-muted-foreground bg-muted/30">Payment Method</TableHead>
                       <TableHead className="text-muted-foreground bg-muted/30">Amount</TableHead>
                       <TableHead className="text-muted-foreground bg-muted/30">Date</TableHead>
-                      <TableHead className="text-muted-foreground bg-muted/30">Status</TableHead>
                       <TableHead className="text-muted-foreground bg-muted/30">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -289,11 +284,6 @@ export const EnhancedTransactionsList = ({
                             <div>
                               <p className="font-medium text-card-foreground text-xs mb-1">{categoryInfo.name}</p>
                               <p className="font-semibold text-card-foreground">{transaction.description}</p>
-                              {transaction.original_message && (
-                                <p className="text-sm text-muted-foreground truncate max-w-xs">
-                                  "{transaction.original_message}"
-                                </p>
-                              )}
                             </div>
                           </TableCell>
                           <TableCell>
@@ -317,21 +307,6 @@ export const EnhancedTransactionsList = ({
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {formatDate(transaction.date)}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              {transaction.is_recurring && (
-                                <Badge variant="outline" className="text-xs">
-                                  <Repeat className="h-3 w-3 mr-1" />
-                                  {transaction.recurring_frequency}
-                                </Badge>
-                              )}
-                              {transaction.type === 'income' && (
-                                <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 text-xs">
-                                  ✓ Received
-                                </Badge>
-                              )}
-                            </div>
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
