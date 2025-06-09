@@ -261,6 +261,9 @@ export const DashboardTab = ({
         </div>
       </Card>
 
+      {/* Frequent Expenses Card positioned below the chart section */}
+      <TransactionFrequencyCard transactions={allTransactions} />
+
       <MessageInput onMessage={onMessage} accounts={accounts} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -297,9 +300,6 @@ export const DashboardTab = ({
               </div>
             </Button>
           </div>
-          
-          {/* Frequent Expenses Card moved below the spending chart */}
-          <TransactionFrequencyCard transactions={allTransactions} />
         </div>
         
         <div>
