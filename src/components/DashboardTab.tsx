@@ -5,6 +5,7 @@ import { TransactionsList } from '@/components/TransactionsList';
 import { CircularSpendingChart } from '@/components/CircularSpendingChart';
 import { Transaction, Account } from '@/types/Transaction';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
 import { TrendingUp, PieChart, Clock, Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,17 @@ export const DashboardTab = ({
   accounts
 }: DashboardTabProps) => {
   const isMobile = useIsMobile();
+  const { user } = useAuth();
+
+  const getUserName = () => {
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name;
+    }
+    if (user?.email) {
+      return user.email.split('@')[0];
+    }
+    return 'User';
+  };
 
   const handleTrendsClick = () => {
     console.log('Trends functionality - showing spending trends and analytics');
@@ -56,7 +68,7 @@ export const DashboardTab = ({
                   <div className="w-1 h-4 bg-red-500 rounded"></div>
                 </div>
               </div>
-              <h1 className="text-lg font-medium ml-2 text-foreground">Hi User</h1>
+              <h1 className="text-lg font-medium ml-2 text-foreground">Hi {getUserName()}</h1>
             </div>
             <Search className="h-5 w-5 text-muted-foreground" />
           </div>
@@ -140,7 +152,7 @@ export const DashboardTab = ({
         <div className="p-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Hi User</h1>
+              <h1 className="text-2xl font-bold text-foreground">Hi {getUserName()}</h1>
               <p className="text-muted-foreground">Spent in {new Date().toLocaleDateString('en-US', { month: 'long' })}</p>
             </div>
             <Search className="h-6 w-6 text-muted-foreground" />

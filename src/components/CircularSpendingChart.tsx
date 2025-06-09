@@ -13,6 +13,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
   const isMobile = useIsMobile();
 
   console.log('CircularSpendingChart rendered with transactions:', transactions.length);
+  console.log('Sample transaction:', transactions[0]);
 
   // Category mappings with proper names and colors
   const categoryMapping = {
@@ -24,20 +25,48 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
     '6': { name: 'Fuel', color: '#10B981', icon: '⛽' },
     '7': { name: 'Salary', color: '#06B6D4', icon: '💰' },
     '8': { name: 'Freelance', color: '#84CC16', icon: '💼' },
+    'food': { name: 'Food & Dining', color: '#EF4444', icon: '🍽️' },
+    'transport': { name: 'Transportation', color: '#3B82F6', icon: '🚗' },
+    'entertainment': { name: 'Entertainment', color: '#8B5CF6', icon: '🎮' },
+    'bills': { name: 'Bills & Utilities', color: '#F59E0B', icon: '⚡' },
+    'shopping': { name: 'Shopping', color: '#EC4899', icon: '🛒' },
+    'fuel': { name: 'Fuel', color: '#10B981', icon: '⛽' },
+    'salary': { name: 'Salary', color: '#06B6D4', icon: '💰' },
+    'freelance': { name: 'Freelance', color: '#84CC16', icon: '💼' },
+    'other': { name: 'Other', color: '#6B7280', icon: '📦' },
   };
 
   // Group expenses by category
   const expensesByCategory = transactions
     .filter(t => t.type === 'expense')
     .reduce((acc, transaction) => {
-      const category = transaction.category;
-      const categoryInfo = categoryMapping[category as keyof typeof categoryMapping];
-      if (categoryInfo) {
-        const key = categoryInfo.name;
-        acc[key] = (acc[key] || 0) + transaction.amount;
+      const category = transaction.category?.toLowerCase() || 'other';
+      console.log('Processing transaction category:', category, 'amount:', transaction.amount);
+      
+      // Try to find category in mapping
+      let categoryInfo = categoryMapping[category as keyof typeof categoryMapping];
+      
+      // If not found, try to find a partial match
+      if (!categoryInfo) {
+        const matchingKey = Object.keys(categoryMapping).find(key => 
+          key.toLowerCase().includes(category) || category.includes(key.toLowerCase())
+        );
+        if (matchingKey) {
+          categoryInfo = categoryMapping[matchingKey as keyof typeof categoryMapping];
+        }
       }
+      
+      // If still not found, use 'other'
+      if (!categoryInfo) {
+        categoryInfo = categoryMapping.other;
+      }
+      
+      const key = categoryInfo.name;
+      acc[key] = (acc[key] || 0) + transaction.amount;
       return acc;
     }, {} as Record<string, number>);
+
+  console.log('Expenses by category:', expensesByCategory);
 
   // Convert to chart data format
   const chartData = Object.entries(expensesByCategory).map(([categoryName, amount]) => {
@@ -63,7 +92,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
           {chartData.length > 0 ? (
             <div className="flex flex-col items-center">
               <div className="relative mb-6">
-                <div className="w-48 h-48 relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-full p-4">
+                <div className="w-48 h-48 relative bg-slate-800 rounded-full p-4">
                   {/* Progress ring */}
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                     <circle
@@ -122,7 +151,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              <div className="w-48 h-48 mx-auto bg-gradient-to-br from-slate-900 to-slate-800 rounded-full flex items-center justify-center mb-4">
+              <div className="w-48 h-48 mx-auto bg-slate-800 rounded-full flex items-center justify-center mb-4">
                 <TrendingUp className="h-12 w-12 text-white/20" />
               </div>
               <p>No expense data</p>
@@ -146,7 +175,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             {/* Chart */}
             <div className="relative flex justify-center">
-              <div className="w-64 h-64 relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-full p-6">
+              <div className="w-64 h-64 relative bg-slate-800 rounded-full p-6">
                 {/* Progress ring */}
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                   <circle
@@ -211,7 +240,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
-            <div className="w-64 h-64 mx-auto bg-gradient-to-br from-slate-900 to-slate-800 rounded-full flex items-center justify-center mb-4">
+            <div className="w-64 h-64 mx-auto bg-slate-800 rounded-full flex items-center justify-center mb-4">
               <TrendingUp className="h-12 w-12 text-white/20" />
             </div>
             <p>No expense data available</p>
