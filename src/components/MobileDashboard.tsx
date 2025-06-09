@@ -4,11 +4,10 @@ import { MessageInput } from '@/components/MessageInput';
 import { TransactionsList } from '@/components/TransactionsList';
 import { MetricsCards } from '@/components/MetricsCards';
 import { SpendingChart } from '@/components/SpendingChart';
-import { CircularSpendingChart } from '@/components/CircularSpendingChart';
 import { Transaction, Account } from '@/types/Transaction';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-interface DashboardTabProps {
+interface MobileDashboardProps {
   onMessage: (message: string, accountId?: string, paymentMethod?: string) => void;
   currentMonthTransactions: Transaction[];
   recentTransactions: Transaction[];
@@ -19,7 +18,7 @@ interface DashboardTabProps {
   accounts: Account[];
 }
 
-export const DashboardTab = ({
+export const MobileDashboard = ({
   onMessage,
   currentMonthTransactions,
   recentTransactions,
@@ -28,12 +27,12 @@ export const DashboardTab = ({
   spentToEarnedRatio,
   budget,
   accounts
-}: DashboardTabProps) => {
+}: MobileDashboardProps) => {
   const isMobile = useIsMobile();
 
-  if (isMobile) {
+  if (!isMobile) {
     return (
-      <div className="space-y-4 pb-20">
+      <div className="space-y-8">
         <MessageInput onMessage={onMessage} accounts={accounts} />
         
         <MetricsCards
@@ -43,19 +42,17 @@ export const DashboardTab = ({
           budget={budget}
         />
 
-        <div className="px-1">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <SpendingChart transactions={currentMonthTransactions} />
         </div>
 
-        <div className="px-1">
-          <TransactionsList transactions={recentTransactions.slice(0, 5)} />
-        </div>
+        <TransactionsList transactions={recentTransactions} />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 pb-20">
       <MessageInput onMessage={onMessage} accounts={accounts} />
       
       <MetricsCards
@@ -65,12 +62,13 @@ export const DashboardTab = ({
         budget={budget}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="px-1">
         <SpendingChart transactions={currentMonthTransactions} />
-        <CircularSpendingChart transactions={currentMonthTransactions} />
       </div>
 
-      <TransactionsList transactions={recentTransactions} />
+      <div className="px-1">
+        <TransactionsList transactions={recentTransactions.slice(0, 5)} />
+      </div>
     </div>
   );
 };

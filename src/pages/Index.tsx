@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { DashboardTab } from '@/components/DashboardTab';
 import { TransactionsTab } from '@/components/TransactionsTab';
 import { CategoriesManager } from '@/components/CategoriesManager';
@@ -7,8 +8,13 @@ import { BudgetTracker } from '@/components/BudgetTracker';
 import { AppLayout } from '@/components/AppLayout';
 import { useExpenseTrackerData } from '@/hooks/useExpenseTrackerData';
 import { AccountsManager } from '@/components/AccountsManager';
+import { MobileTabNavigation } from '@/components/MobileTabNavigation';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
+  const [activeTab, setActiveTab] = React.useState('dashboard');
+  const isMobile = useIsMobile();
+  
   const {
     transactions,
     categories,
@@ -74,80 +80,76 @@ const Index = () => {
 
   return (
     <AppLayout>
-      <Tabs defaultValue="dashboard" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-          <TabsTrigger value="transactions">Transactions</TabsTrigger>
-          <TabsTrigger value="budgets">Budgets</TabsTrigger>
-          <TabsTrigger value="categories">Categories</TabsTrigger>
-          <TabsTrigger value="accounts">Accounts</TabsTrigger>
-        </TabsList>
+      <div className={`${isMobile ? 'pb-20' : ''}`}>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <MobileTabNavigation value={activeTab} onValueChange={setActiveTab} />
 
-        <TabsContent value="dashboard">
-          <DashboardTab
-            onMessage={handleMessage}
-            currentMonthTransactions={currentMonthTransactions}
-            recentTransactions={recentTransactions}
-            totalIncome={totalIncome}
-            totalExpenses={totalExpenses}
-            spentToEarnedRatio={spentToEarnedRatio}
-            budget={budget}
-            accounts={accounts}
-          />
-        </TabsContent>
+          <TabsContent value="dashboard" className={`${isMobile ? 'mt-0' : ''}`}>
+            <DashboardTab
+              onMessage={handleMessage}
+              currentMonthTransactions={currentMonthTransactions}
+              recentTransactions={recentTransactions}
+              totalIncome={totalIncome}
+              totalExpenses={totalExpenses}
+              spentToEarnedRatio={spentToEarnedRatio}
+              budget={budget}
+              accounts={accounts}
+            />
+          </TabsContent>
 
-        <TabsContent value="transactions">
-          <TransactionsTab
-            filteredTransactions={filteredTransactions}
-            categories={categories}
-            accounts={accounts}
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-            selectedAccount={selectedAccount}
-            onAccountChange={setSelectedAccount}
-            selectedType={selectedType}
-            onTypeChange={setSelectedType}
-            dateRange={dateRange}
-            onDateRangeChange={setDateRange}
-            amountRange={amountRange}
-            onAmountRangeChange={setAmountRange}
-            onClearFilters={clearFilters}
-            onEditTransaction={handleEditTransaction}
-            onDeleteTransaction={handleDeleteTransaction}
-            onExportData={handleExportData}
-          />
-        </TabsContent>
+          <TabsContent value="transactions" className={`${isMobile ? 'mt-0 pb-20' : ''}`}>
+            <TransactionsTab
+              filteredTransactions={filteredTransactions}
+              categories={categories}
+              accounts={accounts}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+              selectedAccount={selectedAccount}
+              onAccountChange={setSelectedAccount}
+              selectedType={selectedType}
+              onTypeChange={setSelectedType}
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+              amountRange={amountRange}
+              onAmountRangeChange={setAmountRange}
+              onClearFilters={clearFilters}
+              onEditTransaction={handleEditTransaction}
+              onDeleteTransaction={handleDeleteTransaction}
+              onExportData={handleExportData}
+            />
+          </TabsContent>
 
-        <TabsContent value="budgets">
-          <BudgetTracker
-            budgets={budgets}
-            categories={categories}
-            onAddBudget={handleAddBudget}
-            onUpdateBudget={(id, updates) => setBudgets(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b))}
-            onDeleteBudget={(id) => setBudgets(prev => prev.filter(b => b.id !== id))}
-          />
-        </TabsContent>
+          <TabsContent value="budgets" className={`${isMobile ? 'mt-0 pb-20' : ''}`}>
+            <BudgetTracker
+              budgets={budgets}
+              categories={categories}
+              onAddBudget={handleAddBudget}
+              onUpdateBudget={(id, updates) => setBudgets(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b))}
+              onDeleteBudget={(id) => setBudgets(prev => prev.filter(b => b.id !== id))}
+            />
+          </TabsContent>
 
-        <TabsContent value="categories">
-          <CategoriesManager
-            categories={categories}
-            onAddCategory={handleAddCategory}
-            onEditCategory={(id, updates) => setCategories(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c))}
-            onDeleteCategory={(id) => setCategories(prev => prev.filter(c => c.id !== id))}
-          />
-        </TabsContent>
+          <TabsContent value="categories" className={`${isMobile ? 'mt-0 pb-20' : ''}`}>
+            <CategoriesManager
+              categories={categories}
+              onAddCategory={handleAddCategory}
+              onEditCategory={(id, updates) => setCategories(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c))}
+              onDeleteCategory={(id) => setCategories(prev => prev.filter(c => c.id !== id))}
+            />
+          </TabsContent>
 
-        <TabsContent value="accounts">
-          <AccountsManager
-            accounts={accounts}
-            onAddAccount={handleAddAccount}
-            onEditAccount={handleEditAccount}
-            onDeleteAccount={handleDeleteAccount}
-          />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="accounts" className={`${isMobile ? 'mt-0 pb-20' : ''}`}>
+            <AccountsManager
+              accounts={accounts}
+              onAddAccount={handleAddAccount}
+              onEditAccount={handleEditAccount}
+              onDeleteAccount={handleDeleteAccount}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
     </AppLayout>
   );
 };
