@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { ArrowUp, ArrowDown, Target, TrendingUp } from 'lucide-react';
@@ -22,41 +23,41 @@ export const MetricsCards = ({
 
   if (isMobile) {
     return (
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2">
         {/* Income Card - Mobile */}
-        <Card className="p-4 bg-card/95 backdrop-blur-sm border-border/50 shadow-md">
-          <div className="text-center space-y-2">
+        <Card className="p-2 bg-card/95 backdrop-blur-sm border-border/50 shadow-md">
+          <div className="text-center space-y-1">
             <div className="flex justify-center">
-              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-full">
-                <ArrowUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <div className="p-1 bg-green-100 dark:bg-green-900/30 rounded-full">
+                <ArrowUp className="h-3 w-3 text-green-600 dark:text-green-400" />
               </div>
             </div>
             <div>
-              <p className="text-xs font-medium text-muted-foreground mb-1">Income</p>
-              <p className="text-lg font-bold text-green-600 dark:text-green-400">
+              <p className="text-[10px] font-medium text-muted-foreground mb-0.5">Income</p>
+              <p className="text-sm font-bold text-green-600 dark:text-green-400">
                 ₹{(totalIncome / 1000).toFixed(0)}K
               </p>
-              <div className="w-2 h-2 bg-green-500 rounded-full mx-auto mt-1" />
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full mx-auto mt-0.5" />
             </div>
           </div>
         </Card>
 
         {/* Budget Card - Mobile */}
-        <Card className="p-4 bg-card/95 backdrop-blur-sm border-border/50 shadow-md">
-          <div className="text-center space-y-2">
+        <Card className="p-2 bg-card/95 backdrop-blur-sm border-border/50 shadow-md">
+          <div className="text-center space-y-1">
             <div className="flex justify-center">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                <Target className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <div className="p-1 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                <Target className="h-3 w-3 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
             <div>
-              <p className="text-xs font-medium text-muted-foreground mb-1">Budget</p>
-              <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+              <p className="text-[10px] font-medium text-muted-foreground mb-0.5">Budget</p>
+              <p className="text-sm font-bold text-blue-600 dark:text-blue-400">
                 ₹{(budget / 1000).toFixed(0)}K
               </p>
-              <div className="w-full bg-muted rounded-full h-1.5 mt-2">
+              <div className="w-full bg-muted rounded-full h-1 mt-1">
                 <div 
-                  className={`h-1.5 rounded-full transition-all ${
+                  className={`h-1 rounded-full transition-all ${
                     budgetUsed > 100 ? 'bg-red-500' : budgetUsed > 80 ? 'bg-yellow-500' : 'bg-blue-500'
                   }`}
                   style={{ width: `${Math.min(budgetUsed, 100)}%` }}
@@ -67,22 +68,22 @@ export const MetricsCards = ({
         </Card>
 
         {/* Spent/Earned Ratio Card - Mobile */}
-        <Card className="p-4 bg-card/95 backdrop-blur-sm border-border/50 shadow-md">
-          <div className="text-center space-y-2">
+        <Card className="p-2 bg-card/95 backdrop-blur-sm border-border/50 shadow-md">
+          <div className="text-center space-y-1">
             <div className="flex justify-center">
-              <div className={`p-2 rounded-full ${
+              <div className={`p-1 rounded-full ${
                 spentToEarnedRatio > 100 ? 'bg-red-100 dark:bg-red-900/30' : 
                 spentToEarnedRatio > 80 ? 'bg-yellow-100 dark:bg-yellow-900/30' : 'bg-green-100 dark:bg-green-900/30'
               }`}>
-                <TrendingUp className={`h-4 w-4 ${
+                <TrendingUp className={`h-3 w-3 ${
                   spentToEarnedRatio > 100 ? 'text-red-600 dark:text-red-400' : 
                   spentToEarnedRatio > 80 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'
                 }`} />
               </div>
             </div>
             <div>
-              <p className="text-xs font-medium text-muted-foreground mb-1">Spent/Earned</p>
-              <p className={`text-lg font-bold ${
+              <p className="text-[10px] font-medium text-muted-foreground mb-0.5">Spent/Earned</p>
+              <p className={`text-sm font-bold ${
                 spentToEarnedRatio > 100 ? 'text-red-600 dark:text-red-400' : 
                 spentToEarnedRatio > 80 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'
               }`}>

@@ -52,7 +52,7 @@ export const MobileDashboard = ({
   }
 
   return (
-    <div className="space-y-4 pb-20">
+    <div className="space-y-3 pb-20 px-2">
       <MessageInput onMessage={onMessage} accounts={accounts} />
       
       <MetricsCards
@@ -62,11 +62,11 @@ export const MobileDashboard = ({
         budget={budget}
       />
 
-      <div className="px-1">
+      <div className="px-0">
         <CircularSpendingChart transactions={currentMonthTransactions} />
       </div>
 
-      <div className="px-1">
+      <div className="px-0">
         <TransactionsList transactions={recentTransactions.slice(0, 8)} />
       </div>
     </div>

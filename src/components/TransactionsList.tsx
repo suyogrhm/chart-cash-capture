@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -40,10 +39,10 @@ export const TransactionsList = ({ transactions }: TransactionsListProps) => {
   if (isMobile) {
     return (
       <Card className="bg-card border-border shadow-sm overflow-hidden">
-        <div className="p-3 border-b border-border">
+        <div className="p-2 border-b border-border">
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <h3 className="font-semibold text-card-foreground text-sm">Recent Transactions</h3>
+            <Clock className="h-3 w-3 text-muted-foreground" />
+            <h3 className="font-semibold text-card-foreground text-xs">Recent Transactions</h3>
           </div>
         </div>
 
@@ -52,42 +51,42 @@ export const TransactionsList = ({ transactions }: TransactionsListProps) => {
             {transactions.map((transaction) => {
               const categoryInfo = getCategoryInfo(transaction.category);
               return (
-                <div key={transaction.id} className="p-3 hover:bg-muted/30 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm border border-border/20`}
+                <div key={transaction.id} className="p-2 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm border border-border/20`}
                          style={{ backgroundColor: `${categoryInfo.color}15` }}>
-                      <span className="text-lg">{categoryInfo.icon}</span>
+                      <span className="text-xs">{categoryInfo.icon}</span>
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center justify-between mb-0.5">
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-muted-foreground mb-0.5">
+                          <p className="text-[9px] font-medium text-muted-foreground mb-0.5">
                             {categoryInfo.name}
                           </p>
-                          <p className="font-semibold text-card-foreground truncate text-sm">
+                          <p className="font-semibold text-card-foreground truncate text-xs">
                             {transaction.description}
                           </p>
                           {transaction.original_message && (
-                            <p className="text-xs text-muted-foreground/70 truncate mt-0.5">
+                            <p className="text-[8px] text-muted-foreground/70 truncate mt-0.5">
                               "{transaction.original_message}"
                             </p>
                           )}
                         </div>
-                        <div className="text-right ml-3 flex-shrink-0">
-                          <p className={`font-bold text-base ${
+                        <div className="text-right ml-2 flex-shrink-0">
+                          <p className={`font-bold text-xs ${
                             transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-card-foreground'
                           }`}>
                             {formatAmount(transaction.amount)}
                           </p>
                           {transaction.type === 'income' && (
-                            <div className="text-green-600 dark:text-green-400 text-xs flex justify-end mt-0.5">✓</div>
+                            <div className="text-green-600 dark:text-green-400 text-[8px] flex justify-end mt-0.5">✓</div>
                           )}
                         </div>
                       </div>
                       
                       <div className="flex items-center justify-between">
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-[8px] text-muted-foreground">
                           {formatDate(transaction.date)}
                         </p>
                       </div>
@@ -98,10 +97,10 @@ export const TransactionsList = ({ transactions }: TransactionsListProps) => {
             })}
           </div>
         ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            <Clock className="h-10 w-10 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No transactions yet</p>
-            <p className="text-xs">Your transaction history will appear here</p>
+          <div className="text-center py-6 text-muted-foreground">
+            <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+            <p className="text-xs">No transactions yet</p>
+            <p className="text-[10px]">Your transaction history will appear here</p>
           </div>
         )}
       </Card>
