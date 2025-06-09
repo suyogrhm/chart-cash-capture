@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   LayoutDashboard, 
@@ -9,6 +8,7 @@ import {
   Tag, 
   Wallet 
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface MobileTabNavigationProps {
   value: string;
@@ -19,39 +19,40 @@ export const MobileTabNavigation = ({ value, onValueChange }: MobileTabNavigatio
   const isMobile = useIsMobile();
 
   if (!isMobile) {
-    return (
-      <TabsList className="grid w-full grid-cols-5">
-        <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-        <TabsTrigger value="transactions">Transactions</TabsTrigger>
-        <TabsTrigger value="budgets">Budgets</TabsTrigger>
-        <TabsTrigger value="categories">Categories</TabsTrigger>
-        <TabsTrigger value="accounts">Accounts</TabsTrigger>
-      </TabsList>
-    );
+    return null;
   }
 
+  const tabs = [
+    { value: 'dashboard', label: 'Home', icon: LayoutDashboard },
+    { value: 'transactions', label: 'History', icon: Receipt },
+    { value: 'budgets', label: 'Budget', icon: Target },
+    { value: 'categories', label: 'Tags', icon: Tag },
+    { value: 'accounts', label: 'Accounts', icon: Wallet },
+  ];
+
   return (
-    <TabsList className="grid w-full grid-cols-5 h-14 bg-card border-t border-border fixed bottom-0 left-0 right-0 z-50 rounded-none">
-      <TabsTrigger value="dashboard" className="flex flex-col gap-1 p-2 text-xs">
-        <LayoutDashboard className="h-5 w-5" />
-        <span>Home</span>
-      </TabsTrigger>
-      <TabsTrigger value="transactions" className="flex flex-col gap-1 p-2 text-xs">
-        <Receipt className="h-5 w-5" />
-        <span>History</span>
-      </TabsTrigger>
-      <TabsTrigger value="budgets" className="flex flex-col gap-1 p-2 text-xs">
-        <Target className="h-5 w-5" />
-        <span>Budget</span>
-      </TabsTrigger>
-      <TabsTrigger value="categories" className="flex flex-col gap-1 p-2 text-xs">
-        <Tag className="h-5 w-5" />
-        <span>Tags</span>
-      </TabsTrigger>
-      <TabsTrigger value="accounts" className="flex flex-col gap-1 p-2 text-xs">
-        <Wallet className="h-5 w-5" />
-        <span>Accounts</span>
-      </TabsTrigger>
-    </TabsList>
+    <div className="grid grid-cols-5 h-14 bg-card border-t border-border fixed bottom-0 left-0 right-0 z-50">
+      {tabs.map((tab) => {
+        const Icon = tab.icon;
+        const isActive = value === tab.value;
+        
+        return (
+          <button
+            key={tab.value}
+            onClick={() => onValueChange(tab.value)}
+            className={cn(
+              "flex flex-col gap-1 p-2 text-xs items-center justify-center transition-colors",
+              "hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+              isActive 
+                ? "bg-background text-foreground shadow-sm" 
+                : "text-muted-foreground"
+            )}
+          >
+            <Icon className="h-5 w-5" />
+            <span>{tab.label}</span>
+          </button>
+        );
+      })}
+    </div>
   );
 };
