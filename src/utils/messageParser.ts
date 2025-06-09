@@ -23,18 +23,23 @@ export const parseMessage = (message: string): Omit<Transaction, 'id' | 'date' |
   const hasIncomeKeyword = incomeKeywords.some(keyword => lowerMessage.includes(keyword));
   const hasExpenseKeyword = expenseKeywords.some(keyword => lowerMessage.includes(keyword));
   
-  // Special handling for rent - check context
+  // Special handling for rent - check context more carefully
   const isRentIncome = lowerMessage.includes('received rent') || 
-                      (lowerMessage.includes('rent') && (lowerMessage.includes('received') || lowerMessage.includes('income')));
+                      lowerMessage.includes('rent received') ||
+                      (lowerMessage.includes('rent') && (lowerMessage.includes('received') || lowerMessage.includes('income') || lowerMessage.includes('earned')));
+  
+  const isRentExpense = lowerMessage.includes('paid rent') || 
+                       lowerMessage.includes('rent paid') ||
+                       (lowerMessage.includes('rent') && (lowerMessage.includes('paid') || lowerMessage.includes('bill')));
   
   let type: 'income' | 'expense';
-  if (isRentIncome || (hasIncomeKeyword && !hasExpenseKeyword)) {
+  if (isRentIncome || (hasIncomeKeyword && !hasExpenseKeyword && !isRentExpense)) {
     type = 'income';
   } else if (hasExpenseKeyword && !hasIncomeKeyword) {
     type = 'expense';
   } else {
-    // Default to expense if ambiguous
-    type = 'expense';
+    // Default to expense if ambiguous, unless it's clearly rent income
+    type = isRentIncome ? 'income' : 'expense';
   }
 
   // Determine category based on keywords - but prioritize transaction type
