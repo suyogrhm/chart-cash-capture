@@ -75,22 +75,19 @@ export const DashboardTab = ({
     return (
       <div className="min-h-screen bg-background pb-20">
         {/* Optimized Mobile Header */}
-        <div className="bg-card p-3 border-b border-border">
-          {/* Simplified Header */}
+        <div className="bg-card p-4 border-b border-border">
+          {/* Simplified Header - Only show user greeting */}
           <div className="mb-4">
-            <h1 className="text-sm font-medium text-foreground mb-1">
-              Expense Tracker Pro
-            </h1>
-            <p className="text-lg font-semibold text-foreground">Hi {getUserName()}</p>
+            <p className="text-xl font-semibold text-foreground">Hi {getUserName()}</p>
           </div>
           
           {/* Circular Chart */}
-          <div className="mb-4">
+          <div className="mb-6">
             <CircularSpendingChart transactions={currentMonthTransactions} />
           </div>
 
           {/* Metrics Row */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-3 gap-3 mb-6">
             <div className="text-center">
               <p className="text-muted-foreground text-xs mb-1">Income</p>
               <div className="flex items-center justify-center gap-1">
@@ -137,12 +134,12 @@ export const DashboardTab = ({
         </div>
 
         {/* Quick Add Input - Better Spacing */}
-        <div className="px-3 py-4">
+        <div className="px-4 py-6">
           <MessageInput onMessage={onMessage} accounts={accounts} />
         </div>
 
         {/* Frequent Expenses Card */}
-        <div className="px-3 mb-4">
+        <div className="px-4 mb-6">
           <TransactionFrequencyCard transactions={allTransactions} />
         </div>
 

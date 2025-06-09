@@ -66,13 +66,13 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         {/* Mobile: Header without Navigation */}
         {isMobile && (
           <div className="mb-4 flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <ExpenseTrackerLogo className="h-8 w-8" />
+            <div className="flex items-center gap-2">
+              <ExpenseTrackerLogo className="h-10 w-10" />
               <div>
-                <h1 className="text-2xl font-bold text-foreground mb-2">
+                <h1 className="text-lg font-bold text-foreground">
                   Expense Tracker Pro
                 </h1>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-muted-foreground text-xs">
                   Track your finances on the go
                 </p>
               </div>
