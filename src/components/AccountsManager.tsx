@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,6 +32,8 @@ export const AccountsManager = ({
         return <PiggyBank className="h-5 w-5" />;
       case 'credit':
         return <CreditCard className="h-5 w-5" />;
+      case 'debit':
+        return <CreditCard className="h-5 w-5" />;
       case 'cash':
         return <Wallet className="h-5 w-5" />;
       default:
@@ -48,6 +49,8 @@ export const AccountsManager = ({
         return 'Savings';
       case 'credit':
         return 'Credit Card';
+      case 'debit':
+        return 'Debit Card';
       case 'cash':
         return 'Cash';
       default:

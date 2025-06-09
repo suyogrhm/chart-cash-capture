@@ -31,7 +31,7 @@ export interface Category {
 export interface Account {
   id: string;
   name: string;
-  type: 'checking' | 'savings' | 'credit' | 'cash';
+  type: 'checking' | 'savings' | 'credit' | 'cash' | 'debit';
   balance: number;
   color: string;
   user_id?: string;

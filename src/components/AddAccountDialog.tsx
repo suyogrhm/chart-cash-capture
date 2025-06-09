@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -32,9 +31,9 @@ export const AddAccountDialog = ({
 }: AddAccountDialogProps) => {
   const [formData, setFormData] = useState({
     name: '',
-    type: '' as Account['type'] | '',
+    type: 'savings' as Account['type'] | '',
     balance: '',
-    color: accountColors[0]
+    color: accountColors[1] // Default to green for savings
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -70,9 +69,9 @@ export const AddAccountDialog = ({
     // Reset form
     setFormData({
       name: '',
-      type: '',
+      type: 'savings',
       balance: '',
-      color: accountColors[0]
+      color: accountColors[1]
     });
 
     onOpenChange(false);
@@ -107,8 +106,9 @@ export const AddAccountDialog = ({
                 <SelectValue placeholder="Select account type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="checking">Checking Account</SelectItem>
                 <SelectItem value="savings">Savings Account</SelectItem>
+                <SelectItem value="checking">Checking Account</SelectItem>
+                <SelectItem value="debit">Debit Card</SelectItem>
                 <SelectItem value="credit">Credit Card</SelectItem>
                 <SelectItem value="cash">Cash</SelectItem>
               </SelectContent>

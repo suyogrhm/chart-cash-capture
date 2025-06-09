@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +15,9 @@ interface MessageInputProps {
 
 export const MessageInput = ({ onMessage, accounts }: MessageInputProps) => {
   const [message, setMessage] = useState('');
-  const [selectedAccount, setSelectedAccount] = useState(accounts[0]?.id || '');
+  // Find savings account first, then fallback to first account
+  const defaultAccount = accounts.find(acc => acc.type === 'savings') || accounts[0];
+  const [selectedAccount, setSelectedAccount] = useState(defaultAccount?.id || '');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
   const [isExpanded, setIsExpanded] = useState(false);
   const isMobile = useIsMobile();

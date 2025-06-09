@@ -64,8 +64,9 @@ export const useSupabaseExpenseTracker = () => {
       // If no accounts exist, create default ones
       if (!existingAccounts || existingAccounts.length === 0) {
         const defaultAccounts = [
-          { name: 'Checking Account', type: 'checking', balance: 5000, color: '#3B82F6' },
           { name: 'Savings Account', type: 'savings', balance: 15000, color: '#10B981' },
+          { name: 'Checking Account', type: 'checking', balance: 5000, color: '#3B82F6' },
+          { name: 'Debit Card', type: 'debit', balance: 2000, color: '#06B6D4' },
           { name: 'Credit Card', type: 'credit', balance: -1500, color: '#EF4444' },
         ];
 
@@ -81,7 +82,6 @@ export const useSupabaseExpenseTracker = () => {
     initializeUserData();
   }, [user]);
 
-  // Load user data
   useEffect(() => {
     if (!user) return;
 
@@ -169,11 +169,14 @@ export const useSupabaseExpenseTracker = () => {
       // Handle payment method - if empty string, set to null
       const validPaymentMethod = paymentMethod && paymentMethod.trim() !== '' ? paymentMethod : null;
       
+      // Find default account (prioritize savings, then first available)
+      const defaultAccount = accounts.find(acc => acc.type === 'savings') || accounts[0];
+      
       const newTransaction = {
         ...parsedTransaction,
         user_id: user.id,
         original_message: message,
-        account_id: accountId || accounts[0]?.id,
+        account_id: accountId || defaultAccount?.id,
         payment_method: validPaymentMethod as 'cash' | 'upi' | 'card' | 'bank_transfer' | 'other' | null
       };
 

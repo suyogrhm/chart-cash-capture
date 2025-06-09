@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -101,8 +100,9 @@ export const EditAccountDialog = ({
                 <SelectValue placeholder="Select account type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="checking">Checking Account</SelectItem>
                 <SelectItem value="savings">Savings Account</SelectItem>
+                <SelectItem value="checking">Checking Account</SelectItem>
+                <SelectItem value="debit">Debit Card</SelectItem>
                 <SelectItem value="credit">Credit Card</SelectItem>
                 <SelectItem value="cash">Cash</SelectItem>
               </SelectContent>
