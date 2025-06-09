@@ -6,7 +6,7 @@ import { TransactionsTab } from '@/components/TransactionsTab';
 import { CategoriesManager } from '@/components/CategoriesManager';
 import { BudgetTracker } from '@/components/BudgetTracker';
 import { AppLayout } from '@/components/AppLayout';
-import { useExpenseTrackerData } from '@/hooks/useExpenseTrackerData';
+import { useSupabaseExpenseTracker } from '@/hooks/useSupabaseExpenseTracker';
 import { AccountsManager } from '@/components/AccountsManager';
 import { MobileTabNavigation } from '@/components/MobileTabNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -46,7 +46,7 @@ const Index = () => {
     handleEditAccount,
     handleDeleteAccount,
     clearFilters,
-  } = useExpenseTrackerData();
+  } = useSupabaseExpenseTracker();
 
   // Calculate metrics for current month
   const currentMonth = new Date().getMonth();

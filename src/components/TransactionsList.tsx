@@ -52,9 +52,11 @@ export const TransactionsList = ({ transactions }: TransactionsListProps) => {
                       {transaction.category}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    "{transaction.originalMessage}"
-                  </p>
+                  {transaction.original_message && (
+                    <p className="text-sm text-muted-foreground">
+                      "{transaction.original_message}"
+                    </p>
+                  )}
                 </div>
               </div>
 
