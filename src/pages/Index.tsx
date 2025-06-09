@@ -72,13 +72,15 @@ const Index = () => {
   // Update URL when tab changes and reset filters when leaving transactions
   const handleTabChange = (newTab: string) => {
     const previousTab = activeTab;
-    setActiveTab(newTab);
     
-    // Clear filters when switching away from transactions tab
+    // Clear filters BEFORE changing the tab if leaving transactions
     if (previousTab === 'transactions' && newTab !== 'transactions') {
+      console.log('Clearing filters when leaving transactions tab');
       clearFilters();
       setFromIncomeHistory(false);
     }
+    
+    setActiveTab(newTab);
     
     // If coming from income history and going to transactions normally, clear filters
     if (newTab === 'transactions' && fromIncomeHistory && !searchParams.get('type')) {
