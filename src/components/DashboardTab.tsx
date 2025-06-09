@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { MessageInput } from '@/components/MessageInput';
 import { TransactionsList } from '@/components/TransactionsList';
@@ -261,51 +260,47 @@ export const DashboardTab = ({
         </div>
       </Card>
 
-      {/* Frequent Expenses Card positioned below the chart section */}
+      {/* Frequent Expenses Card positioned right below the spending chart */}
       <TransactionFrequencyCard transactions={allTransactions} />
 
       <MessageInput onMessage={onMessage} accounts={accounts} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Button
-              variant="outline"
-              className="p-4 h-auto text-left bg-card hover:bg-accent/50 border-border/50 transition-all duration-200"
-              onClick={handleIncomeClick}
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/10 rounded-lg">
-                  <DollarSign className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-foreground">Income History</h3>
-                  <p className="text-xs text-muted-foreground">View all your income transactions</p>
-                </div>
-              </div>
-            </Button>
-            <Button
-              variant="outline"
-              className="p-4 h-auto text-left bg-card hover:bg-accent/50 border-border/50 transition-all duration-200"
-              onClick={handleCategoriesClick}
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-500/10 rounded-lg">
-                  <PieChart className="h-5 w-5 text-purple-600" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-foreground">Categories</h3>
-                  <p className="text-xs text-muted-foreground">Manage spending categories</p>
-                </div>
-              </div>
-            </Button>
+      {/* Call-to-action buttons */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Button
+          variant="outline"
+          className="p-4 h-auto text-left bg-card hover:bg-accent/50 border-border/50 transition-all duration-200"
+          onClick={handleIncomeClick}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-500/10 rounded-lg">
+              <DollarSign className="h-5 w-5 text-green-600" />
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-foreground">Income History</h3>
+              <p className="text-xs text-muted-foreground">View all your income transactions</p>
+            </div>
           </div>
-        </div>
-        
-        <div>
-          <TransactionsList transactions={recentTransactions} />
-        </div>
+        </Button>
+        <Button
+          variant="outline"
+          className="p-4 h-auto text-left bg-card hover:bg-accent/50 border-border/50 transition-all duration-200"
+          onClick={handleCategoriesClick}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-purple-500/10 rounded-lg">
+              <PieChart className="h-5 w-5 text-purple-600" />
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-foreground">Categories</h3>
+              <p className="text-xs text-muted-foreground">Manage spending categories</p>
+            </div>
+          </div>
+        </Button>
       </div>
+
+      {/* Recent Transactions positioned below the call-to-action buttons */}
+      <TransactionsList transactions={recentTransactions} />
     </div>
   );
 };
