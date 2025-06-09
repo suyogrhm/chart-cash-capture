@@ -30,12 +30,18 @@ const categoryColors: Record<string, string> = {
   'Fuel': '#FF6348',
   'Salary': '#2ECC71',
   'Freelance': '#3498DB',
+  // Handle the actual category names from your data
+  'food': '#FF6B6B',
+  'entertainment': '#96CEB4',
+  'fuel': '#FF6348',
+  'rental income': '#2ECC71',
   'Other': '#95A5A6'
 };
 
-// Map category IDs to names (matching the getCategoryInfo function in TransactionsList)
+// Improved category name mapping that handles actual data
 const getCategoryName = (categoryId: string) => {
-  const categories: { [key: string]: string } = {
+  // Handle numbered categories (legacy support)
+  const numberedCategories: { [key: string]: string } = {
     '1': 'Food & Dining',
     '2': 'Transportation',
     '3': 'Entertainment',
@@ -45,7 +51,44 @@ const getCategoryName = (categoryId: string) => {
     '7': 'Salary',
     '8': 'Freelance',
   };
-  return categories[categoryId] || 'Other';
+
+  // If it's a numbered category, use the mapping
+  if (numberedCategories[categoryId]) {
+    return numberedCategories[categoryId];
+  }
+
+  // Handle string category names directly
+  const stringCategoryMapping: { [key: string]: string } = {
+    'food': 'Food & Dining',
+    'entertainment': 'Entertainment',
+    'fuel': 'Fuel',
+    'rental income': 'Rental Income',
+    'transportation': 'Transportation',
+    'shopping': 'Shopping',
+    'bills': 'Bills & Utilities',
+    'healthcare': 'Healthcare',
+    'education': 'Education',
+    'travel': 'Travel',
+    'personal care': 'Personal Care',
+    'groceries': 'Groceries',
+    'salary': 'Salary',
+    'freelance': 'Freelance',
+  };
+
+  // Check if it's a known string category
+  const lowerCaseCategory = categoryId.toLowerCase();
+  if (stringCategoryMapping[lowerCaseCategory]) {
+    return stringCategoryMapping[lowerCaseCategory];
+  }
+
+  // If it's a UUID or unknown category, return a cleaned up version or "Other"
+  if (categoryId.length > 20) {
+    // Likely a UUID, return "Other"
+    return 'Other';
+  }
+
+  // Capitalize first letter for unknown but short category names
+  return categoryId.charAt(0).toUpperCase() + categoryId.slice(1);
 };
 
 export const CircularSpendingChart = ({ 
@@ -108,7 +151,7 @@ export const CircularSpendingChart = ({
       .map(([category, amount]) => ({
         name: category,
         value: amount,
-        color: categoryColors[category] || categoryColors['Other']
+        color: categoryColors[category] || categoryColors[category.toLowerCase()] || categoryColors['Other']
       }))
       .sort((a, b) => b.value - a.value); // Sort by amount descending
 
