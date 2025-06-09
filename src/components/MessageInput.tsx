@@ -124,8 +124,11 @@ export const MessageInput = ({ onMessage, accounts }: MessageInputProps) => {
           )}
         </form>
         
-        <div className={`${isMobile ? 'mt-3' : 'mt-3'} ${isMobile ? 'text-xs leading-relaxed' : 'text-sm'} text-muted-foreground`}>
-          💡 Try: "Bought coffee for ₹150", "Received salary ₹30000", "Paid rent ₹12000"
+        <div className={`${isMobile ? 'mt-3 flex items-start gap-2' : 'mt-3'} ${isMobile ? 'text-xs leading-relaxed' : 'text-sm'} text-muted-foreground`}>
+          <span className={`${isMobile ? 'flex-shrink-0 mt-0.5' : ''}`}>💡</span>
+          <span className={`${isMobile ? 'leading-5' : ''}`}>
+            Try: "Bought coffee for ₹150", "Received salary ₹30000", "Paid rent ₹12000"
+          </span>
         </div>
       </div>
     </Card>
