@@ -1,4 +1,3 @@
-
 import { Transaction } from '@/types/Transaction';
 
 const incomeKeywords = ['earned', 'salary', 'paid', 'received', 'income', 'bonus', 'freelance', 'sold'];
@@ -78,17 +77,31 @@ export const parseMessage = (message: string): Omit<Transaction, 'id' | 'date' |
   }
 
   // Create clean description by removing common transaction words and cleaning up
-  let description = cleanMessage
-    .replace(/\b(spent|earned|paid|for|on|the|a|an|i|my|from|to)\b/gi, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  let description = cleanMessage;
 
-  // Special handling for rent transactions - remove "rent" from description
+  // Special handling for rent transactions - remove "rent" but preserve "paid" or "received"
   if (lowerMessage.includes('rent')) {
+    if (isRentExpense) {
+      // For rent expenses, keep "paid" but remove "rent"
+      description = description
+        .replace(/\brent\s+paid\b/gi, 'Paid')
+        .replace(/\bpaid\s+rent\b/gi, 'Paid')
+        .replace(/\brent\b/gi, '') // Remove any remaining "rent" word
+        .replace(/\s+/g, ' ')
+        .trim();
+    } else if (isRentIncome) {
+      // For rent income, keep "received" but remove "rent"
+      description = description
+        .replace(/\brent\s+received\b/gi, 'Received')
+        .replace(/\breceived\s+rent\b/gi, 'Received')
+        .replace(/\brent\b/gi, '') // Remove any remaining "rent" word
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+  } else {
+    // For non-rent transactions, remove common transaction words
     description = description
-      .replace(/\brent\s+(received|paid)\b/gi, '')
-      .replace(/\b(received|paid)\s+rent\b/gi, '')
-      .replace(/\brent\b/gi, '') // Remove any remaining "rent" word
+      .replace(/\b(spent|earned|paid|for|on|the|a|an|i|my|from|to)\b/gi, '')
       .replace(/\s+/g, ' ')
       .trim();
   }
