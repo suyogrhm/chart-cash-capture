@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { DashboardTab } from '@/components/DashboardTab';
@@ -60,10 +59,12 @@ const Index = () => {
   } = useSupabaseExpenseTracker();
 
   React.useEffect(() => {
+    console.log('URL changed - tab:', tabFromUrl, 'type:', typeFromUrl);
     setActiveTab(tabFromUrl);
     
     // If navigating to transactions with a type filter, apply it
     if (tabFromUrl === 'transactions' && typeFromUrl) {
+      console.log('Setting type filter from URL:', typeFromUrl);
       setSelectedType(typeFromUrl);
       setFromIncomeHistory(true);
     }
@@ -72,24 +73,30 @@ const Index = () => {
   // Update URL when tab changes and reset filters when leaving transactions
   const handleTabChange = (newTab: string) => {
     const previousTab = activeTab;
+    console.log('Changing from tab:', previousTab, 'to:', newTab);
+    console.log('Current filters before change:', { selectedType, selectedCategory, selectedAccount, searchTerm });
     
     // Clear filters BEFORE changing the tab if leaving transactions
     if (previousTab === 'transactions' && newTab !== 'transactions') {
       console.log('Clearing filters when leaving transactions tab');
       clearFilters();
       setFromIncomeHistory(false);
+      console.log('Filters cleared, fromIncomeHistory set to false');
     }
     
     setActiveTab(newTab);
     
     // If coming from income history and going to transactions normally, clear filters
     if (newTab === 'transactions' && fromIncomeHistory && !searchParams.get('type')) {
+      console.log('Clearing filters when returning to transactions normally from income history');
       clearFilters();
       setFromIncomeHistory(false);
     }
     
-    // Clear URL params when changing tabs manually
-    navigate(`/?tab=${newTab}`, { replace: true });
+    // Clear URL params when changing tabs manually (but don't clear type when coming from income history)
+    if (newTab !== 'transactions' || !typeFromUrl) {
+      navigate(`/?tab=${newTab}`, { replace: true });
+    }
   };
 
   // Calculate metrics for current month
