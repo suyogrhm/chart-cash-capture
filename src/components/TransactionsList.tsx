@@ -29,18 +29,18 @@ export const TransactionsList = ({ transactions }: TransactionsListProps) => {
     });
   };
 
-  const getCategoryIcon = (categoryId: string) => {
-    const icons: { [key: string]: string } = {
-      '1': '🍽️', // Food & Dining
-      '2': '🚗', // Transportation
-      '3': '🎮', // Entertainment
-      '4': '⚡', // Bills & Utilities
-      '5': '🛒', // Shopping
-      '6': '⛽', // Fuel
-      '7': '💰', // Salary
-      '8': '💼', // Freelance
+  const getCategoryInfo = (categoryId: string) => {
+    const categories: { [key: string]: { name: string; icon: string } } = {
+      '1': { name: 'Food & Dining', icon: '🍽️' },
+      '2': { name: 'Transportation', icon: '🚗' },
+      '3': { name: 'Entertainment', icon: '🎮' },
+      '4': { name: 'Bills & Utilities', icon: '⚡' },
+      '5': { name: 'Shopping', icon: '🛒' },
+      '6': { name: 'Fuel', icon: '⛽' },
+      '7': { name: 'Salary', icon: '💰' },
+      '8': { name: 'Freelance', icon: '💼' },
     };
-    return icons[categoryId] || '💳';
+    return categories[categoryId] || { name: 'Other', icon: '💳' };
   };
 
   if (isMobile) {
@@ -55,48 +55,49 @@ export const TransactionsList = ({ transactions }: TransactionsListProps) => {
 
         {transactions.length > 0 ? (
           <div className="divide-y divide-slate-100">
-            {transactions.map((transaction) => (
-              <div key={transaction.id} className="p-4 hover:bg-slate-50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+            {transactions.map((transaction) => {
+              const categoryInfo = getCategoryInfo(transaction.category);
+              return (
+                <div key={transaction.id} className="p-4 hover:bg-slate-50 transition-colors">
+                  <div className="flex items-start gap-3">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
                       transaction.type === 'income' ? 'bg-green-100' : 'bg-slate-100'
                     }`}>
-                      <span className="text-xl">{getCategoryIcon(transaction.category)}</span>
+                      <span className="text-xl">{categoryInfo.icon}</span>
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-medium text-slate-900 truncate text-sm">
-                          {transaction.description}
-                        </p>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-slate-900 truncate text-sm">
+                            {transaction.description}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-1">
+                            {categoryInfo.name}
+                          </p>
+                        </div>
+                        <div className="text-right ml-3">
+                          <p className={`font-semibold text-base ${
+                            transaction.type === 'income' ? 'text-green-600' : 'text-slate-900'
+                          }`}>
+                            ₹{transaction.amount.toLocaleString()}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      
+                      <div className="flex items-center justify-between">
                         <p className="text-xs text-slate-500">
                           {formatDate(transaction.date)}
                         </p>
-                        {transaction.category && (
-                          <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                            {transaction.category}
-                          </Badge>
+                        {transaction.type === 'income' && (
+                          <div className="text-green-600 text-xs">✓</div>
                         )}
                       </div>
                     </div>
                   </div>
-
-                  <div className="text-right ml-3">
-                    <p className={`font-semibold text-base ${
-                      transaction.type === 'income' ? 'text-green-600' : 'text-slate-900'
-                    }`}>
-                      ₹{transaction.amount.toLocaleString()}
-                    </p>
-                    {transaction.type === 'income' && (
-                      <div className="text-green-600 text-xs flex justify-end mt-1">✓</div>
-                    )}
-                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-12 text-slate-500">
@@ -118,47 +119,50 @@ export const TransactionsList = ({ transactions }: TransactionsListProps) => {
 
       {transactions.length > 0 ? (
         <div className="space-y-4">
-          {transactions.map((transaction) => (
-            <div 
-              key={transaction.id} 
-              className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:shadow-md transition-all"
-            >
-              <div className="flex items-center gap-4 flex-1 min-w-0">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                  transaction.type === 'income' ? 'bg-green-100' : 'bg-slate-100'
-                }`}>
-                  <span className="text-xl">{getCategoryIcon(transaction.category)}</span>
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-medium truncate">
-                      {transaction.description}
-                    </p>
-                    <Badge variant="secondary" className="text-xs">
-                      {transaction.category}
-                    </Badge>
+          {transactions.map((transaction) => {
+            const categoryInfo = getCategoryInfo(transaction.category);
+            return (
+              <div 
+                key={transaction.id} 
+                className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:shadow-md transition-all"
+              >
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    transaction.type === 'income' ? 'bg-green-100' : 'bg-slate-100'
+                  }`}>
+                    <span className="text-xl">{categoryInfo.icon}</span>
                   </div>
-                  {transaction.original_message && (
-                    <p className="text-muted-foreground truncate text-sm">
-                      "{transaction.original_message}"
-                    </p>
-                  )}
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-medium truncate">
+                        {transaction.description}
+                      </p>
+                      <Badge variant="secondary" className="text-xs">
+                        {categoryInfo.name}
+                      </Badge>
+                    </div>
+                    {transaction.original_message && (
+                      <p className="text-muted-foreground truncate text-sm">
+                        "{transaction.original_message}"
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <p className={`text-lg font-semibold ${
+                    transaction.type === 'income' ? 'text-green-600' : 'text-slate-900'
+                  }`}>
+                    ₹{transaction.amount.toLocaleString()}
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    {formatDate(transaction.date)}
+                  </p>
                 </div>
               </div>
-
-              <div className="text-right">
-                <p className={`text-lg font-semibold ${
-                  transaction.type === 'income' ? 'text-green-600' : 'text-slate-900'
-                }`}>
-                  ₹{transaction.amount.toLocaleString()}
-                </p>
-                <p className="text-muted-foreground text-sm">
-                  {formatDate(transaction.date)}
-                </p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-8 text-muted-foreground">
