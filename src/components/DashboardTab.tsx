@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MessageInput } from '@/components/MessageInput';
 import { TransactionsList } from '@/components/TransactionsList';
@@ -62,11 +61,13 @@ export const DashboardTab = ({
 
   const handleIncomeClick = () => {
     console.log('Income button clicked - navigating to transactions with income filter');
+    // Navigate to transactions tab with income filter applied
     navigate('/?tab=transactions&type=income');
   };
 
   const handleCategoriesClick = () => {
     console.log('Categories button clicked - navigating to categories management');
+    // Navigate to categories tab
     navigate('/?tab=categories');
   };
 

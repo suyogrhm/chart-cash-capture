@@ -10,10 +10,18 @@ import { useSupabaseExpenseTracker } from '@/hooks/useSupabaseExpenseTracker';
 import { AccountsManager } from '@/components/AccountsManager';
 import { MobileTabNavigation } from '@/components/MobileTabNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = React.useState('dashboard');
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
+  
+  // Get tab and type from URL params
+  const tabFromUrl = searchParams.get('tab') || 'dashboard';
+  const typeFromUrl = searchParams.get('type');
+  
+  const [activeTab, setActiveTab] = React.useState(tabFromUrl);
   
   const {
     transactions,
@@ -48,6 +56,28 @@ const Index = () => {
     clearFilters,
   } = useSupabaseExpenseTracker();
 
+  // Apply URL filters when component loads or URL changes
+  React.useEffect(() => {
+    setActiveTab(tabFromUrl);
+    
+    // If navigating to transactions with a type filter, apply it
+    if (tabFromUrl === 'transactions' && typeFromUrl) {
+      setSelectedType(typeFromUrl);
+    }
+  }, [tabFromUrl, typeFromUrl, setSelectedType]);
+
+  // Update URL when tab changes (but not when filters change to avoid infinite loops)
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab);
+    // Clear URL params when changing tabs manually
+    navigate(`/?tab=${newTab}`, { replace: true });
+    
+    // Clear filters when switching away from transactions
+    if (newTab !== 'transactions') {
+      clearFilters();
+    }
+  };
+
   // Calculate metrics for current month
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
@@ -81,8 +111,8 @@ const Index = () => {
   return (
     <AppLayout>
       <div className={`${isMobile ? 'pb-20' : ''}`}>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <MobileTabNavigation value={activeTab} onValueChange={setActiveTab} />
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+          <MobileTabNavigation value={activeTab} onValueChange={handleTabChange} />
 
           <TabsContent value="dashboard" className={`${isMobile ? 'mt-0' : ''}`}>
             <DashboardTab
