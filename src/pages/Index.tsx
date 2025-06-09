@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { DashboardTab } from '@/components/DashboardTab';
@@ -8,7 +9,6 @@ import { RecurringTransactionsManager } from '@/components/RecurringTransactions
 import { AppLayout } from '@/components/AppLayout';
 import { useSupabaseExpenseTracker } from '@/hooks/useSupabaseExpenseTracker';
 import { AccountsManager } from '@/components/AccountsManager';
-import { MobileTabNavigation } from '@/components/MobileTabNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
@@ -133,8 +133,6 @@ const Index = () => {
     <AppLayout>
       <div className={`${isMobile ? 'pb-20' : ''}`}>
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-          <MobileTabNavigation value={activeTab} onValueChange={handleTabChange} />
-
           <TabsContent value="dashboard" className={`${isMobile ? 'mt-0' : ''}`}>
             <DashboardTab
               onMessage={handleMessage}
