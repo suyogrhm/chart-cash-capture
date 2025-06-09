@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { DashboardTab } from '@/components/DashboardTab';
 import { TransactionsTab } from '@/components/TransactionsTab';
 import { CategoriesManager } from '@/components/CategoriesManager';
-import { BudgetTracker } from '@/components/BudgetTracker';
+import { EnhancedBudgetTracker } from '@/components/EnhancedBudgetTracker';
+import { RecurringTransactionsManager } from '@/components/RecurringTransactionsManager';
 import { AppLayout } from '@/components/AppLayout';
 import { useSupabaseExpenseTracker } from '@/hooks/useSupabaseExpenseTracker';
 import { AccountsManager } from '@/components/AccountsManager';
@@ -22,6 +22,7 @@ const Index = () => {
   const typeFromUrl = searchParams.get('type');
   
   const [activeTab, setActiveTab] = React.useState(tabFromUrl);
+  const [recurringTransactions, setRecurringTransactions] = React.useState([]);
   
   const {
     transactions,
@@ -56,7 +57,6 @@ const Index = () => {
     clearFilters,
   } = useSupabaseExpenseTracker();
 
-  // Apply URL filters when component loads or URL changes
   React.useEffect(() => {
     setActiveTab(tabFromUrl);
     
@@ -108,6 +108,27 @@ const Index = () => {
   const spentToEarnedRatio = totalIncome > 0 ? (totalExpenses / totalIncome) * 100 : 0;
   const budget = 2000; // You can make this dynamic later
 
+  // New handlers for recurring transactions
+  const handleAddRecurring = (recurring: any) => {
+    const newRecurring = {
+      id: Date.now().toString(),
+      ...recurring
+    };
+    setRecurringTransactions(prev => [...prev, newRecurring]);
+  };
+
+  const handleEditRecurring = (id: string, updates: any) => {
+    setRecurringTransactions(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
+  };
+
+  const handleDeleteRecurring = (id: string) => {
+    setRecurringTransactions(prev => prev.filter(r => r.id !== id));
+  };
+
+  const handleToggleRecurringActive = (id: string, active: boolean) => {
+    setRecurringTransactions(prev => prev.map(r => r.id === id ? { ...r, is_active: active } : r));
+  };
+
   return (
     <AppLayout>
       <div className={`${isMobile ? 'pb-20' : ''}`}>
@@ -152,9 +173,10 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="budgets" className={`${isMobile ? 'mt-0 pb-20' : ''}`}>
-            <BudgetTracker
+            <EnhancedBudgetTracker
               budgets={budgets}
               categories={categories}
+              transactions={transactions}
               onAddBudget={handleAddBudget}
               onUpdateBudget={(id, updates) => setBudgets(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b))}
               onDeleteBudget={(id) => setBudgets(prev => prev.filter(b => b.id !== id))}
@@ -162,12 +184,24 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="categories" className={`${isMobile ? 'mt-0 pb-20' : ''}`}>
-            <CategoriesManager
-              categories={categories}
-              onAddCategory={handleAddCategory}
-              onEditCategory={(id, updates) => setCategories(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c))}
-              onDeleteCategory={(id) => setCategories(prev => prev.filter(c => c.id !== id))}
-            />
+            <div className="space-y-6">
+              <CategoriesManager
+                categories={categories}
+                onAddCategory={handleAddCategory}
+                onEditCategory={(id, updates) => setCategories(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c))}
+                onDeleteCategory={(id) => setCategories(prev => prev.filter(c => c.id !== id))}
+              />
+              
+              <RecurringTransactionsManager
+                recurringTransactions={recurringTransactions}
+                categories={categories}
+                accounts={accounts}
+                onAddRecurring={handleAddRecurring}
+                onEditRecurring={handleEditRecurring}
+                onDeleteRecurring={handleDeleteRecurring}
+                onToggleActive={handleToggleRecurringActive}
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="accounts" className={`${isMobile ? 'mt-0 pb-20' : ''}`}>
