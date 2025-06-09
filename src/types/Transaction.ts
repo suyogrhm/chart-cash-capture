@@ -8,6 +8,7 @@ export interface Transaction {
   date: string;
   originalMessage: string;
   accountId?: string;
+  paymentMethod?: 'cash' | 'upi' | 'card' | 'bank_transfer' | 'other';
   isRecurring?: boolean;
   recurringFrequency?: 'daily' | 'weekly' | 'monthly' | 'yearly';
   nextDueDate?: string;

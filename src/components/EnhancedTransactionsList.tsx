@@ -70,6 +70,17 @@ export const EnhancedTransactionsList = ({
     return account ? account.color : '#6B7280';
   };
 
+  const getPaymentMethodDisplay = (paymentMethod?: string) => {
+    const methods = {
+      cash: '💵 Cash',
+      upi: '📱 UPI',
+      card: '💳 Card',
+      bank_transfer: '🏦 Bank Transfer',
+      other: '📝 Other'
+    };
+    return paymentMethod ? methods[paymentMethod as keyof typeof methods] || paymentMethod : '—';
+  };
+
   return (
     <>
       <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
@@ -94,6 +105,7 @@ export const EnhancedTransactionsList = ({
                   <TableHead>Description</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Account</TableHead>
+                  <TableHead>Payment Method</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Status</TableHead>
@@ -135,6 +147,9 @@ export const EnhancedTransactionsList = ({
                         />
                         {getAccountName(transaction.accountId)}
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {getPaymentMethodDisplay(transaction.paymentMethod)}
                     </TableCell>
                     <TableCell>
                       <span className={`font-semibold ${
@@ -241,6 +256,22 @@ export const EnhancedTransactionsList = ({
                     </div>
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+
+            <Select 
+              value={editForm.paymentMethod || ''} 
+              onValueChange={(value) => setEditForm({ ...editForm, paymentMethod: value as any })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select payment method" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="cash">💵 Cash</SelectItem>
+                <SelectItem value="upi">📱 UPI</SelectItem>
+                <SelectItem value="card">💳 Card</SelectItem>
+                <SelectItem value="bank_transfer">🏦 Bank Transfer</SelectItem>
+                <SelectItem value="other">📝 Other</SelectItem>
               </SelectContent>
             </Select>
 

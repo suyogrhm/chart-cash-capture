@@ -8,7 +8,7 @@ import { CircularSpendingChart } from '@/components/CircularSpendingChart';
 import { Transaction, Account } from '@/types/Transaction';
 
 interface DashboardTabProps {
-  onMessage: (message: string, accountId?: string) => void;
+  onMessage: (message: string, accountId?: string, paymentMethod?: string) => void;
   currentMonthTransactions: Transaction[];
   recentTransactions: Transaction[];
   totalIncome: number;
