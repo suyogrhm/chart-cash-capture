@@ -2,7 +2,6 @@
 import React from 'react';
 import { MessageInput } from '@/components/MessageInput';
 import { TransactionsList } from '@/components/TransactionsList';
-import { MetricsCards } from '@/components/MetricsCards';
 import { CircularSpendingChart } from '@/components/CircularSpendingChart';
 import { Transaction, Account } from '@/types/Transaction';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -33,11 +32,21 @@ export const DashboardTab = ({
 }: DashboardTabProps) => {
   const isMobile = useIsMobile();
 
+  const handleTrendsClick = () => {
+    console.log('Trends functionality - showing spending trends and analytics');
+    // This would typically navigate to a trends page or show a modal with trends
+  };
+
+  const handleCategoriesClick = () => {
+    console.log('Categories functionality - showing category management');
+    // This would typically navigate to categories tab or show category management
+  };
+
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white pb-20">
-        {/* Header Section with Dark Theme */}
-        <div className="bg-slate-950 p-6">
+      <div className="min-h-screen bg-background pb-20">
+        {/* Header Section */}
+        <div className="bg-card p-6 border-b border-border">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <div className="flex flex-col gap-1">
@@ -47,150 +56,125 @@ export const DashboardTab = ({
                   <div className="w-1 h-4 bg-red-500 rounded"></div>
                 </div>
               </div>
-              <h1 className="text-lg font-medium ml-2">Hi User</h1>
+              <h1 className="text-lg font-medium ml-2 text-foreground">Hi User</h1>
             </div>
-            <Search className="h-5 w-5 text-slate-400" />
+            <Search className="h-5 w-5 text-muted-foreground" />
           </div>
           
-          <p className="text-slate-400 text-sm mb-8">
+          <p className="text-muted-foreground text-sm mb-8">
             Spent in {new Date().toLocaleDateString('en-US', { month: 'long' })}
           </p>
           
-          {/* Circular Chart with Dark Theme */}
-          <div className="flex justify-center mb-8">
-            <div className="relative">
-              <CircularSpendingChart transactions={currentMonthTransactions} />
-            </div>
+          {/* Circular Chart */}
+          <div className="mb-8">
+            <CircularSpendingChart transactions={currentMonthTransactions} />
           </div>
 
           {/* Metrics Row */}
           <div className="grid grid-cols-3 gap-4 mb-6">
             <div className="text-center">
-              <p className="text-slate-400 text-xs mb-1">Income</p>
+              <p className="text-muted-foreground text-xs mb-1">Income</p>
               <div className="flex items-center justify-center gap-1">
-                <p className="text-white font-medium">₹{totalIncome.toLocaleString()}</p>
-                <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
+                <p className="text-foreground font-medium">₹{totalIncome.toLocaleString()}</p>
+                <div className="w-2 h-2 bg-muted rounded-full"></div>
               </div>
             </div>
             <div className="text-center">
-              <p className="text-slate-400 text-xs mb-1">Budget</p>
-              <p className="text-white font-medium">₹{budget.toLocaleString()}</p>
+              <p className="text-muted-foreground text-xs mb-1">Budget</p>
+              <p className="text-foreground font-medium">₹{budget.toLocaleString()}</p>
             </div>
             <div className="text-center">
-              <p className="text-slate-400 text-xs mb-1">Safe to spend</p>
-              <p className="text-white font-medium">₹{Math.max(0, budget - totalExpenses).toLocaleString()}/day</p>
+              <p className="text-muted-foreground text-xs mb-1">Safe to spend</p>
+              <p className="text-foreground font-medium">₹{Math.max(0, budget - totalExpenses).toLocaleString()}/day</p>
             </div>
           </div>
 
           {/* Quick Actions */}
           <div className="grid grid-cols-2 gap-3 mb-6">
-            <Button className="bg-slate-800 hover:bg-slate-700 border-slate-700 text-white justify-start p-4 h-auto">
-              <TrendingUp className="h-4 w-4 mr-2 text-blue-400" />
+            <Button 
+              onClick={handleTrendsClick}
+              variant="outline" 
+              className="justify-start p-4 h-auto"
+            >
+              <TrendingUp className="h-4 w-4 mr-2 text-blue-500" />
               <span className="text-sm">Trends</span>
             </Button>
-            <Button className="bg-slate-800 hover:bg-slate-700 border-slate-700 text-white justify-start p-4 h-auto">
-              <PieChart className="h-4 w-4 mr-2 text-purple-400" />
+            <Button 
+              onClick={handleCategoriesClick}
+              variant="outline" 
+              className="justify-start p-4 h-auto"
+            >
+              <PieChart className="h-4 w-4 mr-2 text-purple-500" />
               <span className="text-sm">Categories</span>
             </Button>
           </div>
         </div>
 
         {/* Quick Add Input */}
-        <div className="px-6 mb-6">
+        <div className="px-6 py-4">
           <MessageInput onMessage={onMessage} accounts={accounts} />
         </div>
 
-        {/* Recent Transactions with Modern Design */}
-        <div className="bg-white rounded-t-3xl min-h-[300px] flex-1">
+        {/* Recent Transactions */}
+        <div className="bg-card rounded-t-3xl min-h-[300px] flex-1">
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-semibold text-slate-900 text-lg">Recent transactions</h3>
+              <h3 className="font-semibold text-foreground text-lg">Recent transactions</h3>
               <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white rounded-full">
                 <Plus className="h-4 w-4 mr-1" />
                 Add
               </Button>
             </div>
-            <div className="space-y-3">
-              {recentTransactions.slice(0, 5).map((transaction) => (
-                <div key={transaction.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'
-                    }`}>
-                      <span className="text-xl">
-                        {transaction.category === '1' ? '🍽️' : 
-                         transaction.category === '2' ? '🚗' :
-                         transaction.category === '3' ? '🎮' :
-                         transaction.category === '7' ? '💰' : '💳'}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-900">{transaction.description}</p>
-                      <p className="text-xs text-slate-500">
-                        {new Date(transaction.date).toLocaleDateString('en-US', { 
-                          day: 'numeric', 
-                          month: 'short' 
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={`font-semibold ${
-                      transaction.type === 'income' ? 'text-green-600' : 'text-slate-900'
-                    }`}>
-                      ₹{transaction.amount.toLocaleString()}
-                    </p>
-                    {transaction.type === 'income' && (
-                      <div className="text-green-600 text-xs">✓</div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <TransactionsList transactions={recentTransactions.slice(0, 5)} />
           </div>
         </div>
       </div>
     );
   }
 
-  // Desktop version with updated styling
+  // Desktop version
   return (
-    <div className="space-y-8 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+    <div className="space-y-8 bg-background min-h-screen">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-8 rounded-3xl">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Hi User</h1>
-            <p className="text-slate-300">Spent in {new Date().toLocaleDateString('en-US', { month: 'long' })}</p>
+      <Card className="bg-gradient-to-r from-card to-card/80 border-border">
+        <div className="p-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Hi User</h1>
+              <p className="text-muted-foreground">Spent in {new Date().toLocaleDateString('en-US', { month: 'long' })}</p>
+            </div>
+            <Search className="h-6 w-6 text-muted-foreground" />
           </div>
-          <Search className="h-6 w-6 text-slate-400" />
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-          <CircularSpendingChart transactions={currentMonthTransactions} />
-          <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <p className="text-slate-400 text-sm mb-2">Income</p>
-                <p className="text-white text-xl font-semibold">₹{totalIncome.toLocaleString()}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-slate-400 text-sm mb-2">Budget</p>
-                <p className="text-white text-xl font-semibold">₹{budget.toLocaleString()}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-slate-400 text-sm mb-2">Safe to spend</p>
-                <p className="text-white text-xl font-semibold">₹{Math.max(0, budget - totalExpenses).toLocaleString()}</p>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <CircularSpendingChart transactions={currentMonthTransactions} />
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center">
+                  <p className="text-muted-foreground text-sm mb-2">Income</p>
+                  <p className="text-foreground text-xl font-semibold">₹{totalIncome.toLocaleString()}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-muted-foreground text-sm mb-2">Budget</p>
+                  <p className="text-foreground text-xl font-semibold">₹{budget.toLocaleString()}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-muted-foreground text-sm mb-2">Safe to spend</p>
+                  <p className="text-foreground text-xl font-semibold">₹{Math.max(0, budget - totalExpenses).toLocaleString()}</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       <MessageInput onMessage={onMessage} accounts={accounts} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0">
+        <Card 
+          className="p-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 cursor-pointer hover:shadow-lg transition-all duration-200"
+          onClick={handleTrendsClick}
+        >
           <div className="flex items-center gap-3">
             <TrendingUp className="h-6 w-6" />
             <div>
@@ -199,7 +183,10 @@ export const DashboardTab = ({
             </div>
           </div>
         </Card>
-        <Card className="p-6 bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0">
+        <Card 
+          className="p-6 bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 cursor-pointer hover:shadow-lg transition-all duration-200"
+          onClick={handleCategoriesClick}
+        >
           <div className="flex items-center gap-3">
             <PieChart className="h-6 w-6" />
             <div>

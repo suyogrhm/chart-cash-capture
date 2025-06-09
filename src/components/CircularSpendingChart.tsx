@@ -1,8 +1,6 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { Transaction } from '@/types/Transaction';
 import { TrendingUp } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -50,101 +48,103 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
   });
 
   const totalExpenses = chartData.reduce((sum, item) => sum + item.amount, 0);
-
-  const chartConfig = {
-    amount: {
-      label: "Amount",
-    },
-  };
+  const maxBudget = 50000; // Set a reasonable max for the progress calculation
+  const progressPercentage = Math.min((totalExpenses / maxBudget) * 100, 100);
 
   if (isMobile) {
     return (
-      <div className="bg-slate-900 rounded-3xl p-6 text-white">
-        {chartData.length > 0 ? (
-          <div className="flex flex-col items-center">
-            <div className="relative mb-6">
-              <div className="w-48 h-48 relative">
-                {/* Background circle */}
-                <div className="absolute inset-0 rounded-full border-4 border-slate-700"></div>
-                
-                {/* Progress ring */}
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="none"
-                    stroke="#1e293b"
-                    strokeWidth="8"
-                  />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="none"
-                    stroke="#3b82f6"
-                    strokeWidth="8"
-                    strokeLinecap="round"
-                    strokeDasharray={`${(totalExpenses / 50000) * 283} 283`}
-                    className="transition-all duration-1000 ease-out"
-                  />
-                </svg>
-                
-                {/* Center content */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <div className="text-blue-400 mb-1">
-                    <TrendingUp className="h-4 w-4" />
+      <Card className="bg-[hsl(var(--chart-bg))] border-[hsl(var(--chart-border))] overflow-hidden">
+        <CardContent className="p-6">
+          {chartData.length > 0 ? (
+            <div className="flex flex-col items-center">
+              <div className="relative mb-6">
+                <div className="w-48 h-48 relative">
+                  {/* Background circle */}
+                  <div className="absolute inset-0 rounded-full border-8 border-muted"></div>
+                  
+                  {/* Progress ring */}
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="42"
+                      fill="none"
+                      stroke="hsl(var(--muted))"
+                      strokeWidth="8"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="42"
+                      fill="none"
+                      stroke="hsl(217 91% 60%)"
+                      strokeWidth="8"
+                      strokeLinecap="round"
+                      strokeDasharray={`${(progressPercentage / 100) * 264} 264`}
+                      className="transition-all duration-1000 ease-out"
+                    />
+                  </svg>
+                  
+                  {/* Center content */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <div className="text-primary mb-1">
+                      <TrendingUp className="h-4 w-4" />
+                    </div>
+                    <p className="text-2xl font-bold text-foreground">
+                      ₹{totalExpenses.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{progressPercentage.toFixed(0)}%</p>
                   </div>
-                  <p className="text-2xl font-bold text-white">
-                    ₹{totalExpenses.toLocaleString()}
-                  </p>
-                  <p className="text-xs text-slate-400 mt-1">49%</p>
                 </div>
               </div>
+              
+              {/* Compact legend for mobile */}
+              <div className="grid grid-cols-2 gap-3 w-full text-sm">
+                {chartData.slice(0, 4).map((item) => {
+                  const categoryInfo = Object.values(categoryMapping).find(cat => cat.name === item.category);
+                  const percentage = ((item.amount / totalExpenses) * 100).toFixed(1);
+                  return (
+                    <div key={item.category} className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                      <div 
+                        className="w-3 h-3 rounded-full flex-shrink-0" 
+                        style={{ backgroundColor: item.fill }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs text-muted-foreground truncate">{categoryInfo?.icon} {item.category}</p>
+                        <p className="text-sm font-medium text-foreground">₹{item.amount.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-            
-            {/* Compact legend for mobile */}
-            <div className="grid grid-cols-2 gap-2 w-full text-xs">
-              {chartData.slice(0, 4).map((item) => {
-                const categoryInfo = Object.values(categoryMapping).find(cat => cat.name === item.category);
-                return (
-                  <div key={item.category} className="flex items-center gap-2">
-                    <div 
-                      className="w-2 h-2 rounded-full flex-shrink-0" 
-                      style={{ backgroundColor: item.fill }}
-                    />
-                    <span className="text-slate-300 truncate">{categoryInfo?.icon} {item.category}</span>
-                  </div>
-                );
-              })}
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <TrendingUp className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p>No expense data</p>
             </div>
-          </div>
-        ) : (
-          <div className="text-center py-8 text-slate-400">
-            <TrendingUp className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p>No expense data</p>
-          </div>
-        )}
-      </div>
+          )}
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <Card className="bg-slate-900 border-slate-800 text-white">
+    <Card className="bg-[hsl(var(--chart-bg))] border-[hsl(var(--chart-border))]">
       <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold flex items-center gap-2 text-white">
-          <TrendingUp className="h-5 w-5 text-blue-400" />
+        <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+          <TrendingUp className="h-5 w-5 text-primary" />
           Expenses by Category
         </CardTitle>
       </CardHeader>
       <CardContent>
         {chartData.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             {/* Chart */}
             <div className="relative flex justify-center">
               <div className="w-64 h-64 relative">
                 {/* Background circle */}
-                <div className="absolute inset-0 rounded-full border-8 border-slate-700"></div>
+                <div className="absolute inset-0 rounded-full border-8 border-muted"></div>
                 
                 {/* Progress ring */}
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
@@ -153,31 +153,31 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                     cy="50"
                     r="42"
                     fill="none"
-                    stroke="#1e293b"
-                    strokeWidth="12"
+                    stroke="hsl(var(--muted))"
+                    strokeWidth="8"
                   />
                   <circle
                     cx="50"
                     cy="50"
                     r="42"
                     fill="none"
-                    stroke="#3b82f6"
-                    strokeWidth="12"
+                    stroke="hsl(217 91% 60%)"
+                    strokeWidth="8"
                     strokeLinecap="round"
-                    strokeDasharray={`${(totalExpenses / 50000) * 264} 264`}
+                    strokeDasharray={`${(progressPercentage / 100) * 264} 264`}
                     className="transition-all duration-1000 ease-out"
                   />
                 </svg>
                 
                 {/* Center content */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <div className="text-blue-400 mb-2">
+                  <div className="text-primary mb-2">
                     <TrendingUp className="h-6 w-6" />
                   </div>
-                  <p className="text-3xl font-bold text-white">
+                  <p className="text-3xl font-bold text-foreground">
                     ₹{totalExpenses.toLocaleString()}
                   </p>
-                  <p className="text-sm text-slate-400 mt-1">49%</p>
+                  <p className="text-sm text-muted-foreground mt-1">{progressPercentage.toFixed(0)}%</p>
                 </div>
               </div>
             </div>
@@ -188,7 +188,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                 const categoryInfo = Object.values(categoryMapping).find(cat => cat.name === item.category);
                 const percentage = ((item.amount / totalExpenses) * 100).toFixed(1);
                 return (
-                  <div key={item.category} className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
+                  <div key={item.category} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex items-center gap-3">
                       <div 
                         className="w-4 h-4 rounded-full" 
@@ -196,12 +196,12 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                       />
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{categoryInfo?.icon}</span>
-                        <span className="font-medium text-white">{item.category}</span>
+                        <span className="font-medium text-foreground">{item.category}</span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-white">₹{item.amount.toLocaleString()}</p>
-                      <p className="text-sm text-slate-400">{percentage}%</p>
+                      <p className="font-semibold text-foreground">₹{item.amount.toLocaleString()}</p>
+                      <p className="text-sm text-muted-foreground">{percentage}%</p>
                     </div>
                   </div>
                 );
@@ -209,7 +209,7 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
             </div>
           </div>
         ) : (
-          <div className="text-center py-12 text-slate-400">
+          <div className="text-center py-12 text-muted-foreground">
             <TrendingUp className="h-12 w-12 mx-auto mb-3 opacity-50" />
             <p>No expense data available</p>
             <p className="text-sm">Add some expenses to see the breakdown</p>

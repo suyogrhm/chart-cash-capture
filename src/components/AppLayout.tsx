@@ -2,6 +2,7 @@
 import React from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { UserMenu } from '@/components/UserMenu';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -11,7 +12,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   const isMobile = useIsMobile();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+    <div className="min-h-screen bg-[hsl(var(--app-bg))]">
       <div className={`container mx-auto ${isMobile ? 'px-2 py-4' : 'px-4 py-8'} max-w-7xl`}>
         {/* Header */}
         <div className={`${isMobile ? 'mb-4' : 'mb-8'} flex justify-between items-center`}>
@@ -23,7 +24,10 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
               {isMobile ? 'Track your finances on the go' : 'Advanced financial tracking with natural language processing'}
             </p>
           </div>
-          <UserMenu />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <UserMenu />
+          </div>
         </div>
         {children}
       </div>
