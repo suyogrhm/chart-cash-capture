@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Transaction, Category, Account } from '@/types/Transaction';
 import { ArrowUp, ArrowDown, Edit2, Trash2, Clock, Repeat } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getCategoryInfo } from '@/utils/categoryUtils';
+import { CategorySuggestionDialog } from '@/components/CategorySuggestionDialog';
 
 interface EnhancedTransactionsListProps {
   transactions: Transaction[];
@@ -30,6 +31,12 @@ export const EnhancedTransactionsList = ({
 }: EnhancedTransactionsListProps) => {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [editForm, setEditForm] = useState<Partial<Transaction>>({});
+  const [showSuggestionDialog, setShowSuggestionDialog] = useState(false);
+  const [suggestionData, setSuggestionData] = useState<{
+    transaction: Transaction;
+    newCategoryId: string;
+    similarTransactions: Transaction[];
+  } | null>(null);
   const isMobile = useIsMobile();
 
   const handleEdit = (transaction: Transaction) => {
@@ -37,12 +44,49 @@ export const EnhancedTransactionsList = ({
     setEditForm(transaction);
   };
 
+  const findSimilarTransactions = (currentTransaction: Transaction, newCategoryId: string): Transaction[] => {
+    const keywords = currentTransaction.description.toLowerCase().split(' ');
+    
+    return transactions.filter(t => 
+      t.id !== currentTransaction.id &&
+      t.category !== newCategoryId &&
+      keywords.some(keyword => 
+        keyword.length > 3 && t.description.toLowerCase().includes(keyword)
+      )
+    ).slice(0, 5); // Limit to 5 suggestions
+  };
+
   const handleSaveEdit = () => {
     if (editingTransaction && editForm) {
+      // Check if category changed and find similar transactions
+      if (editForm.category && editForm.category !== editingTransaction.category) {
+        const similarTransactions = findSimilarTransactions(editingTransaction, editForm.category);
+        
+        if (similarTransactions.length > 0) {
+          setSuggestionData({
+            transaction: editingTransaction,
+            newCategoryId: editForm.category,
+            similarTransactions
+          });
+          setShowSuggestionDialog(true);
+          setEditingTransaction(null);
+          setEditForm({});
+          return;
+        }
+      }
+      
       onEditTransaction(editingTransaction.id, editForm);
       setEditingTransaction(null);
       setEditForm({});
     }
+  };
+
+  const handleConfirmGrouping = (transactionIds: string[], categoryId: string) => {
+    transactionIds.forEach(id => {
+      onEditTransaction(id, { category: categoryId });
+    });
+    setShowSuggestionDialog(false);
+    setSuggestionData(null);
   };
 
   const formatDate = (dateString: string) => {
@@ -60,20 +104,6 @@ export const EnhancedTransactionsList = ({
       hour: '2-digit',
       minute: '2-digit'
     });
-  };
-
-  const getCategoryInfo = (categoryId: string) => {
-    const categoryMapping: { [key: string]: { name: string; icon: string } } = {
-      '1': { name: 'Food & Dining', icon: '🍽️' },
-      '2': { name: 'Transportation', icon: '🚗' },
-      '3': { name: 'Entertainment', icon: '🎮' },
-      '4': { name: 'Bills & Utilities', icon: '⚡' },
-      '5': { name: 'Shopping', icon: '🛒' },
-      '6': { name: 'Fuel', icon: '⛽' },
-      '7': { name: 'Salary', icon: '💰' },
-      '8': { name: 'Freelance', icon: '💼' },
-    };
-    return categoryMapping[categoryId] || { name: 'Other', icon: '💳' };
   };
 
   const getAccountName = (accountId?: string) => {
@@ -108,7 +138,7 @@ export const EnhancedTransactionsList = ({
           <div className="flex items-center gap-3 flex-1">
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
               transaction.type === 'income' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'
-            }`}>
+            }`} style={{ backgroundColor: `${categoryInfo.color}20` }}>
               <span className="text-xl">{categoryInfo.icon}</span>
             </div>
             
@@ -222,9 +252,8 @@ export const EnhancedTransactionsList = ({
                       return (
                         <TableRow key={transaction.id} className="border-border hover:bg-muted/50">
                           <TableCell>
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                              transaction.type === 'income' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'
-                            }`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center`} 
+                                 style={{ backgroundColor: `${categoryInfo.color}20` }}>
                               <span className="text-lg">{categoryInfo.icon}</span>
                             </div>
                           </TableCell>
@@ -405,6 +434,18 @@ export const EnhancedTransactionsList = ({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Category Suggestion Dialog */}
+      {suggestionData && (
+        <CategorySuggestionDialog
+          isOpen={showSuggestionDialog}
+          onClose={() => setShowSuggestionDialog(false)}
+          transaction={suggestionData.transaction}
+          newCategoryId={suggestionData.newCategoryId}
+          similarTransactions={suggestionData.similarTransactions}
+          onConfirmGrouping={handleConfirmGrouping}
+        />
+      )}
     </>
   );
 };

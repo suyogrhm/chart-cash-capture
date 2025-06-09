@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,26 +15,23 @@ interface CircularSpendingChartProps {
   title?: string;
 }
 
+// More vibrant colors for different categories
 const categoryColors: Record<string, string> = {
-  'Food & Dining': '#FF6B6B',
-  'Transportation': '#4ECDC4',
-  'Shopping': '#45B7D1',
-  'Entertainment': '#96CEB4',
-  'Bills & Utilities': '#FECA57',
-  'Healthcare': '#FF9FF3',
-  'Education': '#54A0FF',
-  'Travel': '#5F27CD',
-  'Personal Care': '#00D2D3',
-  'Groceries': '#FF9F43',
-  'Fuel': '#FF6348',
-  'Salary': '#2ECC71',
-  'Freelance': '#3498DB',
-  // Handle the actual category names from your data
-  'food': '#FF6B6B',
-  'entertainment': '#96CEB4',
-  'fuel': '#FF6348',
-  'rental income': '#2ECC71',
-  'Other': '#95A5A6'
+  'Food & Dining': '#FF4081',     // Vibrant pink
+  'Transportation': '#00BCD4',    // Cyan
+  'Shopping': '#9C27B0',          // Purple
+  'Entertainment': '#FF5722',     // Deep orange
+  'Bills & Utilities': '#FFC107', // Amber
+  'Healthcare': '#E91E63',        // Pink
+  'Education': '#3F51B5',         // Indigo
+  'Travel': '#795548',            // Brown
+  'Personal Care': '#607D8B',     // Blue grey
+  'Groceries': '#8BC34A',         // Light green
+  'Fuel': '#FF9800',              // Orange
+  'Salary': '#4CAF50',            // Green
+  'Freelance': '#2196F3',         // Blue
+  'Rental Income': '#009688',     // Teal
+  'Other': '#9E9E9E'              // Grey
 };
 
 // Improved category name mapping that handles actual data
@@ -151,7 +147,7 @@ export const CircularSpendingChart = ({
       .map(([category, amount]) => ({
         name: category,
         value: amount,
-        color: categoryColors[category] || categoryColors[category.toLowerCase()] || categoryColors['Other']
+        color: categoryColors[category] || categoryColors['Other']
       }))
       .sort((a, b) => b.value - a.value); // Sort by amount descending
 
