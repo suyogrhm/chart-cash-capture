@@ -41,11 +41,11 @@ export const CategoriesManager = ({
   const icons = ['📁', '🍽️', '🚗', '🎮', '💰', '🏠', '💊', '🛒', '🎬', '⚡'];
 
   return (
-    <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+    <Card className="p-6 bg-card border-border shadow-lg">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Settings className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold">Manage Categories</h2>
+          <h2 className="text-lg font-semibold text-card-foreground">Manage Categories</h2>
         </div>
         
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -82,7 +82,7 @@ export const CategoriesManager = ({
               </div>
 
               <div>
-                <p className="text-sm font-medium mb-2">Color</p>
+                <p className="text-sm font-medium mb-2 text-foreground">Color</p>
                 <div className="flex gap-2">
                   {colors.map((color) => (
                     <button
@@ -98,13 +98,13 @@ export const CategoriesManager = ({
               </div>
 
               <div>
-                <p className="text-sm font-medium mb-2">Icon</p>
+                <p className="text-sm font-medium mb-2 text-foreground">Icon</p>
                 <div className="flex gap-2 flex-wrap">
                   {icons.map((icon) => (
                     <button
                       key={icon}
-                      className={`p-2 rounded border ${
-                        newCategory.icon === icon ? 'bg-primary text-primary-foreground' : 'bg-background'
+                      className={`p-2 rounded border border-border ${
+                        newCategory.icon === icon ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-muted'
                       }`}
                       onClick={() => setNewCategory({ ...newCategory, icon })}
                     >
@@ -126,7 +126,7 @@ export const CategoriesManager = ({
         {categories.map((category) => (
           <div
             key={category.id}
-            className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-100"
+            className="flex items-center justify-between p-4 bg-card rounded-lg border border-border hover:bg-muted/50 transition-colors"
           >
             <div className="flex items-center gap-3">
               <div
@@ -136,7 +136,7 @@ export const CategoriesManager = ({
                 {category.icon}
               </div>
               <div>
-                <p className="font-medium">{category.name}</p>
+                <p className="font-medium text-card-foreground">{category.name}</p>
                 <Badge variant={category.type === 'income' ? 'default' : 'secondary'}>
                   {category.type}
                 </Badge>

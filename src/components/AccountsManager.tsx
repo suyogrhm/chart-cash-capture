@@ -59,7 +59,7 @@ export const AccountsManager = ({
     const isNegative = balance < 0;
     const absBalance = Math.abs(balance);
     return (
-      <span className={isNegative ? 'text-red-600' : 'text-green-600'}>
+      <span className={isNegative ? 'text-red-500 dark:text-red-400' : 'text-green-500 dark:text-green-400'}>
         {isNegative ? '-' : ''}${absBalance.toFixed(2)}
       </span>
     );
@@ -79,11 +79,11 @@ export const AccountsManager = ({
 
   return (
     <div className="space-y-6">
-      <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      <Card className="p-6 bg-card border-border shadow-lg">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <Wallet className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">Account Management</h2>
+            <h2 className="text-lg font-semibold text-card-foreground">Account Management</h2>
           </div>
           <Button onClick={() => setShowAddDialog(true)} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
@@ -92,7 +92,7 @@ export const AccountsManager = ({
         </div>
 
         {/* Total Balance Summary */}
-        <div className="mb-6 p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg">
+        <div className="mb-6 p-4 bg-muted/30 rounded-lg border border-border">
           <div className="text-center">
             <p className="text-sm text-muted-foreground mb-1">Total Net Worth</p>
             <p className="text-2xl font-bold">{formatBalance(totalBalance)}</p>
@@ -103,7 +103,7 @@ export const AccountsManager = ({
         {accounts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {accounts.map((account) => (
-              <Card key={account.id} className="p-4 border border-gray-200 hover:shadow-md transition-shadow">
+              <Card key={account.id} className="p-4 bg-card border-border hover:bg-muted/30 transition-colors">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <div 
@@ -113,7 +113,7 @@ export const AccountsManager = ({
                       {getAccountIcon(account.type)}
                     </div>
                     <div>
-                      <h3 className="font-medium">{account.name}</h3>
+                      <h3 className="font-medium text-card-foreground">{account.name}</h3>
                       <Badge variant="outline" className="text-xs">
                         {getAccountTypeLabel(account.type)}
                       </Badge>
