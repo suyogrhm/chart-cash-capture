@@ -36,6 +36,9 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
     'salary': { name: 'Salary', color: '#06B6D4', icon: '💰' },
     'freelance': { name: 'Freelance', color: '#84CC16', icon: '💼' },
     'other': { name: 'Other', color: '#6B7280', icon: '📦' },
+    'coffee': { name: 'Food & Dining', color: '#EF4444', icon: '🍽️' },
+    'lunch': { name: 'Food & Dining', color: '#EF4444', icon: '🍽️' },
+    'movie': { name: 'Entertainment', color: '#8B5CF6', icon: '🎮' },
   };
 
   // Group expenses by category
@@ -134,26 +137,36 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
             <div className="flex flex-col items-center">
               <div className="relative mb-6">
                 <div className="w-48 h-48 relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-full p-4 shadow-2xl">
-                  {/* Progress ring */}
-                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                  {/* Pie chart for mobile */}
+                  <svg className="w-full h-full" viewBox="0 0 100 100">
+                    {/* Background circle */}
                     <circle
                       cx="50"
                       cy="50"
-                      r="42"
+                      r="35"
                       fill="none"
                       stroke="rgba(255,255,255,0.1)"
-                      strokeWidth="6"
+                      strokeWidth="2"
                     />
+                    
+                    {/* Pie segments */}
+                    {segments.map((segment, index) => (
+                      <path
+                        key={segment.category}
+                        d={segment.path}
+                        fill={segment.fill}
+                        stroke="white"
+                        strokeWidth="0.5"
+                        className="transition-all duration-300"
+                      />
+                    ))}
+                    
+                    {/* Center circle */}
                     <circle
                       cx="50"
                       cy="50"
-                      r="42"
-                      fill="none"
-                      stroke="#3B82F6"
-                      strokeWidth="6"
-                      strokeLinecap="round"
-                      strokeDasharray={`${(progressPercentage / 100) * 264} 264`}
-                      className="transition-all duration-1000 ease-out"
+                      r="15"
+                      fill="rgba(255,255,255,0.1)"
                     />
                   </svg>
                   
@@ -214,11 +227,11 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
       </CardHeader>
       <CardContent>
         {chartData.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Enhanced Pie Chart */}
-            <div className="relative flex justify-center">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+            {/* Enhanced Pie Chart - Made smaller */}
+            <div className="relative flex justify-center lg:col-span-2">
               <div className="relative">
-                <svg width="320" height="320" viewBox="0 0 100 100" className="drop-shadow-2xl">
+                <svg width="240" height="240" viewBox="0 0 100 100" className="drop-shadow-2xl">
                   {/* Background circle */}
                   <circle
                     cx="50"
@@ -258,9 +271,9 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                 {/* Center content */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <div className="text-blue-600 mb-2">
-                    <TrendingUp className="h-8 w-8" />
+                    <TrendingUp className="h-6 w-6" />
                   </div>
-                  <p className="text-3xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-gray-900">
                     ₹{totalExpenses.toLocaleString()}
                   </p>
                   <p className="text-sm text-gray-600 mt-1">Total Spent</p>
@@ -269,17 +282,17 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
             </div>
             
             {/* Enhanced Legend */}
-            <div className="space-y-4">
+            <div className="space-y-4 lg:col-span-1">
               <h3 className="text-lg font-semibold text-foreground mb-4">Categories</h3>
               {chartData.map((item) => {
                 const percentage = totalExpenses > 0 ? ((item.amount / totalExpenses) * 100).toFixed(1) : '0';
                 return (
                   <div key={item.category} className="group">
-                    <div className="flex items-center justify-between p-4 bg-gradient-to-r from-muted/30 to-muted/10 rounded-xl border border-border/50 hover:border-border transition-all duration-200 hover:shadow-md">
-                      <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-muted/30 to-muted/10 rounded-xl border border-border/50 hover:border-border transition-all duration-200 hover:shadow-md">
+                      <div className="flex items-center gap-3">
                         <div className="relative">
                           <div 
-                            className="w-5 h-5 rounded-full shadow-lg border border-white/20" 
+                            className="w-4 h-4 rounded-full shadow-lg border border-white/20" 
                             style={{ backgroundColor: item.fill }}
                           />
                           <div className="absolute -top-1 -right-1 text-xs">
@@ -287,17 +300,17 @@ export const CircularSpendingChart = ({ transactions }: CircularSpendingChartPro
                           </div>
                         </div>
                         <div>
-                          <span className="font-semibold text-foreground text-base">{item.category}</span>
-                          <p className="text-sm text-muted-foreground">{percentage}% of total</p>
+                          <span className="font-semibold text-foreground text-sm">{item.category}</span>
+                          <p className="text-xs text-muted-foreground">{percentage}% of total</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-foreground text-lg">₹{item.amount.toLocaleString()}</p>
+                        <p className="font-bold text-foreground text-sm">₹{item.amount.toLocaleString()}</p>
                         <div 
-                          className="h-2 rounded-full mt-1 transition-all duration-300"
+                          className="h-1.5 rounded-full mt-1 transition-all duration-300"
                           style={{ 
                             backgroundColor: item.fill,
-                            width: `${Math.max(Number(percentage) * 2, 20)}px`,
+                            width: `${Math.max(Number(percentage) * 1.5, 15)}px`,
                             opacity: 0.3
                           }}
                         />

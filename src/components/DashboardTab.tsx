@@ -70,9 +70,21 @@ export const DashboardTab = ({
     navigate('/?tab=categories');
   };
 
-  // Quick action handlers for message input
-  const handleQuickAction = (message: string) => {
-    onMessage(message);
+  // Quick action handlers for quick buttons
+  const handleQuickCoffee = () => {
+    onMessage('Spent ₹150 on coffee');
+  };
+
+  const handleQuickFuel = () => {
+    onMessage('Spent ₹2000 on fuel');
+  };
+
+  const handleQuickLunch = () => {
+    onMessage('Spent ₹300 on lunch');
+  };
+
+  const handleQuickMovie = () => {
+    onMessage('Spent ₹500 on movie');
   };
 
   if (isMobile) {
@@ -141,6 +153,22 @@ export const DashboardTab = ({
               <span className="text-sm">Categories</span>
             </Button>
           </div>
+
+          {/* Quick Transaction Buttons */}
+          <div className="grid grid-cols-2 gap-2 mb-6">
+            <Button onClick={handleQuickCoffee} variant="outline" size="sm" className="text-xs">
+              ☕ Coffee ₹150
+            </Button>
+            <Button onClick={handleQuickFuel} variant="outline" size="sm" className="text-xs">
+              🚗 Fuel ₹2000
+            </Button>
+            <Button onClick={handleQuickLunch} variant="outline" size="sm" className="text-xs">
+              🍔 Lunch ₹300
+            </Button>
+            <Button onClick={handleQuickMovie} variant="outline" size="sm" className="text-xs">
+              🎬 Movie ₹500
+            </Button>
+          </div>
         </div>
 
         {/* Quick Add Input */}
@@ -183,9 +211,9 @@ export const DashboardTab = ({
             </div>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
             {/* Enhanced Metrics */}
-            <div className="lg:col-span-1 space-y-6">
+            <div className="lg:col-span-2 space-y-6">
               <div className="grid gap-4">
                 {/* Income Card */}
                 <div className="p-6 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-xl border border-green-200/20">
@@ -233,6 +261,22 @@ export const DashboardTab = ({
                   <p className="text-2xl font-bold text-foreground">₹{dailySafeToSpend.toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground mt-1">per day remaining</p>
                 </div>
+              </div>
+
+              {/* Quick Transaction Buttons */}
+              <div className="grid grid-cols-2 gap-3">
+                <Button onClick={handleQuickCoffee} variant="outline" size="sm" className="text-xs hover:bg-primary/10">
+                  ☕ Coffee ₹150
+                </Button>
+                <Button onClick={handleQuickFuel} variant="outline" size="sm" className="text-xs hover:bg-primary/10">
+                  🚗 Fuel ₹2000
+                </Button>
+                <Button onClick={handleQuickLunch} variant="outline" size="sm" className="text-xs hover:bg-primary/10">
+                  🍔 Lunch ₹300
+                </Button>
+                <Button onClick={handleQuickMovie} variant="outline" size="sm" className="text-xs hover:bg-primary/10">
+                  🎬 Movie ₹500
+                </Button>
               </div>
             </div>
 
