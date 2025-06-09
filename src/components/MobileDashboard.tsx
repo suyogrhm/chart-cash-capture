@@ -67,7 +67,7 @@ export const MobileDashboard = ({
       </div>
 
       <div className="px-1">
-        <TransactionsList transactions={recentTransactions.slice(0, 5)} />
+        <TransactionsList transactions={recentTransactions.slice(0, 8)} />
       </div>
     </div>
   );
