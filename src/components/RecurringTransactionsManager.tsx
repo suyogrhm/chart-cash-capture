@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,13 +49,13 @@ export const RecurringTransactionsManager = ({
   const [newRecurring, setNewRecurring] = useState({
     description: '',
     amount: 0,
-    type: 'expense' as const,
+    type: 'expense' as 'income' | 'expense',
     category_id: '',
     account_id: '',
-    frequency: 'monthly' as const,
+    frequency: 'monthly' as 'daily' | 'weekly' | 'monthly' | 'yearly',
     start_date: new Date().toISOString().split('T')[0],
     is_active: true,
-    payment_method: 'upi' as const
+    payment_method: 'upi' as 'cash' | 'upi' | 'card' | 'bank_transfer' | 'other'
   });
   const isMobile = useIsMobile();
 
@@ -215,7 +214,7 @@ export const RecurringTransactionsManager = ({
               </Select>
               
               <div className="grid grid-cols-2 gap-2">
-                <Select value={newRecurring.frequency} onValueChange={(value: any) => setNewRecurring({ ...newRecurring, frequency: value })}>
+                <Select value={newRecurring.frequency} onValueChange={(value: 'daily' | 'weekly' | 'monthly' | 'yearly') => setNewRecurring({ ...newRecurring, frequency: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -295,7 +294,6 @@ export const RecurringTransactionsManager = ({
                         <Switch
                           checked={recurring.is_active}
                           onCheckedChange={(checked) => onToggleActive(recurring.id, checked)}
-                          size="sm"
                         />
                         <span className="text-xs text-muted-foreground">
                           {recurring.is_active ? 'Active' : 'Paused'}

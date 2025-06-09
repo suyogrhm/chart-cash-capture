@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,11 +41,10 @@ export const EnhancedBudgetTracker = ({
   const [newBudget, setNewBudget] = useState({
     category_id: '',
     amount: 0,
-    period: 'monthly' as const
+    period: 'monthly' as 'monthly' | 'weekly' | 'yearly'
   });
   const isMobile = useIsMobile();
 
-  // Calculate spent amount for each budget based on transactions
   const calculateSpentAmount = (budget: Budget) => {
     const categoryTransactions = transactions.filter(
       t => t.category === budget.category_id && t.type === 'expense'
