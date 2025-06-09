@@ -30,6 +30,21 @@ const categoryColors: Record<string, string> = {
   'Other': '#C7ECEE'
 };
 
+// Map category IDs to names (matching the getCategoryInfo function in TransactionsList)
+const getCategoryName = (categoryId: string) => {
+  const categories: { [key: string]: string } = {
+    '1': 'Food & Dining',
+    '2': 'Transportation',
+    '3': 'Entertainment',
+    '4': 'Bills & Utilities',
+    '5': 'Shopping',
+    '6': 'Fuel',
+    '7': 'Salary',
+    '8': 'Freelance',
+  };
+  return categories[categoryId] || 'Other';
+};
+
 export const CircularSpendingChart = ({ 
   data, 
   transactions, 
@@ -40,13 +55,13 @@ export const CircularSpendingChart = ({
       return data;
     }
 
-    if (transactions) {
+    if (transactions && Array.isArray(transactions)) {
       // Group transactions by category and calculate totals
       const categoryTotals = transactions
         .filter(t => t.type === 'expense')
         .reduce((acc, transaction) => {
-          const category = transaction.category || 'Other';
-          acc[category] = (acc[category] || 0) + transaction.amount;
+          const categoryName = getCategoryName(transaction.category);
+          acc[categoryName] = (acc[categoryName] || 0) + transaction.amount;
           return acc;
         }, {} as Record<string, number>);
 
@@ -61,7 +76,7 @@ export const CircularSpendingChart = ({
     return [];
   }, [data, transactions]);
 
-  if (chartData.length === 0) {
+  if (!chartData || chartData.length === 0) {
     return (
       <Card className="bg-card border-chart-border">
         <CardHeader>
