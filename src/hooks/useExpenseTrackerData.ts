@@ -67,7 +67,7 @@ export const useExpenseTrackerData = () => {
     if (searchTerm) {
       filtered = filtered.filter(t => 
         t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.originalMessage.toLowerCase().includes(searchTerm.toLowerCase())
+        t.original_message?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -80,7 +80,7 @@ export const useExpenseTrackerData = () => {
     }
 
     if (selectedAccount !== 'all') {
-      filtered = filtered.filter(t => t.accountId === selectedAccount);
+      filtered = filtered.filter(t => t.account_id === selectedAccount);
     }
 
     if (dateRange.from && dateRange.to) {
@@ -108,9 +108,9 @@ export const useExpenseTrackerData = () => {
         id: Date.now().toString(),
         ...parsedTransaction,
         date: new Date().toISOString(),
-        originalMessage: message,
-        accountId: accountId || accounts[0]?.id,
-        paymentMethod: paymentMethod as 'cash' | 'upi' | 'card' | 'bank_transfer' | 'other' | undefined
+        original_message: message,
+        account_id: accountId || accounts[0]?.id,
+        payment_method: paymentMethod as 'cash' | 'upi' | 'card' | 'bank_transfer' | 'other' | undefined
       };
       setTransactions(prev => [newTransaction, ...prev]);
     }

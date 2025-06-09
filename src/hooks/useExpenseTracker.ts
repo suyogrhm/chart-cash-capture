@@ -68,7 +68,7 @@ export const useExpenseTracker = () => {
     if (searchTerm) {
       filtered = filtered.filter(t => 
         t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.originalMessage.toLowerCase().includes(searchTerm.toLowerCase())
+        t.original_message?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -81,7 +81,7 @@ export const useExpenseTracker = () => {
     }
 
     if (selectedAccount !== 'all') {
-      filtered = filtered.filter(t => t.accountId === selectedAccount);
+      filtered = filtered.filter(t => t.account_id === selectedAccount);
     }
 
     if (dateRange.from && dateRange.to) {
@@ -109,8 +109,8 @@ export const useExpenseTracker = () => {
         id: Date.now().toString(),
         ...parsedTransaction,
         date: new Date().toISOString(),
-        originalMessage: message,
-        accountId: accounts[0]?.id
+        original_message: message,
+        account_id: accounts[0]?.id
       };
       setTransactions(prev => [newTransaction, ...prev]);
     }
