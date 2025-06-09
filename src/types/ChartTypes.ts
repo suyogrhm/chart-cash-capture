@@ -1,4 +1,6 @@
 
+import { Transaction } from './Transaction';
+
 export interface SpendingData {
   name: string;
   value: number;
