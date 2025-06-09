@@ -17,6 +17,22 @@ interface CircularSpendingChartProps {
   title?: string;
 }
 
+// Define a color palette for different categories
+const categoryColors = [
+  '#3B82F6', // Blue
+  '#EF4444', // Red
+  '#10B981', // Green
+  '#F59E0B', // Amber
+  '#8B5CF6', // Purple
+  '#EC4899', // Pink
+  '#14B8A6', // Teal
+  '#F97316', // Orange
+  '#6366F1', // Indigo
+  '#84CC16', // Lime
+  '#06B6D4', // Cyan
+  '#F43F5E', // Rose
+];
+
 export const CircularSpendingChart = ({ 
   data, 
   transactions, 
@@ -71,15 +87,14 @@ export const CircularSpendingChart = ({
 
     console.log('Category totals calculated:', categoryTotals);
 
-    // Convert to chart data format
+    // Convert to chart data format with assigned colors
     const result = Object.entries(categoryTotals)
       .filter(([_, amount]) => amount > 0) // Only include categories with spending
-      .map(([category, amount]) => {
-        const categoryInfo = getCategoryInfo(category);
+      .map(([category, amount], index) => {
         return {
           name: category,
           value: amount,
-          color: categoryInfo.color
+          color: categoryColors[index % categoryColors.length]
         };
       })
       .sort((a, b) => b.value - a.value); // Sort by amount descending

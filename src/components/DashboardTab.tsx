@@ -60,9 +60,7 @@ export const DashboardTab = ({
     .reduce((sum, t) => sum + t.amount, 0);
 
   const actualBudget = budget || 50000; // Default budget if not set
-  const safeToSpend = Math.max(0, actualBudget - currentMonthExpenses);
-  const remainingDays = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() - new Date().getDate();
-  const dailySafeToSpend = remainingDays > 0 ? Math.floor(safeToSpend / remainingDays) : 0;
+  const actualSpentToEarnedRatio = currentMonthIncome > 0 ? (currentMonthExpenses / currentMonthIncome) * 100 : 0;
 
   const handleIncomeClick = () => {
     console.log('Income button clicked - navigating to transactions with income filter');
@@ -109,8 +107,13 @@ export const DashboardTab = ({
               <p className="text-foreground font-medium">₹{actualBudget.toLocaleString()}</p>
             </div>
             <div className="text-center">
-              <p className="text-muted-foreground text-xs mb-1">Safe to spend</p>
-              <p className="text-foreground font-medium">₹{dailySafeToSpend.toLocaleString()}/day</p>
+              <p className="text-muted-foreground text-xs mb-1">Spent/Earned</p>
+              <p className={`text-foreground font-medium ${
+                actualSpentToEarnedRatio > 100 ? 'text-red-500' : 
+                actualSpentToEarnedRatio > 80 ? 'text-yellow-500' : 'text-green-500'
+              }`}>
+                {actualSpentToEarnedRatio.toFixed(1)}%
+              </p>
             </div>
           </div>
 
@@ -217,16 +220,24 @@ export const DashboardTab = ({
                   </div>
                 </div>
 
-                {/* Safe to Spend Card */}
+                {/* Spent to Earned Ratio Card */}
                 <div className="p-6 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-xl border border-purple-200/20">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="p-2 bg-purple-500/20 rounded-lg">
                       <TrendingUp className="h-5 w-5 text-purple-600" />
                     </div>
-                    <span className="text-sm font-medium text-muted-foreground">Safe to Spend</span>
+                    <span className="text-sm font-medium text-muted-foreground">Spent/Earned Ratio</span>
                   </div>
-                  <p className="text-2xl font-bold text-foreground">₹{dailySafeToSpend.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground mt-1">per day remaining</p>
+                  <p className={`text-2xl font-bold ${
+                    actualSpentToEarnedRatio > 100 ? 'text-red-500' : 
+                    actualSpentToEarnedRatio > 80 ? 'text-yellow-500' : 'text-green-500'
+                  }`}>
+                    {actualSpentToEarnedRatio.toFixed(1)}%
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {actualSpentToEarnedRatio > 100 ? 'Spending exceeds income' :
+                     actualSpentToEarnedRatio > 80 ? 'High spending ratio' : 'Healthy spending ratio'}
+                  </p>
                 </div>
               </div>
             </div>
