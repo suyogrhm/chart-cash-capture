@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Transaction, Category, Account } from '@/types/Transaction';
-import { ArrowUp, ArrowDown, Edit2, Trash2, Download, Calendar, Repeat } from 'lucide-react';
+import { ArrowUp, ArrowDown, Edit2, Trash2, Clock, Repeat } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface EnhancedTransactionsListProps {
@@ -62,9 +61,23 @@ export const EnhancedTransactionsList = ({
     });
   };
 
+  const getCategoryIcon = (categoryId: string) => {
+    const icons: { [key: string]: string } = {
+      '1': '🍽️', // Food & Dining
+      '2': '🚗', // Transportation
+      '3': '🎮', // Entertainment
+      '4': '⚡', // Bills & Utilities
+      '5': '🛒', // Shopping
+      '6': '⛽', // Fuel
+      '7': '💰', // Salary
+      '8': '💼', // Freelance
+    };
+    return icons[categoryId] || '💳';
+  };
+
   const getCategoryName = (categoryId: string) => {
     const category = categories.find(c => c.id === categoryId);
-    return category ? `${category.icon} ${category.name}` : categoryId;
+    return category ? category.name : categoryId;
   };
 
   const getAccountName = (accountId?: string) => {
@@ -92,23 +105,19 @@ export const EnhancedTransactionsList = ({
 
   // Mobile card view for better UX
   const MobileTransactionCard = ({ transaction }: { transaction: Transaction }) => (
-    <div className="bg-white rounded-lg border border-gray-100 p-4 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-xl border border-slate-100 p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3 flex-1">
-          <div className={`p-2 rounded-full ${
-            transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+            transaction.type === 'income' ? 'bg-green-100' : 'bg-slate-100'
           }`}>
-            {transaction.type === 'income' ? (
-              <ArrowUp className="h-4 w-4 text-green-600" />
-            ) : (
-              <ArrowDown className="h-4 w-4 text-red-600" />
-            )}
+            <span className="text-xl">{getCategoryIcon(transaction.category)}</span>
           </div>
           
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-sm truncate">{transaction.description}</p>
+            <p className="font-semibold text-slate-900 text-sm mb-1">{transaction.description}</p>
             {transaction.original_message && (
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-xs text-slate-500 truncate">
                 "{transaction.original_message}"
               </p>
             )}
@@ -116,30 +125,33 @@ export const EnhancedTransactionsList = ({
         </div>
 
         <div className="text-right">
-          <p className={`text-lg font-semibold ${
-            transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+          <p className={`text-lg font-bold ${
+            transaction.type === 'income' ? 'text-green-600' : 'text-slate-900'
           }`}>
-            {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+            ₹{transaction.amount.toLocaleString()}
           </p>
+          {transaction.type === 'income' && (
+            <div className="text-green-600 text-xs flex justify-end mt-1">✓</div>
+          )}
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+      <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
         <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs px-2 py-1">
             {getCategoryName(transaction.category)}
           </Badge>
+          <span>{formatDate(transaction.date)}</span>
         </div>
-        <span>{formatDate(transaction.date)}</span>
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+        <div className="flex items-center gap-2">
           <div 
             className="w-2 h-2 rounded-full" 
             style={{ backgroundColor: getAccountColor(transaction.account_id) }}
           />
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-slate-600">
             {getAccountName(transaction.account_id)}
           </span>
           {transaction.is_recurring && (
@@ -154,7 +166,7 @@ export const EnhancedTransactionsList = ({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 hover:bg-slate-100"
             onClick={() => handleEdit(transaction)}
           >
             <Edit2 className="h-3 w-3" />
@@ -162,7 +174,7 @@ export const EnhancedTransactionsList = ({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
             onClick={() => onDeleteTransaction(transaction.id)}
           >
             <Trash2 className="h-3 w-3" />
@@ -174,26 +186,21 @@ export const EnhancedTransactionsList = ({
 
   return (
     <>
-      <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-        <div className="flex items-center justify-between mb-6">
+      <Card className="bg-white border-0 shadow-lg overflow-hidden">
+        <div className="p-6 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <Calendar className="h-5 w-5 text-primary" />
+            <Clock className="h-5 w-5 text-primary" />
             <h2 className={`font-semibold ${isMobile ? 'text-base' : 'text-lg'}`}>
               Transaction History
             </h2>
           </div>
-          
-          <Button onClick={onExportData} variant="outline" className={`flex items-center gap-2 ${isMobile ? 'text-xs px-3 py-2' : ''}`}>
-            <Download className="h-4 w-4" />
-            {!isMobile && 'Export'}
-          </Button>
         </div>
 
         {transactions.length > 0 ? (
-          <>
+          <div className="p-6">
             {isMobile ? (
               // Mobile: Card layout
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {transactions.map((transaction) => (
                   <MobileTransactionCard key={transaction.id} transaction={transaction} />
                 ))}
@@ -203,42 +210,40 @@ export const EnhancedTransactionsList = ({
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Account</TableHead>
-                      <TableHead>Payment Method</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
+                    <TableRow className="border-slate-200">
+                      <TableHead className="text-slate-600">Type</TableHead>
+                      <TableHead className="text-slate-600">Description</TableHead>
+                      <TableHead className="text-slate-600">Category</TableHead>
+                      <TableHead className="text-slate-600">Account</TableHead>
+                      <TableHead className="text-slate-600">Payment Method</TableHead>
+                      <TableHead className="text-slate-600">Amount</TableHead>
+                      <TableHead className="text-slate-600">Date</TableHead>
+                      <TableHead className="text-slate-600">Status</TableHead>
+                      <TableHead className="text-slate-600">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {transactions.map((transaction) => (
-                      <TableRow key={transaction.id}>
+                      <TableRow key={transaction.id} className="border-slate-100 hover:bg-slate-50">
                         <TableCell>
-                          <div className={`p-2 rounded-full w-fit ${
-                            transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                            transaction.type === 'income' ? 'bg-green-100' : 'bg-slate-100'
                           }`}>
-                            {transaction.type === 'income' ? (
-                              <ArrowUp className="h-4 w-4 text-green-600" />
-                            ) : (
-                              <ArrowDown className="h-4 w-4 text-red-600" />
-                            )}
+                            <span className="text-lg">{getCategoryIcon(transaction.category)}</span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{transaction.description}</p>
-                            <p className="text-sm text-muted-foreground">
-                              "{transaction.original_message}"
-                            </p>
+                            <p className="font-medium text-slate-900">{transaction.description}</p>
+                            {transaction.original_message && (
+                              <p className="text-sm text-slate-500 truncate max-w-xs">
+                                "{transaction.original_message}"
+                              </p>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="secondary">
+                          <Badge variant="secondary" className="text-xs">
                             {getCategoryName(transaction.category)}
                           </Badge>
                         </TableCell>
@@ -248,26 +253,33 @@ export const EnhancedTransactionsList = ({
                               className="w-3 h-3 rounded-full" 
                               style={{ backgroundColor: getAccountColor(transaction.account_id) }}
                             />
-                            {getAccountName(transaction.account_id)}
+                            <span className="text-sm">{getAccountName(transaction.account_id)}</span>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-sm">
                           {getPaymentMethodDisplay(transaction.payment_method)}
                         </TableCell>
                         <TableCell>
-                          <span className={`font-semibold ${
-                            transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                          <span className={`font-semibold text-lg ${
+                            transaction.type === 'income' ? 'text-green-600' : 'text-slate-900'
                           }`}>
-                            {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                            ₹{transaction.amount.toLocaleString()}
                           </span>
                         </TableCell>
-                        <TableCell>{formatDate(transaction.date)}</TableCell>
+                        <TableCell className="text-sm text-slate-600">
+                          {formatDate(transaction.date)}
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
                             {transaction.is_recurring && (
                               <Badge variant="outline" className="text-xs">
                                 <Repeat className="h-3 w-3 mr-1" />
                                 {transaction.recurring_frequency}
+                              </Badge>
+                            )}
+                            {transaction.type === 'income' && (
+                              <Badge className="bg-green-100 text-green-800 text-xs">
+                                ✓ Received
                               </Badge>
                             )}
                           </div>
@@ -277,6 +289,7 @@ export const EnhancedTransactionsList = ({
                             <Button
                               variant="ghost"
                               size="sm"
+                              className="hover:bg-slate-100"
                               onClick={() => handleEdit(transaction)}
                             >
                               <Edit2 className="h-4 w-4" />
@@ -284,6 +297,7 @@ export const EnhancedTransactionsList = ({
                             <Button
                               variant="ghost"
                               size="sm"
+                              className="hover:bg-red-50 hover:text-red-600"
                               onClick={() => onDeleteTransaction(transaction.id)}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -296,10 +310,10 @@ export const EnhancedTransactionsList = ({
                 </Table>
               </div>
             )}
-          </>
+          </div>
         ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
+          <div className="text-center py-12 text-slate-500">
+            <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
             <p>No transactions yet</p>
             <p className="text-sm">Your transaction history will appear here</p>
           </div>
@@ -313,6 +327,7 @@ export const EnhancedTransactionsList = ({
             <DialogTitle className={isMobile ? 'text-base' : ''}>Edit Transaction</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
+            
             <Input
               placeholder="Description"
               value={editForm.description || ''}

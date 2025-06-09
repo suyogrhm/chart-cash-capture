@@ -29,13 +29,91 @@ export const TransactionsList = ({ transactions }: TransactionsListProps) => {
     });
   };
 
+  const getCategoryIcon = (categoryId: string) => {
+    const icons: { [key: string]: string } = {
+      '1': '🍽️', // Food & Dining
+      '2': '🚗', // Transportation
+      '3': '🎮', // Entertainment
+      '4': '⚡', // Bills & Utilities
+      '5': '🛒', // Shopping
+      '6': '⛽', // Fuel
+      '7': '💰', // Salary
+      '8': '💼', // Freelance
+    };
+    return icons[categoryId] || '💳';
+  };
+
+  if (isMobile) {
+    return (
+      <Card className="bg-white border-0 shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-slate-100">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-slate-600" />
+            <h3 className="font-semibold text-slate-900">Recent Transactions</h3>
+          </div>
+        </div>
+
+        {transactions.length > 0 ? (
+          <div className="divide-y divide-slate-100">
+            {transactions.map((transaction) => (
+              <div key={transaction.id} className="p-4 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                      transaction.type === 'income' ? 'bg-green-100' : 'bg-slate-100'
+                    }`}>
+                      <span className="text-xl">{getCategoryIcon(transaction.category)}</span>
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-medium text-slate-900 truncate text-sm">
+                          {transaction.description}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs text-slate-500">
+                          {formatDate(transaction.date)}
+                        </p>
+                        {transaction.category && (
+                          <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                            {transaction.category}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-right ml-3">
+                    <p className={`font-semibold text-base ${
+                      transaction.type === 'income' ? 'text-green-600' : 'text-slate-900'
+                    }`}>
+                      ₹{transaction.amount.toLocaleString()}
+                    </p>
+                    {transaction.type === 'income' && (
+                      <div className="text-green-600 text-xs flex justify-end mt-1">✓</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 text-slate-500">
+            <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
+            <p className="text-sm">No transactions yet</p>
+            <p className="text-xs">Your transaction history will appear here</p>
+          </div>
+        )}
+      </Card>
+    );
+  }
+
   return (
-    <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+    <Card className="p-6 bg-white border-0 shadow-lg">
       <div className="flex items-center gap-3 mb-6">
         <Clock className="h-5 w-5 text-primary" />
-        <h2 className={`font-semibold ${isMobile ? 'text-base' : 'text-lg'}`}>
-          Recent Transactions
-        </h2>
+        <h2 className="text-lg font-semibold">Recent Transactions</h2>
       </div>
 
       {transactions.length > 0 ? (
@@ -43,32 +121,26 @@ export const TransactionsList = ({ transactions }: TransactionsListProps) => {
           {transactions.map((transaction) => (
             <div 
               key={transaction.id} 
-              className={`flex items-center justify-between bg-white rounded-lg border border-gray-100 hover:shadow-md transition-shadow ${
-                isMobile ? 'p-3' : 'p-4'
-              }`}
+              className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:shadow-md transition-all"
             >
               <div className="flex items-center gap-4 flex-1 min-w-0">
-                <div className={`rounded-full ${
-                  transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'
-                } ${isMobile ? 'p-1.5' : 'p-2'}`}>
-                  {transaction.type === 'income' ? (
-                    <ArrowUp className={`text-green-600 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-                  ) : (
-                    <ArrowDown className={`text-red-600 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-                  )}
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                  transaction.type === 'income' ? 'bg-green-100' : 'bg-slate-100'
+                }`}>
+                  <span className="text-xl">{getCategoryIcon(transaction.category)}</span>
                 </div>
                 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <p className={`font-medium truncate ${isMobile ? 'text-sm' : ''}`}>
+                    <p className="font-medium truncate">
                       {transaction.description}
                     </p>
-                    <Badge variant="secondary" className={isMobile ? 'text-xs px-1.5 py-0.5' : 'text-xs'}>
+                    <Badge variant="secondary" className="text-xs">
                       {transaction.category}
                     </Badge>
                   </div>
                   {transaction.original_message && (
-                    <p className={`text-muted-foreground truncate ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                    <p className="text-muted-foreground truncate text-sm">
                       "{transaction.original_message}"
                     </p>
                   )}
@@ -76,12 +148,12 @@ export const TransactionsList = ({ transactions }: TransactionsListProps) => {
               </div>
 
               <div className="text-right">
-                <p className={`font-semibold ${
-                  transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                } ${isMobile ? 'text-base' : 'text-lg'}`}>
-                  {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                <p className={`text-lg font-semibold ${
+                  transaction.type === 'income' ? 'text-green-600' : 'text-slate-900'
+                }`}>
+                  ₹{transaction.amount.toLocaleString()}
                 </p>
-                <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                <p className="text-muted-foreground text-sm">
                   {formatDate(transaction.date)}
                 </p>
               </div>
@@ -91,8 +163,8 @@ export const TransactionsList = ({ transactions }: TransactionsListProps) => {
       ) : (
         <div className="text-center py-8 text-muted-foreground">
           <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
-          <p className={isMobile ? 'text-sm' : ''}>No transactions yet</p>
-          <p className={isMobile ? 'text-xs' : 'text-sm'}>Your transaction history will appear here</p>
+          <p>No transactions yet</p>
+          <p className="text-sm">Your transaction history will appear here</p>
         </div>
       )}
     </Card>
