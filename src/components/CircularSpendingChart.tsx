@@ -184,7 +184,7 @@ export const CircularSpendingChart = ({
         <CardTitle className="text-chart-foreground">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="relative w-full" style={{ height: `${chartConfig.height}px` }}>
+        <div className="relative w-full flex items-center justify-center" style={{ height: `${chartConfig.height}px` }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -206,16 +206,8 @@ export const CircularSpendingChart = ({
             </PieChart>
           </ResponsiveContainer>
           
-          {/* Centered text positioned at exact chart center for both mobile and desktop */}
-          <div 
-            className="absolute pointer-events-none"
-            style={{
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              zIndex: 10
-            }}
-          >
+          {/* Centered text using flexbox for perfect alignment */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="text-center">
               <p className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-foreground leading-tight`}>
                 ₹{totalSpending.toLocaleString()}
