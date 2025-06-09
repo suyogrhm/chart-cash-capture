@@ -2,11 +2,11 @@
 import { Transaction } from '@/types/Transaction';
 
 const incomeKeywords = ['earned', 'salary', 'paid', 'received', 'income', 'bonus', 'freelance', 'sold'];
-const expenseKeywords = ['spent', 'bought', 'paid for', 'purchased', 'cost', 'bill', 'rent', 'food', 'gas'];
+const expenseKeywords = ['spent', 'bought', 'paid for', 'purchased', 'cost', 'bill', 'food', 'gas', 'fuel'];
 
 const categories = {
   income: ['salary', 'freelance', 'investment', 'bonus', 'other'],
-  expense: ['food', 'transport', 'entertainment', 'bills', 'shopping', 'health', 'other']
+  expense: ['food', 'transport', 'entertainment', 'bills', 'shopping', 'health', 'fuel', 'other']
 };
 
 export const parseMessage = (message: string): Omit<Transaction, 'id' | 'date' | 'originalMessage'> | null => {
@@ -19,12 +19,16 @@ export const parseMessage = (message: string): Omit<Transaction, 'id' | 'date' |
   const amount = parseFloat(amountMatch[1]);
   if (amount <= 0) return null;
 
-  // Determine if it's income or expense
+  // Determine if it's income or expense with better logic for rent
   const hasIncomeKeyword = incomeKeywords.some(keyword => lowerMessage.includes(keyword));
   const hasExpenseKeyword = expenseKeywords.some(keyword => lowerMessage.includes(keyword));
   
+  // Special handling for rent - check context
+  const isRentIncome = lowerMessage.includes('received rent') || 
+                      (lowerMessage.includes('rent') && (lowerMessage.includes('received') || lowerMessage.includes('income')));
+  
   let type: 'income' | 'expense';
-  if (hasIncomeKeyword && !hasExpenseKeyword) {
+  if (isRentIncome || (hasIncomeKeyword && !hasExpenseKeyword)) {
     type = 'income';
   } else if (hasExpenseKeyword && !hasIncomeKeyword) {
     type = 'expense';
@@ -49,6 +53,7 @@ export const parseMessage = (message: string): Omit<Transaction, 'id' | 'date' |
   } else {
     // For expenses, use the existing expense categorization
     if (lowerMessage.includes('food') || lowerMessage.includes('lunch') || lowerMessage.includes('dinner') || lowerMessage.includes('coffee')) category = 'food';
+    else if (lowerMessage.includes('fuel') || lowerMessage.includes('petrol') || lowerMessage.includes('gasoline')) category = 'fuel';
     else if (lowerMessage.includes('gas') || lowerMessage.includes('uber') || lowerMessage.includes('transport')) category = 'transport';
     else if (lowerMessage.includes('movie') || lowerMessage.includes('game') || lowerMessage.includes('entertainment')) category = 'entertainment';
     else if (lowerMessage.includes('rent') || lowerMessage.includes('electricity') || lowerMessage.includes('bill')) category = 'bills';

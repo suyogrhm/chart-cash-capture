@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SpendingChart } from '@/components/SpendingChart';
@@ -36,8 +35,9 @@ const Index = () => {
       { id: '3', name: 'Entertainment', type: 'expense', color: '#8B5CF6', icon: '🎮' },
       { id: '4', name: 'Bills & Utilities', type: 'expense', color: '#F59E0B', icon: '⚡' },
       { id: '5', name: 'Shopping', type: 'expense', color: '#EC4899', icon: '🛒' },
-      { id: '6', name: 'Salary', type: 'income', color: '#10B981', icon: '💰' },
-      { id: '7', name: 'Freelance', type: 'income', color: '#06B6D4', icon: '💼' },
+      { id: '6', name: 'Fuel', type: 'expense', color: '#059669', icon: '⛽' },
+      { id: '7', name: 'Salary', type: 'income', color: '#10B981', icon: '💰' },
+      { id: '8', name: 'Freelance', type: 'income', color: '#06B6D4', icon: '💼' },
     ];
 
     const defaultAccounts: Account[] = [
