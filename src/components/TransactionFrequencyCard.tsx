@@ -15,6 +15,23 @@ interface FrequencyData {
   icon: string;
 }
 
+// Move getCategoryIcon function to the top before it's used
+const getCategoryIcon = (category: string): string => {
+  const iconMap: Record<string, string> = {
+    'Food & Dining': '🍽️',
+    'Transportation': '🚗',
+    'Entertainment': '🎮',
+    'Bills & Utilities': '⚡',
+    'Shopping': '🛒',
+    'Fuel': '⛽',
+    'Groceries': '🛍️',
+    'Healthcare': '🏥',
+    'Education': '📚',
+    'Travel': '✈️'
+  };
+  return iconMap[category] || '💰';
+};
+
 export const TransactionFrequencyCard = ({ transactions }: TransactionFrequencyCardProps) => {
   // Calculate frequency for current month
   const currentMonth = new Date().getMonth();
@@ -48,22 +65,6 @@ export const TransactionFrequencyCard = ({ transactions }: TransactionFrequencyC
     .filter(item => item.count > 1) // Only show categories with more than 1 transaction
     .sort((a, b) => b.count - a.count)
     .slice(0, 6); // Show top 6
-
-  const getCategoryIcon = (category: string): string => {
-    const iconMap: Record<string, string> = {
-      'Food & Dining': '🍽️',
-      'Transportation': '🚗',
-      'Entertainment': '🎮',
-      'Bills & Utilities': '⚡',
-      'Shopping': '🛒',
-      'Fuel': '⛽',
-      'Groceries': '🛍️',
-      'Healthcare': '🏥',
-      'Education': '📚',
-      'Travel': '✈️'
-    };
-    return iconMap[category] || '💰';
-  };
 
   if (frequencyData.length === 0) {
     return (
