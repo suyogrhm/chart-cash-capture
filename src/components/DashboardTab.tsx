@@ -3,7 +3,6 @@ import React from 'react';
 import { MessageInput } from '@/components/MessageInput';
 import { TransactionsList } from '@/components/TransactionsList';
 import { MetricsCards } from '@/components/MetricsCards';
-import { SpendingChart } from '@/components/SpendingChart';
 import { CircularSpendingChart } from '@/components/CircularSpendingChart';
 import { Transaction, Account } from '@/types/Transaction';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -44,7 +43,7 @@ export const DashboardTab = ({
         />
 
         <div className="px-1">
-          <SpendingChart transactions={currentMonthTransactions} />
+          <CircularSpendingChart transactions={currentMonthTransactions} />
         </div>
 
         <div className="px-1">
@@ -65,8 +64,7 @@ export const DashboardTab = ({
         budget={budget}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <SpendingChart transactions={currentMonthTransactions} />
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
         <CircularSpendingChart transactions={currentMonthTransactions} />
       </div>
 
