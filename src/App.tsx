@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,11 @@ const App: React.FC = () => {
             <AuthProvider>
               <Routes>
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/profile" element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                } />
                 <Route path="/" element={
                   <ProtectedRoute>
                     <Index />

@@ -11,10 +11,12 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { useAuth } from '@/hooks/useAuth'
+import { useNavigate } from 'react-router-dom'
 import { LogOut, User } from 'lucide-react'
 
 export const UserMenu = () => {
   const { user, signOut } = useAuth()
+  const navigate = useNavigate()
 
   const getInitials = (email: string) => {
     return email.substring(0, 2).toUpperCase()
@@ -22,6 +24,10 @@ export const UserMenu = () => {
 
   const handleSignOut = async () => {
     await signOut()
+  }
+
+  const handleProfileClick = () => {
+    navigate('/profile')
   }
 
   return (
@@ -47,7 +53,7 @@ export const UserMenu = () => {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleProfileClick}>
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem>
