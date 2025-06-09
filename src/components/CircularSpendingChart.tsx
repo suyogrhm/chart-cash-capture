@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -114,18 +113,18 @@ export const CircularSpendingChart = ({
   // Get current month name
   const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long' });
 
-  // Dynamic sizing based on screen size
+  // Dynamic sizing based on screen size with adjusted thickness
   const chartConfig = useMemo(() => {
     if (isMobile) {
       return {
         outerRadius: 80,
-        innerRadius: 55,
+        innerRadius: 60, // Reduced thickness
         height: 250
       };
     } else {
       return {
         outerRadius: 100,
-        innerRadius: 75,
+        innerRadius: 80, // Reduced thickness
         height: 300
       };
     }
@@ -185,7 +184,7 @@ export const CircularSpendingChart = ({
         <CardTitle className="text-chart-foreground">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="relative w-full flex items-center justify-center" style={{ height: `${chartConfig.height}px` }}>
+        <div className="relative w-full" style={{ height: `${chartConfig.height}px` }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -207,16 +206,9 @@ export const CircularSpendingChart = ({
             </PieChart>
           </ResponsiveContainer>
           
-          {/* Center text positioned at exact center of the chart */}
+          {/* Centered text using absolute positioning at exact chart center */}
           <div 
-            className="absolute pointer-events-none flex items-center justify-center"
-            style={{
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: `${chartConfig.innerRadius * 2}px`,
-              height: `${chartConfig.innerRadius * 2}px`
-            }}
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
           >
             <div className="text-center">
               <p className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-foreground leading-tight`}>
