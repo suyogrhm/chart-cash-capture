@@ -7,8 +7,9 @@ import { Transaction, Account } from '@/types/Transaction';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
-import { TrendingUp, PieChart, Clock, Plus, Search } from 'lucide-react';
+import { TrendingUp, PieChart, Clock, Plus, Search, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardTabProps {
   onMessage: (message: string, accountId?: string, paymentMethod?: string) => void;
@@ -33,10 +34,11 @@ export const DashboardTab = ({
 }: DashboardTabProps) => {
   const isMobile = useIsMobile();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const getUserName = () => {
     if (user?.user_metadata?.full_name) {
-      return user.user_metadata.full_name;
+      return user.user_metadata.full_name.split(' ')[0];
     }
     if (user?.email) {
       return user.email.split('@')[0];
@@ -44,14 +46,29 @@ export const DashboardTab = ({
     return 'User';
   };
 
-  const handleTrendsClick = () => {
-    console.log('Trends functionality - showing spending trends and analytics');
-    // This would typically navigate to a trends page or show a modal with trends
+  // Calculate correct metrics
+  const currentMonthIncome = currentMonthTransactions
+    .filter(t => t.type === 'income')
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const currentMonthExpenses = currentMonthTransactions
+    .filter(t => t.type === 'expense')
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const actualBudget = budget || 50000; // Default budget if not set
+  const safeToSpend = Math.max(0, actualBudget - currentMonthExpenses);
+  const dailySafeToSpend = Math.floor(safeToSpend / new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate());
+
+  const handleIncomeClick = () => {
+    console.log('Income button clicked - navigating to transactions with income filter');
+    // Navigate to transactions tab with income filter
+    navigate('/?tab=transactions&type=income');
   };
 
   const handleCategoriesClick = () => {
-    console.log('Categories functionality - showing category management');
-    // This would typically navigate to categories tab or show category management
+    console.log('Categories button clicked - navigating to categories management');
+    // Navigate to categories management (you might need to create this route)
+    navigate('/?tab=categories');
   };
 
   if (isMobile) {
@@ -87,29 +104,29 @@ export const DashboardTab = ({
             <div className="text-center">
               <p className="text-muted-foreground text-xs mb-1">Income</p>
               <div className="flex items-center justify-center gap-1">
-                <p className="text-foreground font-medium">₹{totalIncome.toLocaleString()}</p>
-                <div className="w-2 h-2 bg-muted rounded-full"></div>
+                <p className="text-foreground font-medium">₹{currentMonthIncome.toLocaleString()}</p>
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               </div>
             </div>
             <div className="text-center">
               <p className="text-muted-foreground text-xs mb-1">Budget</p>
-              <p className="text-foreground font-medium">₹{budget.toLocaleString()}</p>
+              <p className="text-foreground font-medium">₹{actualBudget.toLocaleString()}</p>
             </div>
             <div className="text-center">
               <p className="text-muted-foreground text-xs mb-1">Safe to spend</p>
-              <p className="text-foreground font-medium">₹{Math.max(0, budget - totalExpenses).toLocaleString()}/day</p>
+              <p className="text-foreground font-medium">₹{dailySafeToSpend.toLocaleString()}/day</p>
             </div>
           </div>
 
           {/* Quick Actions */}
           <div className="grid grid-cols-2 gap-3 mb-6">
             <Button 
-              onClick={handleTrendsClick}
+              onClick={handleIncomeClick}
               variant="outline" 
               className="justify-start p-4 h-auto"
             >
-              <TrendingUp className="h-4 w-4 mr-2 text-blue-500" />
-              <span className="text-sm">Trends</span>
+              <DollarSign className="h-4 w-4 mr-2 text-green-500" />
+              <span className="text-sm">Income</span>
             </Button>
             <Button 
               onClick={handleCategoriesClick}
@@ -148,33 +165,76 @@ export const DashboardTab = ({
   return (
     <div className="space-y-8 bg-background min-h-screen">
       {/* Header */}
-      <Card className="bg-gradient-to-r from-card to-card/80 border-border">
+      <Card className="bg-gradient-to-r from-card/80 to-card border border-border/50 shadow-xl">
         <div className="p-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Hi {getUserName()}</h1>
-              <p className="text-muted-foreground">Spent in {new Date().toLocaleDateString('en-US', { month: 'long' })}</p>
+              <h1 className="text-3xl font-bold text-foreground mb-2">Hello {getUserName()}! 👋</h1>
+              <p className="text-muted-foreground text-lg">Here's your spending overview for {new Date().toLocaleDateString('en-US', { month: 'long' })}</p>
             </div>
-            <Search className="h-6 w-6 text-muted-foreground" />
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/10 rounded-xl">
+                <Search className="h-6 w-6 text-primary" />
+              </div>
+            </div>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <CircularSpendingChart transactions={currentMonthTransactions} />
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="text-center">
-                  <p className="text-muted-foreground text-sm mb-2">Income</p>
-                  <p className="text-foreground text-xl font-semibold">₹{totalIncome.toLocaleString()}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            {/* Enhanced Metrics */}
+            <div className="lg:col-span-1 space-y-6">
+              <div className="grid gap-4">
+                {/* Income Card */}
+                <div className="p-6 bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-xl border border-green-200/20">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-green-500/20 rounded-lg">
+                      <DollarSign className="h-5 w-5 text-green-600" />
+                    </div>
+                    <span className="text-sm font-medium text-muted-foreground">Monthly Income</span>
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">₹{currentMonthIncome.toLocaleString()}</p>
+                  <p className="text-xs text-green-600 mt-1">+{((currentMonthIncome / (currentMonthIncome || 1)) * 100).toFixed(0)}% this month</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-muted-foreground text-sm mb-2">Budget</p>
-                  <p className="text-foreground text-xl font-semibold">₹{budget.toLocaleString()}</p>
+
+                {/* Budget Card */}
+                <div className="p-6 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-xl border border-blue-200/20">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-blue-500/20 rounded-lg">
+                      <TrendingUp className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <span className="text-sm font-medium text-muted-foreground">Budget</span>
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">₹{actualBudget.toLocaleString()}</p>
+                  <div className="mt-3">
+                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                      <span>Used: {actualBudget > 0 ? ((currentMonthExpenses / actualBudget) * 100).toFixed(1) : 0}%</span>
+                      <span>₹{currentMonthExpenses.toLocaleString()} spent</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div 
+                        className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
+                        style={{ width: `${Math.min((currentMonthExpenses / actualBudget) * 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <p className="text-muted-foreground text-sm mb-2">Safe to spend</p>
-                  <p className="text-foreground text-xl font-semibold">₹{Math.max(0, budget - totalExpenses).toLocaleString()}</p>
+
+                {/* Safe to Spend Card */}
+                <div className="p-6 bg-gradient-to-br from-purple-500/10 to-purple-600/5 rounded-xl border border-purple-200/20">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-purple-500/20 rounded-lg">
+                      <Clock className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <span className="text-sm font-medium text-muted-foreground">Safe to Spend</span>
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">₹{dailySafeToSpend.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">per day remaining</p>
                 </div>
               </div>
+            </div>
+
+            {/* Chart */}
+            <div className="lg:col-span-2">
+              <CircularSpendingChart transactions={currentMonthTransactions} />
             </div>
           </div>
         </div>
@@ -184,25 +244,29 @@ export const DashboardTab = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card 
-          className="p-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 cursor-pointer hover:shadow-lg transition-all duration-200"
-          onClick={handleTrendsClick}
+          className="p-6 bg-gradient-to-br from-green-500 to-green-600 text-white border-0 cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105"
+          onClick={handleIncomeClick}
         >
-          <div className="flex items-center gap-3">
-            <TrendingUp className="h-6 w-6" />
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-white/20 rounded-xl">
+              <DollarSign className="h-8 w-8" />
+            </div>
             <div>
-              <h3 className="font-semibold">Trends</h3>
-              <p className="text-sm opacity-90">View spending insights</p>
+              <h3 className="text-xl font-bold">Income History</h3>
+              <p className="text-sm opacity-90">View all your income transactions</p>
             </div>
           </div>
         </Card>
         <Card 
-          className="p-6 bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 cursor-pointer hover:shadow-lg transition-all duration-200"
+          className="p-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105"
           onClick={handleCategoriesClick}
         >
-          <div className="flex items-center gap-3">
-            <PieChart className="h-6 w-6" />
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-white/20 rounded-xl">
+              <PieChart className="h-8 w-8" />
+            </div>
             <div>
-              <h3 className="font-semibold">Categories</h3>
+              <h3 className="text-xl font-bold">Categories</h3>
               <p className="text-sm opacity-90">Manage spending categories</p>
             </div>
           </div>
