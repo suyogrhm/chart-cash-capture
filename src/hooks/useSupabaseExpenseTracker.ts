@@ -382,6 +382,7 @@ export const useSupabaseExpenseTracker = () => {
     setCategories,
     setAccounts,
     setBudgets,
+    setTransactions,
     handleMessage,
     handleAddCategory,
     handleEditTransaction,
