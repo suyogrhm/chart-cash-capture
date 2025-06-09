@@ -57,7 +57,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
       )}
 
       {/* Content Container */}
-      <div className={`container mx-auto ${isMobile ? 'px-2 py-4' : 'px-4 py-6'} max-w-7xl`}>
+      <div className={`container mx-auto ${isMobile ? 'px-2 py-4 pb-20' : 'px-4 py-6'} max-w-7xl`}>
         {/* Mobile: Header without Navigation (handled by MobileTabNavigation) */}
         {isMobile && (
           <div className="mb-4 flex justify-between items-center">
