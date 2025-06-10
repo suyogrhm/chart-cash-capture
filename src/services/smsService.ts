@@ -1,5 +1,4 @@
 import { Capacitor } from '@capacitor/core';
-import { SmsManager } from 'capacitor-sms';
 import { TransactionCallback, SmsPlugin } from '@/types/SMSTypes';
 import { SMSPermissionManager } from './sms/SMSPermissionManager';
 import { SMSProcessor } from './sms/SMSProcessor';
