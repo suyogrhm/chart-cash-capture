@@ -1,17 +1,38 @@
 
 import { Capacitor } from '@capacitor/core';
-import { Sms } from '@capacitor-community/sms';
 import { parseMessage } from '@/utils/messageParser';
 import { Transaction } from '@/types/Transaction';
 import { toast } from '@/hooks/use-toast';
+
+// Define the SMS plugin interface for type safety
+interface SmsPlugin {
+  requestPermissions(): Promise<{ receive: string; send: string }>;
+  checkPermissions(): Promise<{ receive: string; send: string }>;
+  addListener(event: string, callback: (message: { body: string; address: string }) => void): Promise<any>;
+}
 
 export class SMSService {
   private static instance: SMSService;
   private isListening = false;
   private smsListener?: any;
+  private smsPlugin?: SmsPlugin;
   private onTransactionDetected?: (transaction: Omit<Transaction, 'id' | 'date' | 'original_message'>) => void;
 
-  private constructor() {}
+  private constructor() {
+    this.initializeSMSPlugin();
+  }
+
+  private async initializeSMSPlugin() {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        // Dynamically import the SMS plugin only when on native platform
+        const { Sms } = await import('@capacitor-community/sms');
+        this.smsPlugin = Sms;
+      } catch (error) {
+        console.warn('SMS plugin not available:', error);
+      }
+    }
+  }
 
   static getInstance(): SMSService {
     if (!SMSService.instance) {
@@ -31,8 +52,21 @@ export class SMSService {
         return false;
       }
 
+      if (!this.smsPlugin) {
+        await this.initializeSMSPlugin();
+      }
+
+      if (!this.smsPlugin) {
+        toast({
+          title: "SMS Plugin Unavailable",
+          description: "SMS plugin is not installed. Please build the app for mobile devices.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
       // Request SMS permissions using the plugin
-      const result = await Sms.requestPermissions();
+      const result = await this.smsPlugin.requestPermissions();
       
       if (result.receive === 'granted' && result.send === 'granted') {
         toast({
@@ -64,8 +98,16 @@ export class SMSService {
       if (!Capacitor.isNativePlatform()) {
         return false;
       }
+
+      if (!this.smsPlugin) {
+        await this.initializeSMSPlugin();
+      }
+
+      if (!this.smsPlugin) {
+        return false;
+      }
       
-      const result = await Sms.checkPermissions();
+      const result = await this.smsPlugin.checkPermissions();
       return result.receive === 'granted' && result.send === 'granted';
     } catch (error) {
       console.error('Error checking SMS permissions:', error);
@@ -81,12 +123,20 @@ export class SMSService {
     if (this.isListening) return true;
 
     if (!Capacitor.isNativePlatform()) {
+      // For web preview, show info and enable test mode
       toast({
-        title: "SMS Detection Unavailable",
-        description: "SMS detection is only available on mobile devices. Build and install the app to use this feature.",
-        variant: "destructive",
+        title: "SMS Detection Test Mode",
+        description: "Testing SMS detection with a simulated transaction. Install on mobile for real SMS detection.",
       });
-      return false;
+      
+      this.isListening = true;
+      
+      // Simulate receiving an SMS for testing in web mode
+      setTimeout(() => {
+        this.simulateSMSForTesting();
+      }, 3000);
+      
+      return true;
     }
 
     const hasPermission = await this.checkPermissions();
@@ -96,8 +146,12 @@ export class SMSService {
     }
 
     try {
+      if (!this.smsPlugin) {
+        throw new Error('SMS plugin not available');
+      }
+
       // Set up SMS listener using the plugin
-      this.smsListener = await Sms.addListener('smsReceived', (message) => {
+      this.smsListener = await this.smsPlugin.addListener('smsReceived', (message) => {
         console.log('SMS received:', message);
         this.processSMS(message.body, message.address);
       });
@@ -108,13 +162,6 @@ export class SMSService {
         title: "SMS Detection Active",
         description: "Now automatically detecting transactions from SMS messages.",
       });
-
-      // Simulate receiving an SMS for testing in web mode
-      if (Capacitor.getPlatform() === 'web') {
-        setTimeout(() => {
-          this.simulateSMSForTesting();
-        }, 3000);
-      }
 
       return true;
     } catch (error) {
