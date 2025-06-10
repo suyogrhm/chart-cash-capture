@@ -44,7 +44,11 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
       const success = await smsService.startListening();
       if (success) {
         setIsListening(true);
-        setHasPermission(true);
+        // Double check permissions after successful start
+        if (isNative) {
+          const permission = await smsService.checkPermissions();
+          setHasPermission(permission);
+        }
       }
     }
   };
@@ -52,6 +56,12 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
   const requestPermissions = async () => {
     const granted = await smsService.requestPermissions();
     setHasPermission(granted);
+    
+    // If permissions were granted, also check the current permission status
+    if (granted && isNative) {
+      const currentPermission = await smsService.checkPermissions();
+      setHasPermission(currentPermission);
+    }
   };
 
   return (
