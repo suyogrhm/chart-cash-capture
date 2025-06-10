@@ -1,4 +1,3 @@
-
 import { Capacitor } from '@capacitor/core';
 import { TransactionCallback, SmsPlugin } from '@/types/SMSTypes';
 import { SMSPermissionManager } from './sms/SMSPermissionManager';
@@ -49,22 +48,59 @@ class CapacitorSmsWrapper implements SmsPlugin {
       
       console.log('Requesting permissions via SMS plugin...');
       const result = await this.smsPlugin.requestPermissions();
-      console.log('Raw permission request result:', result);
+      console.log('Raw permission request result:', JSON.stringify(result, null, 2));
+      console.log('Result type:', typeof result);
+      console.log('Result keys:', Object.keys(result || {}));
       
-      // Handle different possible response formats
-      if (typeof result === 'object' && result !== null) {
-        if ('receive' in result && 'send' in result) {
+      // Handle the actual capacitor-sms plugin response format
+      if (result && typeof result === 'object') {
+        // Check for direct receive/send properties
+        if (result.receive !== undefined && result.send !== undefined) {
+          console.log('Found receive/send properties:', { receive: result.receive, send: result.send });
           return {
             receive: result.receive,
             send: result.send
           };
-        } else if ('granted' in result) {
+        }
+        
+        // Check for nested permissions object
+        if (result.permissions) {
+          console.log('Found nested permissions:', result.permissions);
+          return {
+            receive: result.permissions.receive || 'denied',
+            send: result.permissions.send || 'denied'
+          };
+        }
+        
+        // Check for granted boolean (legacy format)
+        if (typeof result.granted === 'boolean') {
           const status = result.granted ? 'granted' : 'denied';
+          console.log('Found granted boolean:', result.granted, 'status:', status);
           return {
             receive: status,
             send: status
           };
         }
+        
+        // Check for status property
+        if (result.status) {
+          const status = result.status === 'granted' ? 'granted' : 'denied';
+          console.log('Found status property:', result.status, 'parsed:', status);
+          return {
+            receive: status,
+            send: status
+          };
+        }
+      }
+      
+      // Handle boolean response directly
+      if (typeof result === 'boolean') {
+        const status = result ? 'granted' : 'denied';
+        console.log('Boolean result:', result, 'status:', status);
+        return {
+          receive: status,
+          send: status
+        };
       }
       
       // Fallback for unexpected response format
@@ -93,33 +129,66 @@ class CapacitorSmsWrapper implements SmsPlugin {
 
       console.log('Checking permissions via SMS plugin...');
       const result = await this.smsPlugin.checkPermissions();
-      console.log('Raw permission check result:', result);
+      console.log('Raw permission check result:', JSON.stringify(result, null, 2));
+      console.log('Result type:', typeof result);
+      console.log('Result keys:', Object.keys(result || {}));
       
-      // Handle different possible response formats
-      if (typeof result === 'object' && result !== null) {
-        if ('receive' in result && 'send' in result) {
+      // Handle the actual capacitor-sms plugin response format
+      if (result && typeof result === 'object') {
+        // Check for direct receive/send properties
+        if (result.receive !== undefined && result.send !== undefined) {
+          console.log('Found receive/send properties:', { receive: result.receive, send: result.send });
           return {
             receive: result.receive,
             send: result.send
           };
-        } else if ('granted' in result) {
-          const status = result.granted ? 'granted' : 'denied';
+        }
+        
+        // Check for nested permissions object
+        if (result.permissions) {
+          console.log('Found nested permissions:', result.permissions);
           return {
-            receive: status,
-            send: status
+            receive: result.permissions.receive || 'denied',
+            send: result.permissions.send || 'denied'
           };
-        } else if (typeof result.granted === 'boolean') {
+        }
+        
+        // Check for granted boolean (legacy format)
+        if (typeof result.granted === 'boolean') {
           const status = result.granted ? 'granted' : 'denied';
+          console.log('Found granted boolean:', result.granted, 'status:', status);
           return {
             receive: status,
             send: status
           };
         }
+        
+        // Check for status property
+        if (result.status) {
+          const status = result.status === 'granted' ? 'granted' : 'denied';
+          console.log('Found status property:', result.status, 'parsed:', status);
+          return {
+            receive: status,
+            send: status
+          };
+        }
+        
+        // Check for individual permission properties that might be boolean
+        if (result.readSms !== undefined || result.receiveSms !== undefined) {
+          const receiveStatus = (result.readSms || result.receiveSms) ? 'granted' : 'denied';
+          const sendStatus = result.sendSms ? 'granted' : 'denied';
+          console.log('Found individual SMS permissions:', { readSms: result.readSms, receiveSms: result.receiveSms, sendSms: result.sendSms });
+          return {
+            receive: receiveStatus,
+            send: sendStatus
+          };
+        }
       }
       
-      // Handle boolean response
+      // Handle boolean response directly
       if (typeof result === 'boolean') {
         const status = result ? 'granted' : 'denied';
+        console.log('Boolean result:', result, 'status:', status);
         return {
           receive: status,
           send: status
@@ -128,6 +197,7 @@ class CapacitorSmsWrapper implements SmsPlugin {
       
       // Fallback for unexpected response format
       console.warn('Unexpected permission check response format:', result);
+      console.warn('Available properties:', Object.keys(result || {}));
       return {
         receive: 'denied',
         send: 'denied'
