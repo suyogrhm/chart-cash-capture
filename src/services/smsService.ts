@@ -1,5 +1,6 @@
 
 import { Capacitor } from '@capacitor/core';
+import { Sms } from '@capacitor-community/sms';
 import { parseMessage } from '@/utils/messageParser';
 import { Transaction } from '@/types/Transaction';
 import { toast } from '@/hooks/use-toast';
@@ -7,6 +8,7 @@ import { toast } from '@/hooks/use-toast';
 export class SMSService {
   private static instance: SMSService;
   private isListening = false;
+  private smsListener?: any;
   private onTransactionDetected?: (transaction: Omit<Transaction, 'id' | 'date' | 'original_message'>) => void;
 
   private constructor() {}
@@ -29,13 +31,23 @@ export class SMSService {
         return false;
       }
 
-      // For now, we'll simulate permission granted
-      // In a real app, you would use a proper SMS plugin
-      toast({
-        title: "SMS Permission Granted",
-        description: "The app can now detect transactions from SMS messages.",
-      });
-      return true;
+      // Request SMS permissions using the plugin
+      const result = await Sms.requestPermissions();
+      
+      if (result.receive === 'granted' && result.send === 'granted') {
+        toast({
+          title: "SMS Permission Granted",
+          description: "The app can now detect transactions from SMS messages.",
+        });
+        return true;
+      } else {
+        toast({
+          title: "SMS Permission Denied",
+          description: "SMS permissions are required for automatic transaction detection.",
+          variant: "destructive",
+        });
+        return false;
+      }
     } catch (error) {
       console.error('Error requesting SMS permissions:', error);
       toast({
@@ -53,9 +65,8 @@ export class SMSService {
         return false;
       }
       
-      // In a real implementation, check actual SMS permissions
-      // For now, return true if on native platform
-      return true;
+      const result = await Sms.checkPermissions();
+      return result.receive === 'granted' && result.send === 'granted';
     } catch (error) {
       console.error('Error checking SMS permissions:', error);
       return false;
@@ -85,8 +96,12 @@ export class SMSService {
     }
 
     try {
-      // In a real implementation, you would set up SMS listeners here
-      // For development, we'll simulate the listener being active
+      // Set up SMS listener using the plugin
+      this.smsListener = await Sms.addListener('smsReceived', (message) => {
+        console.log('SMS received:', message);
+        this.processSMS(message.body, message.address);
+      });
+
       this.isListening = true;
       
       toast({
@@ -94,7 +109,7 @@ export class SMSService {
         description: "Now automatically detecting transactions from SMS messages.",
       });
 
-      // Simulate receiving an SMS for testing
+      // Simulate receiving an SMS for testing in web mode
       if (Capacitor.getPlatform() === 'web') {
         setTimeout(() => {
           this.simulateSMSForTesting();
@@ -115,6 +130,11 @@ export class SMSService {
 
   stopListening() {
     if (!this.isListening) return;
+
+    if (this.smsListener) {
+      this.smsListener.remove();
+      this.smsListener = null;
+    }
 
     this.isListening = false;
     toast({
