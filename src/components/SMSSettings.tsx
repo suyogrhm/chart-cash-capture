@@ -110,7 +110,6 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
     }
   };
 
-  // New force refresh function
   const forceRefreshPermissions = async () => {
     if (isForceRefreshing) return;
     
@@ -118,8 +117,8 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
     
     try {
       console.log('Force refreshing permissions...');
-      // Use the force refresh method from permission manager
-      const permission = await smsService.checkPermissions();
+      // Use the new force refresh method from SMS service
+      const permission = await smsService.forceRefreshPermissions();
       console.log('Force refresh result:', permission);
       setHasPermission(permission);
       

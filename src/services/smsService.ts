@@ -43,13 +43,35 @@ class CapacitorSmsWrapper implements SmsPlugin {
     
     try {
       if (!this.smsPlugin) {
+        console.log('No SMS plugin available for permission request');
         return { receive: 'denied', send: 'denied' };
       }
       
+      console.log('Requesting permissions via SMS plugin...');
       const result = await this.smsPlugin.requestPermissions();
+      console.log('Raw permission request result:', result);
+      
+      // Handle different possible response formats
+      if (typeof result === 'object' && result !== null) {
+        if ('receive' in result && 'send' in result) {
+          return {
+            receive: result.receive,
+            send: result.send
+          };
+        } else if ('granted' in result) {
+          const status = result.granted ? 'granted' : 'denied';
+          return {
+            receive: status,
+            send: status
+          };
+        }
+      }
+      
+      // Fallback for unexpected response format
+      console.warn('Unexpected permission request response format:', result);
       return {
-        receive: result.granted ? 'granted' : 'denied',
-        send: result.granted ? 'granted' : 'denied'
+        receive: 'denied',
+        send: 'denied'
       };
     } catch (error) {
       console.error('Error requesting SMS permissions:', error);
@@ -65,13 +87,50 @@ class CapacitorSmsWrapper implements SmsPlugin {
     
     try {
       if (!this.smsPlugin) {
+        console.log('No SMS plugin available for permission check');
         return { receive: 'denied', send: 'denied' };
       }
 
+      console.log('Checking permissions via SMS plugin...');
       const result = await this.smsPlugin.checkPermissions();
+      console.log('Raw permission check result:', result);
+      
+      // Handle different possible response formats
+      if (typeof result === 'object' && result !== null) {
+        if ('receive' in result && 'send' in result) {
+          return {
+            receive: result.receive,
+            send: result.send
+          };
+        } else if ('granted' in result) {
+          const status = result.granted ? 'granted' : 'denied';
+          return {
+            receive: status,
+            send: status
+          };
+        } else if (typeof result.granted === 'boolean') {
+          const status = result.granted ? 'granted' : 'denied';
+          return {
+            receive: status,
+            send: status
+          };
+        }
+      }
+      
+      // Handle boolean response
+      if (typeof result === 'boolean') {
+        const status = result ? 'granted' : 'denied';
+        return {
+          receive: status,
+          send: status
+        };
+      }
+      
+      // Fallback for unexpected response format
+      console.warn('Unexpected permission check response format:', result);
       return {
-        receive: result.granted ? 'granted' : 'denied',
-        send: result.granted ? 'granted' : 'denied'
+        receive: 'denied',
+        send: 'denied'
       };
     } catch (error) {
       console.error('Error checking SMS permissions:', error);
@@ -152,6 +211,10 @@ export class SMSService {
 
   async checkPermissions(): Promise<boolean> {
     return this.permissionManager.checkPermissions();
+  }
+
+  async forceRefreshPermissions(): Promise<boolean> {
+    return this.permissionManager.forceRefreshPermissions();
   }
 
   setTransactionCallback(callback: TransactionCallback) {
