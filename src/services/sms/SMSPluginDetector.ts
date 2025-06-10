@@ -23,7 +23,7 @@ export class SMSPluginDetector {
     console.log('Platform:', Capacitor.getPlatform());
     console.log('Is native:', Capacitor.isNativePlatform());
 
-    // Strategy 1: Try capacitor-sms-inbox plugin
+    // Strategy 1: Try capacitor-sms-inbox plugin (the one that's actually installed)
     try {
       console.log('Strategy 1: Attempting to import capacitor-sms-inbox...');
       const smsModule = await import('capacitor-sms-inbox');
@@ -43,12 +43,13 @@ export class SMSPluginDetector {
       console.log('SMS Inbox plugin not available:', error.message);
     }
 
-    // Strategy 2: Try registerPlugin approach
+    // Strategy 2: Try registerPlugin approach with correct plugin name
     try {
       console.log('Strategy 2: Attempting registerPlugin...');
       const { registerPlugin } = await import('@capacitor/core');
       
-      const pluginIds = ['SMSInboxReader', 'SmsInbox', 'Sms', 'SMS', 'CapacitorSms'];
+      // Use the correct plugin name for capacitor-sms-inbox
+      const pluginIds = ['SMSInboxReader', 'SmsInbox'];
       
       for (const pluginId of pluginIds) {
         try {
@@ -57,7 +58,7 @@ export class SMSPluginDetector {
           
           if (smsPlugin && typeof smsPlugin === 'object') {
             // Check if it has SMS-like methods
-            const hasSmsMethod = 'checkPermissions' in smsPlugin || 'requestPermissions' in smsPlugin || 'getMessages' in smsPlugin;
+            const hasSmsMethod = 'checkPermissions' in smsPlugin || 'requestPermissions' in smsPlugin || 'getInboxSms' in smsPlugin;
             if (hasSmsMethod) {
               console.log(`✓ Successfully registered plugin with ID: ${pluginId}`);
               return smsPlugin;
@@ -71,14 +72,28 @@ export class SMSPluginDetector {
       console.log('Strategy 2 failed:', error.message);
     }
 
-    // Strategy 3: Check global window objects
+    // Strategy 3: Check global window objects for the SMS plugin
     console.log('Strategy 3: Checking global window objects...');
-    const possibleNames = ['SMSInboxReader', 'SmsInbox', 'Sms', 'SMS', 'CapacitorSms'];
+    const possibleNames = ['SMSInboxReader', 'SmsInbox'];
 
     for (const name of possibleNames) {
       if ((window as any)[name]) {
         console.log(`✓ Found plugin at window.${name}`);
         return (window as any)[name];
+      }
+    }
+
+    // Strategy 4: Check Capacitor.Plugins specifically
+    console.log('Strategy 4: Checking Capacitor.Plugins...');
+    if ((window as any).Capacitor && (window as any).Capacitor.Plugins) {
+      const plugins = (window as any).Capacitor.Plugins;
+      console.log('Available plugins:', Object.keys(plugins));
+      
+      for (const name of possibleNames) {
+        if (plugins[name]) {
+          console.log(`✓ Found plugin in Capacitor.Plugins.${name}`);
+          return plugins[name];
+        }
       }
     }
 

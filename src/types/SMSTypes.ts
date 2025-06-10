@@ -7,7 +7,7 @@ export interface SmsPlugin {
   addListener(event: string, callback: (message: { body: string; address: string }) => void): Promise<any>;
   startWatching?(): Promise<void>;
   stopWatching?(): Promise<void>;
-  getMessages?(options?: any): Promise<any>;
+  getInboxSms?(options?: any): Promise<any>; // This is the actual method for capacitor-sms-inbox
 }
 
 export interface SMSMessage {
