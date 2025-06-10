@@ -23,13 +23,23 @@ export class SMSPluginDetector {
     console.log('Platform:', Capacitor.getPlatform());
     console.log('Is native:', Capacitor.isNativePlatform());
 
-    // Strategy 1: Check if plugin is available through Capacitor.registerPlugin
+    // Strategy 1: Check if plugin is available through import
     try {
-      console.log('Strategy 1: Attempting to register capacitor-sms plugin...');
-      const { CapacitorSms } = await import('capacitor-sms');
-      if (CapacitorSms) {
-        console.log('✓ Found CapacitorSms import');
-        return CapacitorSms;
+      console.log('Strategy 1: Attempting to import capacitor-sms plugin...');
+      const smsModule = await import('capacitor-sms');
+      console.log('SMS module imported:', smsModule);
+      console.log('Module keys:', Object.keys(smsModule));
+      
+      // Try different possible exports
+      if (smsModule.default) {
+        console.log('✓ Found default export');
+        return smsModule.default;
+      } else if (smsModule.SMSWeb) {
+        console.log('✓ Found SMSWeb export');
+        return smsModule.SMSWeb;
+      } else if (smsModule.SMSPluginWeb) {
+        console.log('✓ Found SMSPluginWeb export');
+        return smsModule.SMSPluginWeb;
       }
     } catch (error) {
       console.log('Strategy 1 failed:', error.message);
