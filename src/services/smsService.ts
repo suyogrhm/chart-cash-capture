@@ -3,13 +3,16 @@ import { TransactionCallback, SmsPlugin } from '@/types/SMSTypes';
 import { SMSPermissionManager } from './sms/SMSPermissionManager';
 import { SMSProcessor } from './sms/SMSProcessor';
 import { SMSListenerManager } from './sms/SMSListenerManager';
+import { SMSPluginDetector } from './sms/SMSPluginDetector';
 
 // Mock implementation for web and runtime plugin loading for native
 class CapacitorSmsWrapper implements SmsPlugin {
   private smsPlugin: any = null;
   private initialized = false;
+  private detector: SMSPluginDetector;
 
   constructor() {
+    this.detector = SMSPluginDetector.getInstance();
     // Initialize immediately if on native platform
     if (Capacitor.isNativePlatform()) {
       this.initializePlugin();
@@ -26,42 +29,47 @@ class CapacitorSmsWrapper implements SmsPlugin {
     }
     
     try {
-      console.log('Attempting to load SMS plugin...');
+      console.log('=== INITIALIZING SMS PLUGIN ===');
       
-      // Try to access the plugin through different methods
-      // Method 1: Check if plugin is registered globally
-      if ((window as any).SMS) {
-        this.smsPlugin = (window as any).SMS;
-        console.log('SMS plugin found in window.SMS');
-      } else if ((window as any).SmsManager) {
-        this.smsPlugin = (window as any).SmsManager;
-        console.log('SMS plugin found in window.SmsManager');
-      } else if ((window as any).Capacitor && (window as any).Capacitor.Plugins) {
-        // Method 2: Try accessing through window.Capacitor.Plugins
-        const plugins = (window as any).Capacitor.Plugins;
-        if (plugins.SMS) {
-          this.smsPlugin = plugins.SMS;
-          console.log('SMS plugin found in window.Capacitor.Plugins.SMS');
-        } else if (plugins.SmsManager) {
-          this.smsPlugin = plugins.SmsManager;
-          console.log('SMS plugin found in window.Capacitor.Plugins.SmsManager');
-        }
-      }
+      // Log debug info first
+      this.detector.logAvailableCapacitorInfo();
+      
+      // Attempt to detect and load the plugin
+      this.smsPlugin = await this.detector.detectAndLoadSMSPlugin();
       
       if (this.smsPlugin) {
-        console.log('SMS plugin successfully loaded');
-        console.log('Available methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(this.smsPlugin || {})));
+        console.log('✓ SMS plugin successfully loaded');
         console.log('Plugin object:', this.smsPlugin);
-      } else {
-        console.warn('SMS plugin not found in any expected location');
-        // Log available global objects for debugging
-        console.log('Available window properties:', Object.keys(window).filter(key => key.toLowerCase().includes('sms')));
-        if ((window as any).Capacitor) {
-          console.log('Capacitor object exists, plugins:', Object.keys((window as any).Capacitor.Plugins || {}));
+        console.log('Available methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(this.smsPlugin || {})));
+        
+        // Test if we can call a basic method
+        try {
+          if (typeof this.smsPlugin.checkPermissions === 'function') {
+            console.log('✓ checkPermissions method is callable');
+          } else if (typeof this.smsPlugin.checkPermission === 'function') {
+            console.log('✓ checkPermission method is callable');
+          } else {
+            console.log('⚠ No standard permission check method found');
+            console.log('Available methods on plugin:', Object.getOwnPropertyNames(this.smsPlugin));
+          }
+        } catch (testError) {
+          console.log('Plugin test failed:', testError.message);
         }
+        
+      } else {
+        console.log('❌ SMS plugin not found - this could mean:');
+        console.log('1. Plugin not installed - run: npm install capacitor-sms');
+        console.log('2. Plugin not synced - run: npx cap sync');
+        console.log('3. App needs to be rebuilt after plugin installation');
+        console.log('4. Plugin registration name is different than expected');
       }
     } catch (error) {
       console.error('Failed to load SMS plugin:', error);
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
       this.smsPlugin = null;
     }
   }
@@ -70,36 +78,40 @@ class CapacitorSmsWrapper implements SmsPlugin {
     await this.initializePlugin();
     
     if (!this.smsPlugin) {
-      console.log('SMS plugin not available for permission request');
+      console.log('❌ SMS plugin not available for permission request');
+      console.log('Returning fallback denied permissions');
       return { receive: 'denied', send: 'denied' };
     }
     
     try {
-      console.log('Requesting permissions via SMS plugin...');
+      console.log('📱 Requesting permissions via SMS plugin...');
       console.log('Plugin methods available:', Object.getOwnPropertyNames(this.smsPlugin));
       
       let result;
       
       // Try different method names the plugin might use
       if (typeof this.smsPlugin.requestPermissions === 'function') {
+        console.log('Using requestPermissions method');
         result = await this.smsPlugin.requestPermissions();
       } else if (typeof this.smsPlugin.requestPermission === 'function') {
+        console.log('Using requestPermission method');
         result = await this.smsPlugin.requestPermission();
       } else if (typeof this.smsPlugin.checkPermissions === 'function') {
-        // Some plugins only have check, not request
+        console.log('No request method, trying checkPermissions');
         result = await this.smsPlugin.checkPermissions();
       } else {
-        console.error('No permission request method found on SMS plugin');
+        console.error('❌ No permission request method found on SMS plugin');
+        console.error('Available methods:', Object.getOwnPropertyNames(this.smsPlugin));
         return { receive: 'denied', send: 'denied' };
       }
       
-      console.log('Raw permission request result:', JSON.stringify(result, null, 2));
+      console.log('📱 Raw permission request result:', JSON.stringify(result, null, 2));
       console.log('Result type:', typeof result);
       console.log('Result constructor:', result?.constructor?.name);
       
       return this.parsePermissionResult(result, 'request');
     } catch (error) {
-      console.error('Error requesting SMS permissions:', error);
+      console.error('❌ Error requesting SMS permissions:', error);
       console.error('Error details:', {
         name: error.name,
         message: error.message,
@@ -113,35 +125,40 @@ class CapacitorSmsWrapper implements SmsPlugin {
     await this.initializePlugin();
     
     if (!this.smsPlugin) {
-      console.log('SMS plugin not available for permission check');
+      console.log('❌ SMS plugin not available for permission check');
+      console.log('This means the capacitor-sms plugin is not properly loaded');
       return { receive: 'denied', send: 'denied' };
     }
 
     try {
-      console.log('Checking permissions via SMS plugin...');
+      console.log('🔍 Checking permissions via SMS plugin...');
       console.log('Plugin methods available:', Object.getOwnPropertyNames(this.smsPlugin));
       
       let result;
       
       // Try different method names
       if (typeof this.smsPlugin.checkPermissions === 'function') {
+        console.log('Using checkPermissions method');
         result = await this.smsPlugin.checkPermissions();
       } else if (typeof this.smsPlugin.checkPermission === 'function') {
+        console.log('Using checkPermission method');
         result = await this.smsPlugin.checkPermission();
       } else if (typeof this.smsPlugin.hasPermission === 'function') {
+        console.log('Using hasPermission method');
         result = await this.smsPlugin.hasPermission();
       } else {
-        console.error('No permission check method found on SMS plugin');
+        console.error('❌ No permission check method found on SMS plugin');
+        console.error('Available methods:', Object.getOwnPropertyNames(this.smsPlugin));
         return { receive: 'denied', send: 'denied' };
       }
       
-      console.log('Raw permission check result:', JSON.stringify(result, null, 2));
+      console.log('🔍 Raw permission check result:', JSON.stringify(result, null, 2));
       console.log('Result type:', typeof result);
       console.log('Result constructor:', result?.constructor?.name);
       
       return this.parsePermissionResult(result, 'check');
     } catch (error) {
-      console.error('Error checking SMS permissions:', error);
+      console.error('❌ Error checking SMS permissions:', error);
       console.error('Error details:', {
         name: error.name,
         message: error.message,

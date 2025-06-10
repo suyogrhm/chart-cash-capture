@@ -1,4 +1,3 @@
-
 import { Capacitor } from '@capacitor/core';
 import { toast } from '@/hooks/use-toast';
 import { SmsPlugin, SMSPermissionResult } from '@/types/SMSTypes';
@@ -23,7 +22,7 @@ export class SMSPermissionManager {
       if (!this.smsPlugin) {
         toast({
           title: "SMS Plugin Not Available",
-          description: "SMS plugin needs to be installed. Please sync the project with 'npx cap sync'.",
+          description: "SMS plugin needs to be installed. Please run 'npm install capacitor-sms' and 'npx cap sync'.",
           variant: "destructive",
         });
         return false;
@@ -80,8 +79,8 @@ export class SMSPermissionManager {
         }
         
         toast({
-          title: "SMS Permission Required",
-          description: "Please manually grant SMS permissions in your device settings to enable automatic transaction detection.",
+          title: "SMS Plugin Setup Required",
+          description: "If you've granted permissions but still see this message, the SMS plugin may need to be properly installed and synced.",
           variant: "destructive",
         });
         return false;
@@ -94,8 +93,8 @@ export class SMSPermissionManager {
         stack: error.stack
       });
       toast({
-        title: "Permission Error",
-        description: "Failed to request SMS permissions. Please grant them manually in device settings.",
+        title: "Plugin Setup Issue",
+        description: "SMS plugin may not be properly installed. Please check console for details.",
         variant: "destructive",
       });
       return false;
@@ -134,7 +133,12 @@ export class SMSPermissionManager {
       }
 
       if (!this.smsPlugin) {
-        console.log('SMS plugin not available');
+        console.log('❌ SMS plugin not available for permission check');
+        console.log('This indicates the capacitor-sms plugin is not properly loaded');
+        console.log('Please ensure:');
+        console.log('1. Plugin is installed: npm install capacitor-sms');
+        console.log('2. Plugin is synced: npx cap sync');
+        console.log('3. App is rebuilt after plugin installation');
         return false;
       }
       
@@ -189,7 +193,14 @@ export class SMSPermissionManager {
     console.log('=== FORCE REFRESH PERMISSIONS STARTING ===');
     
     if (!this.smsPlugin) {
-      console.log('No SMS plugin available for force refresh');
+      console.log('❌ No SMS plugin available for force refresh');
+      console.log('This means the capacitor-sms plugin is not loaded at all');
+      
+      toast({
+        title: "Plugin Not Loaded",
+        description: "SMS plugin is not available. Please install capacitor-sms and run 'npx cap sync'.",
+        variant: "destructive",
+      });
       return false;
     }
     
@@ -273,11 +284,21 @@ export class SMSPermissionManager {
       console.log('System check failed:', error.message);
     }
     
-    console.log('=== FORCE REFRESH FAILED - NO PERMISSIONS DETECTED ===');
+    console.log('=== FORCE REFRESH FAILED - PLUGIN AVAILABLE BUT NO PERMISSIONS ===');
+    console.log('This suggests the SMS plugin is loaded but either:');
+    console.log('1. Permissions were not granted by the user');
+    console.log('2. Plugin is not working correctly with current device/OS');
+    console.log('3. Plugin needs different permission request method');
     console.log('Debug information:');
     console.log('- Platform:', Capacitor.getPlatform());
     console.log('- Is native:', Capacitor.isNativePlatform());
     console.log('- SMS plugin available:', !!this.smsPlugin);
+    
+    toast({
+      title: "Permission Check Complete",
+      description: "Plugin is loaded but permissions may not be granted. Check device settings for SMS permissions.",
+      variant: "destructive",
+    });
     
     return false;
   }
