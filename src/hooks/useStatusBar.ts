@@ -7,10 +7,10 @@ export const useStatusBar = () => {
     const initializeStatusBar = async () => {
       if (Capacitor.isNativePlatform()) {
         try {
-          const { StatusBar } = await import('@capacitor/status-bar');
+          const { StatusBar, Style } = await import('@capacitor/status-bar');
           
           // Set status bar style based on theme
-          await StatusBar.setStyle({ style: 'DARK' });
+          await StatusBar.setStyle({ style: Style.Dark });
           await StatusBar.setBackgroundColor({ color: '#ffffff' });
           await StatusBar.setOverlaysWebView({ overlay: false });
         } catch (error) {
