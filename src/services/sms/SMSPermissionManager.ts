@@ -35,28 +35,42 @@ export class SMSPermissionManager {
         description: "Please allow SMS access in the system dialog that appears.",
       });
 
+      console.log('Starting permission request...');
       const result = await this.smsPlugin.requestPermissions();
       console.log('Permission request result:', result);
       
-      // After requesting, wait a bit and then check current permissions
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Parse the result to check if permissions were granted
+      const hasPermission = this.parsePermissionStatus(result);
+      console.log('Parsed permission status after request:', hasPermission);
       
-      const recheckResult = await this.checkPermissions();
-      console.log('Recheck after request:', recheckResult);
-      
-      if (recheckResult) {
+      if (hasPermission) {
         toast({
           title: "SMS Permission Granted",
           description: "The app can now detect transactions from SMS messages.",
         });
         return true;
       } else {
-        toast({
-          title: "SMS Permission Required",
-          description: "Please manually grant SMS permissions in your device settings to enable automatic transaction detection.",
-          variant: "destructive",
-        });
-        return false;
+        // Wait a bit and recheck permissions in case there's a delay
+        console.log('Initial check failed, rechecking after delay...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        const recheckResult = await this.checkPermissions();
+        console.log('Recheck after request:', recheckResult);
+        
+        if (recheckResult) {
+          toast({
+            title: "SMS Permission Granted",
+            description: "The app can now detect transactions from SMS messages.",
+          });
+          return true;
+        } else {
+          toast({
+            title: "SMS Permission Required",
+            description: "Please manually grant SMS permissions in your device settings to enable automatic transaction detection.",
+            variant: "destructive",
+          });
+          return false;
+        }
       }
     } catch (error) {
       console.error('Error requesting SMS permissions:', error);
@@ -85,15 +99,7 @@ export class SMSPermissionManager {
       const result = await this.smsPlugin.checkPermissions();
       console.log('Permission check raw result:', result);
       
-      // Check if permissions are granted based on the actual type structure
-      const hasReceivePermission = result.receive === 'granted';
-      const hasSendPermission = result.send === 'granted';
-      
-      console.log('Parsed permissions - receive:', hasReceivePermission, 'send:', hasSendPermission);
-      
-      // For SMS detection, we primarily need receive permission
-      const hasPermission = hasReceivePermission;
-      
+      const hasPermission = this.parsePermissionStatus(result);
       console.log('Final permission result:', hasPermission);
       
       return hasPermission;
@@ -104,25 +110,62 @@ export class SMSPermissionManager {
     }
   }
 
-  // Force refresh permission status by making multiple checks
+  private parsePermissionStatus(result: SMSPermissionResult): boolean {
+    if (!result) {
+      console.log('No permission result to parse');
+      return false;
+    }
+
+    console.log('Parsing permission status from:', result);
+    
+    // Check if permissions are granted based on the actual type structure
+    const hasReceivePermission = result.receive === 'granted';
+    const hasSendPermission = result.send === 'granted';
+    
+    console.log('Parsed permissions - receive:', hasReceivePermission, 'send:', hasSendPermission);
+    
+    // For SMS detection, we primarily need receive permission
+    return hasReceivePermission;
+  }
+
+  // Force refresh permission status by making multiple checks with different strategies
   async forceRefreshPermissions(): Promise<boolean> {
     console.log('Force refreshing permissions...');
     
-    // Try checking multiple times with small delays
-    for (let i = 0; i < 3; i++) {
+    // Strategy 1: Multiple rapid checks
+    for (let i = 0; i < 5; i++) {
+      console.log(`Permission check attempt ${i + 1}...`);
       const result = await this.checkPermissions();
-      console.log(`Permission check attempt ${i + 1}:`, result);
+      console.log(`Permission check attempt ${i + 1} result:`, result);
       
       if (result) {
+        console.log('Permission detected on attempt', i + 1);
         return true;
       }
       
       // Wait a bit before next check
-      if (i < 2) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+      if (i < 4) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
     
+    // Strategy 2: Try requesting permissions again (might refresh the status)
+    console.log('Attempting permission request to refresh status...');
+    try {
+      if (this.smsPlugin) {
+        await this.smsPlugin.requestPermissions();
+        
+        // Check again after request
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const finalCheck = await this.checkPermissions();
+        console.log('Final check after request:', finalCheck);
+        return finalCheck;
+      }
+    } catch (error) {
+      console.log('Error during force refresh request:', error);
+    }
+    
+    console.log('Force refresh failed - no permissions detected');
     return false;
   }
 }
