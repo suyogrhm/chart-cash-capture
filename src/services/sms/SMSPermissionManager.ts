@@ -38,41 +38,22 @@ export class SMSPermissionManager {
       const result = await this.smsPlugin.requestPermissions();
       console.log('Permission request result:', result);
       
-      // Check for granted permissions with more flexible checking
-      const hasReceivePermission = result.receive === 'granted';
-      const hasSendPermission = result.send === 'granted';
+      // After requesting, wait a bit and then check current permissions
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      console.log('Receive permission:', hasReceivePermission);
-      console.log('Send permission:', hasSendPermission);
+      const recheckResult = await this.checkPermissions();
+      console.log('Recheck after request:', recheckResult);
       
-      if (hasReceivePermission && hasSendPermission) {
+      if (recheckResult) {
         toast({
           title: "SMS Permission Granted",
           description: "The app can now detect transactions from SMS messages.",
         });
         return true;
-      } else if (result.receive === 'denied' || result.send === 'denied') {
-        toast({
-          title: "SMS Permission Denied",
-          description: "Please grant SMS permissions in your device settings to enable automatic transaction detection.",
-          variant: "destructive",
-        });
-        return false;
       } else {
-        // Handle cases where permission might be granted but not reported correctly
-        console.log('Permission status unclear, checking again...');
-        const recheckResult = await this.checkPermissions();
-        if (recheckResult) {
-          toast({
-            title: "SMS Permission Granted",
-            description: "The app can now detect transactions from SMS messages.",
-          });
-          return true;
-        }
-        
         toast({
           title: "SMS Permission Required",
-          description: "Please grant SMS permissions to automatically detect transactions.",
+          description: "Please manually grant SMS permissions in your device settings to enable automatic transaction detection.",
           variant: "destructive",
         });
         return false;
@@ -81,7 +62,7 @@ export class SMSPermissionManager {
       console.error('Error requesting SMS permissions:', error);
       toast({
         title: "Permission Error",
-        description: "Failed to request SMS permissions. You may need to grant them manually in device settings.",
+        description: "Failed to request SMS permissions. Please grant them manually in device settings.",
         variant: "destructive",
       });
       return false;
@@ -91,26 +72,58 @@ export class SMSPermissionManager {
   async checkPermissions(): Promise<boolean> {
     try {
       if (!Capacitor.isNativePlatform()) {
+        console.log('Not on native platform, returning false');
         return false;
       }
 
       if (!this.smsPlugin) {
+        console.log('SMS plugin not available');
         return false;
       }
       
+      console.log('Checking SMS permissions...');
       const result = await this.smsPlugin.checkPermissions();
-      console.log('Current permissions check result:', result);
+      console.log('Permission check raw result:', result);
       
-      const hasReceivePermission = result.receive === 'granted';
-      const hasSendPermission = result.send === 'granted';
+      // Try multiple ways to check if permissions are granted
+      const hasReceivePermission = result.receive === 'granted' || result.granted === true;
+      const hasSendPermission = result.send === 'granted' || result.granted === true;
       
-      console.log('Current receive permission:', hasReceivePermission);
-      console.log('Current send permission:', hasSendPermission);
+      console.log('Parsed permissions - receive:', hasReceivePermission, 'send:', hasSendPermission);
       
-      return hasReceivePermission && hasSendPermission;
+      // For SMS detection, we primarily need receive permission
+      // Some plugins might only return a single 'granted' property
+      const hasPermission = hasReceivePermission || result.granted === true;
+      
+      console.log('Final permission result:', hasPermission);
+      
+      return hasPermission;
     } catch (error) {
       console.error('Error checking SMS permissions:', error);
+      // If there's an error checking permissions, assume we don't have them
       return false;
     }
+  }
+
+  // Force refresh permission status by making multiple checks
+  async forceRefreshPermissions(): Promise<boolean> {
+    console.log('Force refreshing permissions...');
+    
+    // Try checking multiple times with small delays
+    for (let i = 0; i < 3; i++) {
+      const result = await this.checkPermissions();
+      console.log(`Permission check attempt ${i + 1}:`, result);
+      
+      if (result) {
+        return true;
+      }
+      
+      // Wait a bit before next check
+      if (i < 2) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+    
+    return false;
   }
 }

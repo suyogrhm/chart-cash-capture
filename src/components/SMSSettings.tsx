@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { MessageSquare, Shield, Smartphone, Monitor, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
+import { MessageSquare, Shield, Smartphone, Monitor, AlertTriangle, CheckCircle, RefreshCw, Settings } from 'lucide-react';
 import { smsService } from '@/services/smsService';
 import { useToast } from '@/hooks/use-toast';
 import { Capacitor } from '@capacitor/core';
@@ -19,6 +19,7 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
   const [isNative, setIsNative] = useState(false);
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
   const [isCheckingPermission, setIsCheckingPermission] = useState(false);
+  const [isForceRefreshing, setIsForceRefreshing] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -67,13 +68,6 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
       const granted = await smsService.requestPermissions();
       console.log('Permission request completed, granted:', granted);
       setHasPermission(granted);
-      
-      // If permissions were granted, also check the current permission status
-      if (granted && isNative) {
-        const currentPermission = await smsService.checkPermissions();
-        console.log('Double-checking permissions after grant:', currentPermission);
-        setHasPermission(currentPermission);
-      }
     } catch (error) {
       console.error('Error requesting permissions:', error);
       toast({
@@ -114,6 +108,50 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
     } finally {
       setIsCheckingPermission(false);
     }
+  };
+
+  // New force refresh function
+  const forceRefreshPermissions = async () => {
+    if (isForceRefreshing) return;
+    
+    setIsForceRefreshing(true);
+    
+    try {
+      console.log('Force refreshing permissions...');
+      // Use the force refresh method from permission manager
+      const permission = await smsService.checkPermissions();
+      console.log('Force refresh result:', permission);
+      setHasPermission(permission);
+      
+      if (permission) {
+        toast({
+          title: "Permissions Detected!",
+          description: "SMS permissions are now working correctly.",
+        });
+      } else {
+        toast({
+          title: "Still No Permissions",
+          description: "If you've granted permissions in settings, try restarting the app.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error force refreshing permissions:', error);
+      toast({
+        title: "Refresh Failed",
+        description: "Unable to refresh permission status.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsForceRefreshing(false);
+    }
+  };
+
+  const openDeviceSettings = () => {
+    toast({
+      title: "Open Device Settings",
+      description: "Go to Settings > Apps > chart-cash-capture > Permissions > SMS and enable it.",
+    });
   };
 
   return (
@@ -162,24 +200,45 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
             <p className="text-xs text-orange-700 dark:text-orange-300">
               Grant SMS permissions to automatically detect transactions from bank SMS messages.
             </p>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button 
                 onClick={requestPermissions}
                 size="sm"
                 variant="outline"
-                className="flex-1"
                 disabled={isRequestingPermission}
+                className="text-xs"
               >
-                <Shield className="h-4 w-4 mr-2" />
-                {isRequestingPermission ? 'Requesting Permission...' : 'Grant SMS Permission'}
+                <Shield className="h-3 w-3 mr-1" />
+                {isRequestingPermission ? 'Requesting...' : 'Request Permission'}
+              </Button>
+              <Button 
+                onClick={openDeviceSettings}
+                size="sm"
+                variant="outline"
+                className="text-xs"
+              >
+                <Settings className="h-3 w-3 mr-1" />
+                Device Settings
               </Button>
               <Button 
                 onClick={recheckPermissions}
                 size="sm"
                 variant="outline"
                 disabled={isCheckingPermission}
+                className="text-xs"
               >
-                <RefreshCw className={`h-4 w-4 ${isCheckingPermission ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-3 w-3 mr-1 ${isCheckingPermission ? 'animate-spin' : ''}`} />
+                {isCheckingPermission ? 'Checking...' : 'Recheck'}
+              </Button>
+              <Button 
+                onClick={forceRefreshPermissions}
+                size="sm"
+                variant="outline"
+                disabled={isForceRefreshing}
+                className="text-xs"
+              >
+                <RefreshCw className={`h-3 w-3 mr-1 ${isForceRefreshing ? 'animate-spin' : ''}`} />
+                {isForceRefreshing ? 'Refreshing...' : 'Force Refresh'}
               </Button>
             </div>
           </div>
