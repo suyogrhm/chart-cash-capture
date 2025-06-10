@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">chart-cash-capture</string>
+    <string name="title_activity_main">chart-cash-capture</string>
+    <string name="package_name">app.lovable.d4e60afbe03a4bb59e75d4dc605b1186</string>
+    <string name="custom_url_scheme">app.lovable.d4e60afbe03a4bb59e75d4dc605b1186</string>
+</resources>
