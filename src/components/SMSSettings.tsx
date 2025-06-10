@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { MessageSquare, Shield, Smartphone, Monitor, AlertTriangle, CheckCircle } from 'lucide-react';
+import { MessageSquare, Shield, Smartphone, Monitor, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 import { smsService } from '@/services/smsService';
 import { useToast } from '@/hooks/use-toast';
 import { Capacitor } from '@capacitor/core';
@@ -18,6 +18,7 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
   const [hasPermission, setHasPermission] = useState(false);
   const [isNative, setIsNative] = useState(false);
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
+  const [isCheckingPermission, setIsCheckingPermission] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -30,7 +31,9 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
     setIsNative(native);
     
     if (native) {
+      console.log('Checking initial permission state...');
       const permission = await smsService.checkPermissions();
+      console.log('Initial permission state:', permission);
       setHasPermission(permission);
     }
     
@@ -60,12 +63,15 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
     setIsRequestingPermission(true);
     
     try {
+      console.log('Requesting SMS permissions...');
       const granted = await smsService.requestPermissions();
+      console.log('Permission request completed, granted:', granted);
       setHasPermission(granted);
       
       // If permissions were granted, also check the current permission status
       if (granted && isNative) {
         const currentPermission = await smsService.checkPermissions();
+        console.log('Double-checking permissions after grant:', currentPermission);
         setHasPermission(currentPermission);
       }
     } catch (error) {
@@ -77,6 +83,36 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
       });
     } finally {
       setIsRequestingPermission(false);
+    }
+  };
+
+  const recheckPermissions = async () => {
+    if (isCheckingPermission) return;
+    
+    setIsCheckingPermission(true);
+    
+    try {
+      console.log('Manually rechecking permissions...');
+      const permission = await smsService.checkPermissions();
+      console.log('Manual permission recheck result:', permission);
+      setHasPermission(permission);
+      
+      if (permission) {
+        toast({
+          title: "Permissions Updated",
+          description: "SMS permissions are now active.",
+        });
+      } else {
+        toast({
+          title: "No SMS Permissions",
+          description: "Please grant SMS permissions in your device settings.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error rechecking permissions:', error);
+    } finally {
+      setIsCheckingPermission(false);
     }
   };
 
@@ -126,16 +162,26 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
             <p className="text-xs text-orange-700 dark:text-orange-300">
               Grant SMS permissions to automatically detect transactions from bank SMS messages.
             </p>
-            <Button 
-              onClick={requestPermissions}
-              size="sm"
-              variant="outline"
-              className="w-full"
-              disabled={isRequestingPermission}
-            >
-              <Shield className="h-4 w-4 mr-2" />
-              {isRequestingPermission ? 'Requesting Permission...' : 'Grant SMS Permission'}
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={requestPermissions}
+                size="sm"
+                variant="outline"
+                className="flex-1"
+                disabled={isRequestingPermission}
+              >
+                <Shield className="h-4 w-4 mr-2" />
+                {isRequestingPermission ? 'Requesting Permission...' : 'Grant SMS Permission'}
+              </Button>
+              <Button 
+                onClick={recheckPermissions}
+                size="sm"
+                variant="outline"
+                disabled={isCheckingPermission}
+              >
+                <RefreshCw className={`h-4 w-4 ${isCheckingPermission ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
           </div>
         )}
 

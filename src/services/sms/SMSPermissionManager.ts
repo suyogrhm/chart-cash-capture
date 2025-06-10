@@ -38,7 +38,14 @@ export class SMSPermissionManager {
       const result = await this.smsPlugin.requestPermissions();
       console.log('Permission request result:', result);
       
-      if (result.receive === 'granted' && result.send === 'granted') {
+      // Check for granted permissions with more flexible checking
+      const hasReceivePermission = result.receive === 'granted';
+      const hasSendPermission = result.send === 'granted';
+      
+      console.log('Receive permission:', hasReceivePermission);
+      console.log('Send permission:', hasSendPermission);
+      
+      if (hasReceivePermission && hasSendPermission) {
         toast({
           title: "SMS Permission Granted",
           description: "The app can now detect transactions from SMS messages.",
@@ -52,6 +59,17 @@ export class SMSPermissionManager {
         });
         return false;
       } else {
+        // Handle cases where permission might be granted but not reported correctly
+        console.log('Permission status unclear, checking again...');
+        const recheckResult = await this.checkPermissions();
+        if (recheckResult) {
+          toast({
+            title: "SMS Permission Granted",
+            description: "The app can now detect transactions from SMS messages.",
+          });
+          return true;
+        }
+        
         toast({
           title: "SMS Permission Required",
           description: "Please grant SMS permissions to automatically detect transactions.",
@@ -81,8 +99,15 @@ export class SMSPermissionManager {
       }
       
       const result = await this.smsPlugin.checkPermissions();
-      console.log('Current permissions:', result);
-      return result.receive === 'granted' && result.send === 'granted';
+      console.log('Current permissions check result:', result);
+      
+      const hasReceivePermission = result.receive === 'granted';
+      const hasSendPermission = result.send === 'granted';
+      
+      console.log('Current receive permission:', hasReceivePermission);
+      console.log('Current send permission:', hasSendPermission);
+      
+      return hasReceivePermission && hasSendPermission;
     } catch (error) {
       console.error('Error checking SMS permissions:', error);
       return false;
