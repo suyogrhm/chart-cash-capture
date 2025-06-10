@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { MessageSquare, Shield, Smartphone, Monitor, AlertTriangle } from 'lucide-react';
+import { MessageSquare, Shield, Smartphone, Monitor, AlertTriangle, CheckCircle } from 'lucide-react';
 import { smsService } from '@/services/smsService';
 import { useToast } from '@/hooks/use-toast';
 import { Capacitor } from '@capacitor/core';
@@ -67,6 +67,7 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
           <MessageSquare className="h-5 w-5" />
           SMS Auto-Detection
           {!isNative && <Monitor className="h-4 w-4 text-muted-foreground" />}
+          {isNative && hasPermission && <CheckCircle className="h-4 w-4 text-green-500" />}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -83,16 +84,17 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
           </div>
         )}
 
-        <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg space-y-3">
-          <div className="flex items-center gap-2 text-sm">
-            <AlertTriangle className="h-4 w-4 text-orange-500" />
-            <span className="font-medium text-orange-900 dark:text-orange-100">Development Notice</span>
+        {isNative && (
+          <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg space-y-3">
+            <div className="flex items-center gap-2 text-sm">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              <span className="font-medium text-green-900 dark:text-green-100">Production Ready</span>
+            </div>
+            <p className="text-xs text-green-700 dark:text-green-300">
+              SMS plugin is installed and configured. The app can detect transactions from SMS messages.
+            </p>
           </div>
-          <p className="text-xs text-orange-700 dark:text-orange-300">
-            SMS plugin is not installed in this development environment. For production builds, 
-            you'll need to install a compatible SMS plugin like @capacitor-community/sms.
-          </p>
-        </div>
+        )}
 
         <div className="flex items-center space-x-2">
           <Smartphone className="h-4 w-4 text-muted-foreground" />
@@ -153,8 +155,8 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
         {!isNative && (
           <div className="p-4 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
             <p className="text-xs text-yellow-700 dark:text-yellow-300">
-              <strong>For production use:</strong> Install a compatible SMS plugin and build the app 
-              for mobile deployment using Capacitor CLI.
+              <strong>To use in production:</strong> Run 'npx cap sync' after pulling the latest changes, 
+              then build and deploy to your mobile device.
             </p>
           </div>
         )}

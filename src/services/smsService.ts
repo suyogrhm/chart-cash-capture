@@ -1,9 +1,41 @@
 
 import { Capacitor } from '@capacitor/core';
+import { Sms } from '@capacitor-community/sms';
 import { TransactionCallback, SmsPlugin } from '@/types/SMSTypes';
 import { SMSPermissionManager } from './sms/SMSPermissionManager';
 import { SMSProcessor } from './sms/SMSProcessor';
 import { SMSListenerManager } from './sms/SMSListenerManager';
+
+// Create a wrapper that implements our SmsPlugin interface
+class CapacitorSmsWrapper implements SmsPlugin {
+  async requestPermissions() {
+    const result = await Sms.requestPermissions();
+    return {
+      receive: result.sms || 'denied',
+      send: result.sms || 'denied'
+    };
+  }
+
+  async checkPermissions() {
+    const result = await Sms.checkPermissions();
+    return {
+      receive: result.sms || 'denied',
+      send: result.sms || 'denied'
+    };
+  }
+
+  async addListener(event: string, callback: (message: { body: string; address: string }) => void) {
+    return Sms.addListener('smsReceived', callback);
+  }
+
+  async startWatching() {
+    return Sms.startWatch();
+  }
+
+  async stopWatching() {
+    return Sms.stopWatch();
+  }
+}
 
 export class SMSService {
   private static instance: SMSService;
@@ -22,14 +54,15 @@ export class SMSService {
   private async initializeSMSPlugin() {
     if (Capacitor.isNativePlatform()) {
       try {
-        // Note: SMS plugin is not available in this development environment
-        // For production builds, you would need to install a working SMS plugin
-        // such as @capacitor-community/sms or similar
-        console.log('SMS plugin not available - running in development mode');
-        this.smsPlugin = undefined;
+        this.smsPlugin = new CapacitorSmsWrapper();
+        console.log('SMS plugin initialized successfully');
       } catch (error) {
-        console.warn('SMS plugin not available:', error);
+        console.warn('SMS plugin initialization failed:', error);
+        this.smsPlugin = undefined;
       }
+    } else {
+      console.log('SMS plugin not available - running in web mode');
+      this.smsPlugin = undefined;
     }
   }
 
