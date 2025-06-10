@@ -1,5 +1,4 @@
 
-
 import { Capacitor } from '@capacitor/core';
 import { TransactionCallback, SmsPlugin } from '@/types/SMSTypes';
 import { SMSPermissionManager } from './sms/SMSPermissionManager';
@@ -22,8 +21,10 @@ class CapacitorSmsWrapper implements SmsPlugin {
     
     if (Capacitor.isNativePlatform()) {
       try {
-        // Use dynamic import to avoid build issues
-        const smsModule = await import('capacitor-sms').catch(() => null);
+        // Use eval-based dynamic import to completely avoid static analysis
+        const importFunction = new Function('specifier', 'return import(specifier)');
+        const smsModule = await importFunction('capacitor-sms').catch(() => null);
+        
         if (smsModule) {
           this.smsPlugin = smsModule.default || smsModule.SmsManager || smsModule;
           console.log('SMS plugin loaded:', !!this.smsPlugin);
@@ -177,4 +178,3 @@ export class SMSService {
 }
 
 export const smsService = SMSService.getInstance();
-
