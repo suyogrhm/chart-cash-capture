@@ -29,9 +29,15 @@ export class SMSPluginDetector {
       const smsModule = await import('capacitor-sms-inbox');
       console.log('SMS module imported:', smsModule);
       
-      if (smsModule.SmsInbox) {
-        console.log('✓ Found capacitor-sms-inbox plugin');
-        return smsModule.SmsInbox;
+      if (smsModule.SMSInboxReader) {
+        console.log('✓ Found capacitor-sms-inbox plugin with SMSInboxReader');
+        return smsModule.SMSInboxReader;
+      }
+      
+      // Try default export if SMSInboxReader is not available
+      if (smsModule.default) {
+        console.log('✓ Found capacitor-sms-inbox plugin with default export');
+        return smsModule.default;
       }
     } catch (error: any) {
       console.log('SMS Inbox plugin not available:', error.message);
@@ -42,7 +48,7 @@ export class SMSPluginDetector {
       console.log('Strategy 2: Attempting registerPlugin...');
       const { registerPlugin } = await import('@capacitor/core');
       
-      const pluginIds = ['SmsInbox', 'Sms', 'SMS', 'CapacitorSms'];
+      const pluginIds = ['SMSInboxReader', 'SmsInbox', 'Sms', 'SMS', 'CapacitorSms'];
       
       for (const pluginId of pluginIds) {
         try {
@@ -67,7 +73,7 @@ export class SMSPluginDetector {
 
     // Strategy 3: Check global window objects
     console.log('Strategy 3: Checking global window objects...');
-    const possibleNames = ['SmsInbox', 'Sms', 'SMS', 'CapacitorSms'];
+    const possibleNames = ['SMSInboxReader', 'SmsInbox', 'Sms', 'SMS', 'CapacitorSms'];
 
     for (const name of possibleNames) {
       if ((window as any)[name]) {
