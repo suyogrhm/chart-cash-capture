@@ -23,9 +23,35 @@ export class SMSPluginDetector {
     console.log('Platform:', Capacitor.getPlatform());
     console.log('Is native:', Capacitor.isNativePlatform());
 
-    // Strategy 1: Check if plugin is available through import
+    // Strategy 1: Try registerPlugin first (most reliable for Capacitor 5+)
     try {
-      console.log('Strategy 1: Attempting to import capacitor-sms plugin...');
+      console.log('Strategy 1: Attempting registerPlugin...');
+      const { registerPlugin } = await import('@capacitor/core');
+      
+      // Try different plugin IDs that capacitor-sms might use
+      const pluginIds = ['CapacitorSms', 'SMSPlugin', 'SMS', 'SmsManager'];
+      
+      for (const pluginId of pluginIds) {
+        try {
+          console.log(`Trying to register plugin with ID: ${pluginId}`);
+          const smsPlugin = registerPlugin(pluginId);
+          
+          // Test if the plugin actually works
+          if (typeof smsPlugin.checkPermissions === 'function') {
+            console.log(`✓ Successfully registered plugin with ID: ${pluginId}`);
+            return smsPlugin;
+          }
+        } catch (error) {
+          console.log(`Failed to register plugin ${pluginId}:`, error.message);
+        }
+      }
+    } catch (error) {
+      console.log('Strategy 1 failed:', error.message);
+    }
+
+    // Strategy 2: Check if plugin is available through import
+    try {
+      console.log('Strategy 2: Attempting to import capacitor-sms plugin...');
       const smsModule = await import('capacitor-sms');
       console.log('SMS module imported:', smsModule);
       console.log('Module keys:', Object.keys(smsModule));
@@ -42,11 +68,11 @@ export class SMSPluginDetector {
         return smsModule.SMSPluginWeb;
       }
     } catch (error) {
-      console.log('Strategy 1 failed:', error.message);
+      console.log('Strategy 2 failed:', error.message);
     }
 
-    // Strategy 2: Check global window objects
-    console.log('Strategy 2: Checking global window objects...');
+    // Strategy 3: Check global window objects
+    console.log('Strategy 3: Checking global window objects...');
     const possibleNames = [
       'CapacitorSms',
       'SMS', 
@@ -62,9 +88,9 @@ export class SMSPluginDetector {
       }
     }
 
-    // Strategy 3: Check Capacitor.Plugins (if available)
+    // Strategy 4: Check Capacitor.Plugins (if available)
     if ((window as any).Capacitor && (window as any).Capacitor.Plugins) {
-      console.log('Strategy 3: Checking Capacitor.Plugins...');
+      console.log('Strategy 4: Checking Capacitor.Plugins...');
       const plugins = (window as any).Capacitor.Plugins;
       console.log('Available plugins:', Object.keys(plugins));
       
@@ -76,8 +102,8 @@ export class SMSPluginDetector {
       }
     }
 
-    // Strategy 4: Check if plugin is registered but under a different name
-    console.log('Strategy 4: Checking for any SMS-related global objects...');
+    // Strategy 5: Check if plugin is registered but under a different name
+    console.log('Strategy 5: Checking for any SMS-related global objects...');
     const allWindowKeys = Object.getOwnPropertyNames(window);
     const smsRelatedKeys = allWindowKeys.filter(key => 
       key.toLowerCase().includes('sms') || 
@@ -100,25 +126,12 @@ export class SMSPluginDetector {
       }
     }
 
-    // Strategy 5: Try to access through native bridge directly
-    console.log('Strategy 5: Attempting direct native bridge access...');
-    try {
-      if ((window as any).Capacitor && (window as any).Capacitor.Plugins) {
-        // Try to manually register the plugin
-        const { registerPlugin } = await import('@capacitor/core');
-        const smsPlugin = registerPlugin('CapacitorSms');
-        console.log('✓ Manually registered plugin:', smsPlugin);
-        return smsPlugin;
-      }
-    } catch (error) {
-      console.log('Strategy 5 failed:', error.message);
-    }
-
     console.log('❌ SMS PLUGIN DETECTION FAILED - NO PLUGIN FOUND');
-    console.log('Debug info:');
-    console.log('- Available window keys (SMS-related):', smsRelatedKeys);
-    console.log('- Capacitor available:', !!(window as any).Capacitor);
-    console.log('- Capacitor.Plugins available:', !!((window as any).Capacitor?.Plugins));
+    console.log('This likely means:');
+    console.log('1. The capacitor-sms plugin is not installed');
+    console.log('2. The plugin is not synced to the native platform');
+    console.log('3. The plugin does not support this platform');
+    console.log('4. The plugin needs to be manually registered');
     
     return null;
   }

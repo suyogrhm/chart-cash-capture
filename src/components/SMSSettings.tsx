@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { MessageSquare, Shield, Smartphone, Monitor, AlertTriangle, CheckCircle, RefreshCw, Settings } from 'lucide-react';
+import { MessageSquare, Shield, Smartphone, Monitor, AlertTriangle, CheckCircle, RefreshCw, Settings, ExternalLink } from 'lucide-react';
 import { smsService } from '@/services/smsService';
 import { useToast } from '@/hooks/use-toast';
 import { Capacitor } from '@capacitor/core';
@@ -20,6 +20,7 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
   const [isCheckingPermission, setIsCheckingPermission] = useState(false);
   const [isForceRefreshing, setIsForceRefreshing] = useState(false);
+  const [pluginError, setPluginError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -33,9 +34,19 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
     
     if (native) {
       console.log('Checking initial permission state...');
-      const permission = await smsService.checkPermissions();
-      console.log('Initial permission state:', permission);
-      setHasPermission(permission);
+      try {
+        const permission = await smsService.checkPermissions();
+        console.log('Initial permission state:', permission);
+        setHasPermission(permission);
+        setPluginError(null);
+      } catch (error) {
+        console.error('Error checking initial permissions:', error);
+        if (error.message && error.message.includes('not implemented')) {
+          setPluginError('not_implemented');
+        } else {
+          setPluginError('unknown');
+        }
+      }
     }
     
     setIsListening(smsService.getListeningStatus());
@@ -68,13 +79,23 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
       const granted = await smsService.requestPermissions();
       console.log('Permission request completed, granted:', granted);
       setHasPermission(granted);
+      setPluginError(null);
     } catch (error) {
       console.error('Error requesting permissions:', error);
-      toast({
-        title: "Permission Error",
-        description: "Failed to request SMS permissions. Please try again or check device settings.",
-        variant: "destructive",
-      });
+      if (error.message && error.message.includes('not implemented')) {
+        setPluginError('not_implemented');
+        toast({
+          title: "Platform Not Supported",
+          description: "SMS detection requires plugin setup. Run 'npx cap sync' and rebuild the app.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Permission Error",
+          description: "Failed to request SMS permissions. Please try again or check plugin setup.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsRequestingPermission(false);
     }
@@ -90,6 +111,7 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
       const permission = await smsService.checkPermissions();
       console.log('Manual permission recheck result:', permission);
       setHasPermission(permission);
+      setPluginError(null);
       
       if (permission) {
         toast({
@@ -105,6 +127,9 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
       }
     } catch (error) {
       console.error('Error rechecking permissions:', error);
+      if (error.message && error.message.includes('not implemented')) {
+        setPluginError('not_implemented');
+      }
     } finally {
       setIsCheckingPermission(false);
     }
@@ -117,25 +142,22 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
     
     try {
       console.log('Force refreshing permissions...');
-      // Use the new force refresh method from SMS service
       const permission = await smsService.forceRefreshPermissions();
       console.log('Force refresh result:', permission);
       setHasPermission(permission);
+      setPluginError(null);
       
       if (permission) {
         toast({
           title: "Permissions Detected!",
           description: "SMS permissions are now working correctly.",
         });
-      } else {
-        toast({
-          title: "Still No Permissions",
-          description: "If you've granted permissions in settings, try restarting the app.",
-          variant: "destructive",
-        });
       }
     } catch (error) {
       console.error('Error force refreshing permissions:', error);
+      if (error.message && error.message.includes('not implemented')) {
+        setPluginError('not_implemented');
+      }
       toast({
         title: "Refresh Failed",
         description: "Unable to refresh permission status.",
@@ -153,6 +175,13 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
     });
   };
 
+  const openSetupInstructions = () => {
+    toast({
+      title: "Setup Instructions",
+      description: "Run 'npx cap sync' in your project, then rebuild and reinstall the app to enable SMS detection.",
+    });
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -160,8 +189,8 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
           <MessageSquare className="h-5 w-5" />
           Transaction Detection
           {!isNative && <Monitor className="h-4 w-4 text-muted-foreground" />}
-          {isNative && hasPermission && <CheckCircle className="h-4 w-4 text-green-500" />}
-          {isNative && !hasPermission && <AlertTriangle className="h-4 w-4 text-orange-500" />}
+          {isNative && hasPermission && !pluginError && <CheckCircle className="h-4 w-4 text-green-500" />}
+          {isNative && (!hasPermission || pluginError) && <AlertTriangle className="h-4 w-4 text-orange-500" />}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -178,7 +207,7 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
           </div>
         )}
 
-        {isNative && hasPermission && (
+        {isNative && hasPermission && !pluginError && (
           <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg space-y-3">
             <div className="flex items-center gap-2 text-sm">
               <CheckCircle className="h-4 w-4 text-green-500" />
@@ -190,7 +219,28 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
           </div>
         )}
 
-        {isNative && !hasPermission && (
+        {isNative && pluginError === 'not_implemented' && (
+          <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg space-y-3">
+            <div className="flex items-center gap-2 text-sm">
+              <AlertTriangle className="h-4 w-4 text-red-500" />
+              <span className="font-medium text-red-900 dark:text-red-100">Plugin Setup Required</span>
+            </div>
+            <p className="text-xs text-red-700 dark:text-red-300">
+              The SMS plugin is not properly installed or synced. This requires rebuilding the app with proper plugin configuration.
+            </p>
+            <Button 
+              onClick={openSetupInstructions}
+              size="sm"
+              variant="outline"
+              className="text-xs"
+            >
+              <ExternalLink className="h-3 w-3 mr-1" />
+              Setup Instructions
+            </Button>
+          </div>
+        )}
+
+        {isNative && !hasPermission && !pluginError && (
           <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg space-y-3">
             <div className="flex items-center gap-2 text-sm">
               <AlertTriangle className="h-4 w-4 text-orange-500" />
@@ -256,7 +306,7 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
           <Switch
             checked={isListening}
             onCheckedChange={handleToggleSMSDetection}
-            disabled={isNative && !hasPermission}
+            disabled={isNative && (!hasPermission || pluginError === 'not_implemented')}
           />
         </div>
 
