@@ -25,7 +25,7 @@ const config: CapacitorConfig = {
       layoutName: 'launch_screen',
       useDialog: true,
     },
-    Sms: {
+    SmsManager: {
       enabled: true,
     },
   },

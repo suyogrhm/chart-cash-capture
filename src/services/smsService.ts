@@ -1,6 +1,6 @@
 
 import { Capacitor } from '@capacitor/core';
-import { Sms } from '@capacitor-community/sms';
+import { SmsManager } from 'capacitor-sms';
 import { TransactionCallback, SmsPlugin } from '@/types/SMSTypes';
 import { SMSPermissionManager } from './sms/SMSPermissionManager';
 import { SMSProcessor } from './sms/SMSProcessor';
@@ -9,31 +9,47 @@ import { SMSListenerManager } from './sms/SMSListenerManager';
 // Create a wrapper that implements our SmsPlugin interface
 class CapacitorSmsWrapper implements SmsPlugin {
   async requestPermissions() {
-    const result = await Sms.requestPermissions();
-    return {
-      receive: result.sms || 'denied',
-      send: result.sms || 'denied'
-    };
+    try {
+      const result = await SmsManager.requestPermissions();
+      return {
+        receive: result.granted ? 'granted' : 'denied',
+        send: result.granted ? 'granted' : 'denied'
+      };
+    } catch (error) {
+      console.error('Error requesting SMS permissions:', error);
+      return {
+        receive: 'denied',
+        send: 'denied'
+      };
+    }
   }
 
   async checkPermissions() {
-    const result = await Sms.checkPermissions();
-    return {
-      receive: result.sms || 'denied',
-      send: result.sms || 'denied'
-    };
+    try {
+      const result = await SmsManager.checkPermissions();
+      return {
+        receive: result.granted ? 'granted' : 'denied',
+        send: result.granted ? 'granted' : 'denied'
+      };
+    } catch (error) {
+      console.error('Error checking SMS permissions:', error);
+      return {
+        receive: 'denied',
+        send: 'denied'
+      };
+    }
   }
 
   async addListener(event: string, callback: (message: { body: string; address: string }) => void) {
-    return Sms.addListener('smsReceived', callback);
+    return SmsManager.addListener('smsReceived', callback);
   }
 
   async startWatching() {
-    return Sms.startWatch();
+    return SmsManager.startWatch();
   }
 
   async stopWatching() {
-    return Sms.stopWatch();
+    return SmsManager.stopWatch();
   }
 }
 
