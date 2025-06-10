@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,17 @@ import { AddAccountDialog } from '@/components/AddAccountDialog';
 import { EditAccountDialog } from '@/components/EditAccountDialog';
 import { Plus, Edit2, Trash2, CreditCard, Wallet, PiggyBank, DollarSign } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface AccountsManagerProps {
   accounts: Account[];
@@ -69,13 +81,11 @@ export const AccountsManager = ({
   };
 
   const handleDeleteAccount = (id: string, accountName: string) => {
-    if (window.confirm(`Are you sure you want to delete "${accountName}"? This action cannot be undone.`)) {
-      onDeleteAccount(id);
-      toast({
-        title: "Account deleted",
-        description: `${accountName} has been removed from your accounts.`,
-      });
-    }
+    onDeleteAccount(id);
+    toast({
+      title: "Account deleted",
+      description: `${accountName} has been removed from your accounts.`,
+    });
   };
 
   const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
@@ -127,16 +137,38 @@ export const AccountsManager = ({
                       variant="ghost"
                       size="sm"
                       onClick={() => setEditingAccount(account)}
+                      className="h-8 w-8 p-0"
                     >
                       <Edit2 className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteAccount(account.id, account.name)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Account</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{account.name}"? This action cannot be undone and will remove all associated transactions.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteAccount(account.id, account.name)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
                 
@@ -170,5 +202,49 @@ export const AccountsManager = ({
         />
       )}
     </div>
+  );
+};
+
+const getAccountIcon = (type: Account['type']) => {
+  switch (type) {
+    case 'checking':
+      return <CreditCard className="h-5 w-5" />;
+    case 'savings':
+      return <PiggyBank className="h-5 w-5" />;
+    case 'credit':
+      return <CreditCard className="h-5 w-5" />;
+    case 'debit':
+      return <CreditCard className="h-5 w-5" />;
+    case 'cash':
+      return <Wallet className="h-5 w-5" />;
+    default:
+      return <DollarSign className="h-5 w-5" />;
+  }
+};
+
+const getAccountTypeLabel = (type: Account['type']) => {
+  switch (type) {
+    case 'checking':
+      return 'Checking';
+    case 'savings':
+      return 'Savings';
+    case 'credit':
+      return 'Credit Card';
+    case 'debit':
+      return 'Debit Card';
+    case 'cash':
+      return 'Cash';
+    default:
+      return 'Unknown';
+  }
+};
+
+const formatBalance = (balance: number) => {
+  const isNegative = balance < 0;
+  const absBalance = Math.abs(balance);
+  return (
+    <span className={isNegative ? 'text-red-500 dark:text-red-400' : 'text-green-500 dark:text-green-400'}>
+      {isNegative ? '-' : ''}${absBalance.toFixed(2)}
+    </span>
   );
 };
