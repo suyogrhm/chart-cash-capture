@@ -1,3 +1,4 @@
+
 import { Capacitor } from '@capacitor/core';
 import { toast } from '@/hooks/use-toast';
 import { SmsPlugin, SMSPermissionResult } from '@/types/SMSTypes';
@@ -143,6 +144,7 @@ export class SMSPermissionManager {
       }
       
       console.log('=== Checking SMS permissions ===');
+      console.log('Plugin available for check:', !!this.smsPlugin);
       const result = await this.smsPlugin.checkPermissions();
       console.log('=== SMS permission check completed ===');
       console.log('Raw check result:', JSON.stringify(result, null, 2));
@@ -204,6 +206,9 @@ export class SMSPermissionManager {
       return false;
     }
     
+    console.log('✓ SMS plugin is available for force refresh');
+    console.log('Plugin type:', typeof this.smsPlugin);
+    
     // Strategy 1: Rapid multiple checks
     console.log('Strategy 1: Rapid multiple checks');
     for (let i = 0; i < 10; i++) {
@@ -224,6 +229,7 @@ export class SMSPermissionManager {
     // Strategy 2: Request permissions again to refresh state
     console.log('Strategy 2: Re-requesting permissions to refresh state');
     try {
+      console.log('SMS plugin not available for permission request');
       const requestResult = await this.smsPlugin.requestPermissions();
       console.log('Re-request result:', JSON.stringify(requestResult, null, 2));
       

@@ -10,21 +10,30 @@ class CapacitorSmsWrapper implements SmsPlugin {
   private smsPlugin: any = null;
   private initialized = false;
   private detector: SMSPluginDetector;
+  private initializationPromise: Promise<void> | null = null;
 
   constructor() {
     this.detector = SMSPluginDetector.getInstance();
-    // Initialize immediately if on native platform
-    if (Capacitor.isNativePlatform()) {
-      this.initializePlugin();
-    }
   }
 
   private async initializePlugin(): Promise<void> {
-    if (this.initialized) return;
-    this.initialized = true;
+    // Prevent multiple simultaneous initialization attempts
+    if (this.initializationPromise) {
+      return this.initializationPromise;
+    }
+
+    if (this.initialized && this.smsPlugin) {
+      return Promise.resolve();
+    }
     
+    this.initializationPromise = this._doInitialize();
+    return this.initializationPromise;
+  }
+
+  private async _doInitialize(): Promise<void> {
     if (!Capacitor.isNativePlatform()) {
       console.log('Not on native platform, skipping SMS plugin initialization');
+      this.initialized = true;
       return;
     }
     
@@ -38,8 +47,8 @@ class CapacitorSmsWrapper implements SmsPlugin {
       this.smsPlugin = await this.detector.detectAndLoadSMSPlugin();
       
       if (this.smsPlugin) {
-        console.log('✓ SMS plugin successfully loaded');
-        console.log('Plugin object:', this.smsPlugin);
+        console.log('✓ SMS plugin successfully loaded and stored');
+        console.log('Plugin object type:', typeof this.smsPlugin);
         console.log('Available methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(this.smsPlugin || {})));
         
         // Test if we can call a basic method
@@ -57,20 +66,14 @@ class CapacitorSmsWrapper implements SmsPlugin {
         }
         
       } else {
-        console.log('❌ SMS plugin not found - this could mean:');
-        console.log('1. Plugin not installed - run: npm install capacitor-sms');
-        console.log('2. Plugin not synced - run: npx cap sync');
-        console.log('3. App needs to be rebuilt after plugin installation');
-        console.log('4. Plugin registration name is different than expected');
+        console.log('❌ SMS plugin not found');
       }
     } catch (error) {
       console.error('Failed to load SMS plugin:', error);
-      console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
       this.smsPlugin = null;
+    } finally {
+      this.initialized = true;
+      this.initializationPromise = null;
     }
   }
 
@@ -79,13 +82,12 @@ class CapacitorSmsWrapper implements SmsPlugin {
     
     if (!this.smsPlugin) {
       console.log('❌ SMS plugin not available for permission request');
-      console.log('Returning fallback denied permissions');
       return { receive: 'denied', send: 'denied' };
     }
     
     try {
       console.log('📱 Requesting permissions via SMS plugin...');
-      console.log('Plugin methods available:', Object.getOwnPropertyNames(this.smsPlugin));
+      console.log('Plugin available for request:', !!this.smsPlugin);
       
       let result;
       
@@ -106,17 +108,10 @@ class CapacitorSmsWrapper implements SmsPlugin {
       }
       
       console.log('📱 Raw permission request result:', JSON.stringify(result, null, 2));
-      console.log('Result type:', typeof result);
-      console.log('Result constructor:', result?.constructor?.name);
       
       return this.parsePermissionResult(result, 'request');
     } catch (error) {
       console.error('❌ Error requesting SMS permissions:', error);
-      console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
       return { receive: 'denied', send: 'denied' };
     }
   }
@@ -126,13 +121,13 @@ class CapacitorSmsWrapper implements SmsPlugin {
     
     if (!this.smsPlugin) {
       console.log('❌ SMS plugin not available for permission check');
-      console.log('This means the capacitor-sms plugin is not properly loaded');
+      console.log('Plugin state - initialized:', this.initialized, 'plugin:', !!this.smsPlugin);
       return { receive: 'denied', send: 'denied' };
     }
 
     try {
       console.log('🔍 Checking permissions via SMS plugin...');
-      console.log('Plugin methods available:', Object.getOwnPropertyNames(this.smsPlugin));
+      console.log('Plugin available for check:', !!this.smsPlugin);
       
       let result;
       
@@ -153,17 +148,10 @@ class CapacitorSmsWrapper implements SmsPlugin {
       }
       
       console.log('🔍 Raw permission check result:', JSON.stringify(result, null, 2));
-      console.log('Result type:', typeof result);
-      console.log('Result constructor:', result?.constructor?.name);
       
       return this.parsePermissionResult(result, 'check');
     } catch (error) {
       console.error('❌ Error checking SMS permissions:', error);
-      console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
       return { receive: 'denied', send: 'denied' };
     }
   }
@@ -347,6 +335,11 @@ class CapacitorSmsWrapper implements SmsPlugin {
     console.log('No stop method found');
     return Promise.resolve();
   }
+
+  // Method to check if plugin is available (for debugging)
+  isPluginAvailable(): boolean {
+    return !!this.smsPlugin;
+  }
 }
 
 export class SMSService {
@@ -367,7 +360,7 @@ export class SMSService {
     if (Capacitor.isNativePlatform()) {
       try {
         this.smsPlugin = new CapacitorSmsWrapper();
-        console.log('SMS plugin initialized successfully');
+        console.log('SMS plugin wrapper created successfully');
       } catch (error) {
         console.warn('SMS plugin initialization failed:', error);
         this.smsPlugin = undefined;
@@ -417,6 +410,13 @@ export class SMSService {
 
   getListeningStatus(): boolean {
     return this.listenerManager.getListeningStatus();
+  }
+
+  // Debug method to check plugin status
+  debugPluginStatus() {
+    if (this.smsPlugin && typeof (this.smsPlugin as any).isPluginAvailable === 'function') {
+      console.log('Plugin available:', (this.smsPlugin as any).isPluginAvailable());
+    }
   }
 }
 
