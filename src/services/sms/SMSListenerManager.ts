@@ -8,9 +8,9 @@ export class SMSListenerManager {
   private isListening = false;
   private smsListener?: any;
   private smsPlugin?: SmsPlugin;
-  private processor: SMSProcessor;
+  private processor?: SMSProcessor;
 
-  constructor(smsPlugin?: SmsPlugin, processor: SMSProcessor) {
+  constructor(smsPlugin?: SmsPlugin, processor?: SMSProcessor) {
     this.smsPlugin = smsPlugin;
     this.processor = processor;
   }
@@ -28,9 +28,11 @@ export class SMSListenerManager {
       this.isListening = true;
       
       // Simulate receiving an SMS for testing in web mode
-      setTimeout(() => {
-        this.processor.simulateSMSForTesting();
-      }, 3000);
+      if (this.processor) {
+        setTimeout(() => {
+          this.processor!.simulateSMSForTesting();
+        }, 3000);
+      }
       
       return true;
     }
@@ -49,7 +51,9 @@ export class SMSListenerManager {
       // Set up SMS listener using the plugin
       this.smsListener = await this.smsPlugin.addListener('smsReceived', (message) => {
         console.log('SMS received:', message);
-        this.processor.processSMS(message.body, message.address);
+        if (this.processor) {
+          this.processor.processSMS(message.body, message.address);
+        }
       });
 
       this.isListening = true;
