@@ -9,75 +9,55 @@ import { SMSListenerManager } from './sms/SMSListenerManager';
 class CapacitorSmsWrapper implements SmsPlugin {
   private smsPlugin: any = null;
   private initialized = false;
-  private initializationPromise: Promise<void> | null = null;
 
   constructor() {
-    // Don't initialize immediately to avoid build issues
-  }
-
-  private async ensureInitialized(): Promise<boolean> {
-    if (this.initialized) return !!this.smsPlugin;
-    
-    if (this.initializationPromise) {
-      await this.initializationPromise;
-      return !!this.smsPlugin;
+    // Initialize immediately if on native platform
+    if (Capacitor.isNativePlatform()) {
+      this.initializePlugin();
     }
-
-    this.initializationPromise = this.initializePlugin();
-    await this.initializationPromise;
-    return !!this.smsPlugin;
   }
 
   private async initializePlugin(): Promise<void> {
+    if (this.initialized) return;
     this.initialized = true;
     
     if (!Capacitor.isNativePlatform()) {
       console.log('Not on native platform, skipping SMS plugin initialization');
-      this.smsPlugin = null;
       return;
     }
     
     try {
       console.log('Attempting to load SMS plugin...');
       
-      // Multiple attempts to load the plugin with different methods
-      let smsModule = null;
+      // Try to access the plugin through Capacitor's plugin registry
+      const { Capacitor } = await import('@capacitor/core');
       
-      // Method 1: Direct import
-      try {
-        smsModule = await import('capacitor-sms');
-        console.log('SMS plugin loaded via direct import:', !!smsModule);
-      } catch (e) {
-        console.log('Direct import failed, trying eval method:', e);
-      }
-      
-      // Method 2: Eval-based dynamic import
-      if (!smsModule) {
-        try {
-          const importFunction = new Function('specifier', 'return import(specifier)');
-          smsModule = await importFunction('capacitor-sms');
-          console.log('SMS plugin loaded via eval import:', !!smsModule);
-        } catch (e) {
-          console.log('Eval import failed:', e);
-        }
-      }
-      
-      if (smsModule) {
-        // Try different plugin access patterns
-        this.smsPlugin = smsModule.default || smsModule.SmsManager || smsModule.SMS || smsModule;
-        console.log('SMS plugin object:', this.smsPlugin);
-        console.log('SMS plugin methods:', Object.keys(this.smsPlugin || {}));
-        
-        // Test if the plugin has required methods
-        if (this.smsPlugin && typeof this.smsPlugin.checkPermissions === 'function') {
-          console.log('SMS plugin successfully initialized with required methods');
+      // Check if plugin is registered
+      if (Capacitor.Plugins && Capacitor.Plugins.SMS) {
+        this.smsPlugin = Capacitor.Plugins.SMS;
+        console.log('SMS plugin found in Capacitor.Plugins.SMS');
+      } else if (Capacitor.Plugins && Capacitor.Plugins.SmsManager) {
+        this.smsPlugin = Capacitor.Plugins.SmsManager;
+        console.log('SMS plugin found in Capacitor.Plugins.SmsManager');
+      } else {
+        // Try direct global access
+        if ((window as any).SMS) {
+          this.smsPlugin = (window as any).SMS;
+          console.log('SMS plugin found in window.SMS');
+        } else if ((window as any).SmsManager) {
+          this.smsPlugin = (window as any).SmsManager;
+          console.log('SMS plugin found in window.SmsManager');
         } else {
-          console.warn('SMS plugin loaded but missing required methods');
+          console.warn('SMS plugin not found in any expected location');
+          console.log('Available Capacitor plugins:', Object.keys(Capacitor.Plugins || {}));
           this.smsPlugin = null;
         }
-      } else {
-        console.warn('SMS plugin module not found');
-        this.smsPlugin = null;
+      }
+      
+      if (this.smsPlugin) {
+        console.log('SMS plugin successfully loaded');
+        console.log('Available methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(this.smsPlugin || {})));
+        console.log('Plugin object:', this.smsPlugin);
       }
     } catch (error) {
       console.error('Failed to load SMS plugin:', error);
@@ -86,67 +66,113 @@ class CapacitorSmsWrapper implements SmsPlugin {
   }
 
   async requestPermissions() {
-    const pluginReady = await this.ensureInitialized();
+    await this.initializePlugin();
     
-    if (!pluginReady || !this.smsPlugin) {
+    if (!this.smsPlugin) {
       console.log('SMS plugin not available for permission request');
       return { receive: 'denied', send: 'denied' };
     }
     
     try {
       console.log('Requesting permissions via SMS plugin...');
-      const result = await this.smsPlugin.requestPermissions();
+      console.log('Plugin methods available:', Object.getOwnPropertyNames(this.smsPlugin));
+      
+      let result;
+      
+      // Try different method names the plugin might use
+      if (typeof this.smsPlugin.requestPermissions === 'function') {
+        result = await this.smsPlugin.requestPermissions();
+      } else if (typeof this.smsPlugin.requestPermission === 'function') {
+        result = await this.smsPlugin.requestPermission();
+      } else if (typeof this.smsPlugin.checkPermissions === 'function') {
+        // Some plugins only have check, not request
+        result = await this.smsPlugin.checkPermissions();
+      } else {
+        console.error('No permission request method found on SMS plugin');
+        return { receive: 'denied', send: 'denied' };
+      }
+      
       console.log('Raw permission request result:', JSON.stringify(result, null, 2));
+      console.log('Result type:', typeof result);
+      console.log('Result constructor:', result?.constructor?.name);
       
       return this.parsePermissionResult(result, 'request');
     } catch (error) {
       console.error('Error requesting SMS permissions:', error);
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
       return { receive: 'denied', send: 'denied' };
     }
   }
 
   async checkPermissions() {
-    const pluginReady = await this.ensureInitialized();
+    await this.initializePlugin();
     
-    if (!pluginReady || !this.smsPlugin) {
+    if (!this.smsPlugin) {
       console.log('SMS plugin not available for permission check');
       return { receive: 'denied', send: 'denied' };
     }
 
     try {
       console.log('Checking permissions via SMS plugin...');
-      const result = await this.smsPlugin.checkPermissions();
+      console.log('Plugin methods available:', Object.getOwnPropertyNames(this.smsPlugin));
+      
+      let result;
+      
+      // Try different method names
+      if (typeof this.smsPlugin.checkPermissions === 'function') {
+        result = await this.smsPlugin.checkPermissions();
+      } else if (typeof this.smsPlugin.checkPermission === 'function') {
+        result = await this.smsPlugin.checkPermission();
+      } else if (typeof this.smsPlugin.hasPermission === 'function') {
+        result = await this.smsPlugin.hasPermission();
+      } else {
+        console.error('No permission check method found on SMS plugin');
+        return { receive: 'denied', send: 'denied' };
+      }
+      
       console.log('Raw permission check result:', JSON.stringify(result, null, 2));
+      console.log('Result type:', typeof result);
+      console.log('Result constructor:', result?.constructor?.name);
       
       return this.parsePermissionResult(result, 'check');
     } catch (error) {
       console.error('Error checking SMS permissions:', error);
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
       return { receive: 'denied', send: 'denied' };
     }
   }
 
   private parsePermissionResult(result: any, operation: 'request' | 'check'): { receive: string; send: string } {
-    console.log(`Parsing ${operation} permission result:`, result);
+    console.log(`=== Parsing ${operation} permission result ===`);
+    console.log('Raw result:', result);
     console.log('Result type:', typeof result);
     console.log('Result keys:', Object.keys(result || {}));
+    console.log('Result stringified:', JSON.stringify(result, null, 2));
     
     if (!result) {
-      console.log('No result returned');
+      console.log('No result returned - defaulting to denied');
       return { receive: 'denied', send: 'denied' };
     }
 
-    // Handle different response formats from capacitor-sms plugin
-    
-    // Format 1: Direct receive/send properties
-    if (result.receive !== undefined && result.send !== undefined) {
-      console.log('Found direct receive/send properties:', { receive: result.receive, send: result.send });
-      return {
-        receive: result.receive,
-        send: result.send
+    // Strategy 1: Check for standard Capacitor permission format
+    if (result.receive !== undefined || result.send !== undefined) {
+      const parsed = {
+        receive: result.receive || 'denied',
+        send: result.send || 'denied'
       };
+      console.log('✓ Found standard format:', parsed);
+      return parsed;
     }
     
-    // Format 2: Nested permissions object
+    // Strategy 2: Check for nested permissions object
     if (result.permissions && typeof result.permissions === 'object') {
       console.log('Found nested permissions:', result.permissions);
       return {
@@ -155,114 +181,153 @@ class CapacitorSmsWrapper implements SmsPlugin {
       };
     }
     
-    // Format 3: Individual permission properties (common in some plugins)
-    if (result.readSms !== undefined || result.receiveSms !== undefined || result.sendSms !== undefined) {
-      const receiveGranted = result.readSms === true || result.receiveSms === true || 
-                           result.readSms === 'granted' || result.receiveSms === 'granted';
-      const sendGranted = result.sendSms === true || result.sendSms === 'granted';
+    // Strategy 3: Check for SMS-specific properties
+    const smsProperties = ['readSms', 'receiveSms', 'sendSms', 'sms', 'SMS_RECEIVE', 'SMS_SEND'];
+    const foundProps = smsProperties.filter(prop => result[prop] !== undefined);
+    
+    if (foundProps.length > 0) {
+      console.log('Found SMS-specific properties:', foundProps);
+      const receiveGranted = ['readSms', 'receiveSms', 'sms', 'SMS_RECEIVE'].some(prop => 
+        result[prop] === true || result[prop] === 'granted' || result[prop] === 'authorized'
+      );
+      const sendGranted = ['sendSms', 'sms', 'SMS_SEND'].some(prop => 
+        result[prop] === true || result[prop] === 'granted' || result[prop] === 'authorized'
+      );
       
-      console.log('Found individual SMS permissions:', { 
-        readSms: result.readSms, 
-        receiveSms: result.receiveSms, 
-        sendSms: result.sendSms,
-        receiveGranted,
-        sendGranted
-      });
-      
-      return {
+      const parsed = {
         receive: receiveGranted ? 'granted' : 'denied',
         send: sendGranted ? 'granted' : 'denied'
       };
+      console.log('✓ Parsed SMS properties:', parsed);
+      return parsed;
     }
     
-    // Format 4: Boolean granted property (legacy)
-    if (typeof result.granted === 'boolean') {
-      const status = result.granted ? 'granted' : 'denied';
-      console.log('Found boolean granted property:', result.granted, 'status:', status);
-      return {
-        receive: status,
-        send: status
-      };
-    }
-    
-    // Format 5: String status property
-    if (result.status) {
-      const status = result.status === 'granted' || result.status === true ? 'granted' : 'denied';
-      console.log('Found status property:', result.status, 'parsed:', status);
-      return {
-        receive: status,
-        send: status
-      };
-    }
-    
-    // Format 6: Direct boolean response
-    if (typeof result === 'boolean') {
-      const status = result ? 'granted' : 'denied';
-      console.log('Boolean result:', result, 'status:', status);
-      return {
-        receive: status,
-        send: status
-      };
-    }
-    
-    // Format 7: Check for any property that might indicate granted status
-    const possibleGrantedKeys = ['granted', 'allowed', 'permitted', 'enabled'];
-    for (const key of possibleGrantedKeys) {
-      if (result[key] !== undefined) {
-        const isGranted = result[key] === true || result[key] === 'granted' || result[key] === 'allowed';
+    // Strategy 4: Check for boolean granted/allowed properties
+    const booleanProps = ['granted', 'allowed', 'permitted', 'enabled', 'authorized'];
+    for (const prop of booleanProps) {
+      if (result[prop] !== undefined) {
+        const isGranted = result[prop] === true || result[prop] === 'granted' || result[prop] === 'allowed';
         const status = isGranted ? 'granted' : 'denied';
-        console.log(`Found ${key} property:`, result[key], 'status:', status);
-        return {
-          receive: status,
-          send: status
-        };
+        console.log(`✓ Found ${prop} property:`, result[prop], '- status:', status);
+        return { receive: status, send: status };
       }
     }
     
-    // Fallback: Check if any property suggests permission is granted
+    // Strategy 5: Check for direct boolean result
+    if (typeof result === 'boolean') {
+      const status = result ? 'granted' : 'denied';
+      console.log('✓ Boolean result:', result, '- status:', status);
+      return { receive: status, send: status };
+    }
+    
+    // Strategy 6: String analysis for positive indicators
     const resultString = JSON.stringify(result).toLowerCase();
-    if (resultString.includes('granted') || resultString.includes('allowed') || resultString.includes('true')) {
-      console.log('Fallback: Found positive indicators in result string');
-      return {
-        receive: 'granted',
-        send: 'granted'
-      };
+    const positiveIndicators = ['granted', 'allowed', 'permitted', 'authorized', 'true', 'yes'];
+    const hasPositive = positiveIndicators.some(indicator => resultString.includes(indicator));
+    
+    if (hasPositive) {
+      console.log('✓ Found positive indicators in result string');
+      return { receive: 'granted', send: 'granted' };
+    }
+    
+    // Strategy 7: Check all property values for permission states
+    const allValues = Object.values(result || {}).flat();
+    const hasGranted = allValues.some(value => 
+      value === 'granted' || value === 'allowed' || value === true || value === 'authorized'
+    );
+    
+    if (hasGranted) {
+      console.log('✓ Found granted permission in property values');
+      return { receive: 'granted', send: 'granted' };
     }
     
     // Ultimate fallback
-    console.warn('Unable to parse permission result, defaulting to denied:', result);
-    console.warn('Available properties:', Object.keys(result || {}));
-    return {
-      receive: 'denied',
-      send: 'denied'
-    };
+    console.warn('❌ Unable to parse permission result - defaulting to denied');
+    console.warn('Result details:');
+    console.warn('- Type:', typeof result);
+    console.warn('- Constructor:', result?.constructor?.name);
+    console.warn('- Keys:', Object.keys(result || {}));
+    console.warn('- Values:', Object.values(result || {}));
+    console.warn('- String representation:', String(result));
+    
+    return { receive: 'denied', send: 'denied' };
   }
 
   async addListener(event: string, callback: (message: { body: string; address: string }) => void) {
-    const pluginReady = await this.ensureInitialized();
+    await this.initializePlugin();
     
-    if (!pluginReady || !this.smsPlugin) {
+    if (!this.smsPlugin) {
       throw new Error('SMS plugin not available');
     }
-    return this.smsPlugin.addListener('smsReceived', callback);
+    
+    // Try different event names and listener methods
+    const eventNames = ['smsReceived', 'sms', 'messageReceived'];
+    const listenerMethods = ['addListener', 'addEventListener', 'on'];
+    
+    for (const eventName of eventNames) {
+      for (const method of listenerMethods) {
+        if (typeof this.smsPlugin[method] === 'function') {
+          try {
+            console.log(`Trying ${method}('${eventName}', callback)`);
+            return await this.smsPlugin[method](eventName, callback);
+          } catch (error) {
+            console.log(`Failed with ${method}('${eventName}'):`, error.message);
+          }
+        }
+      }
+    }
+    
+    throw new Error('No compatible listener method found on SMS plugin');
   }
 
   async startWatching() {
-    const pluginReady = await this.ensureInitialized();
+    await this.initializePlugin();
     
-    if (!pluginReady || !this.smsPlugin) {
+    if (!this.smsPlugin) {
       throw new Error('SMS plugin not available');
     }
-    return this.smsPlugin.startWatch();
+    
+    // Try different start methods
+    const startMethods = ['startWatch', 'startWatching', 'start', 'enable'];
+    
+    for (const method of startMethods) {
+      if (typeof this.smsPlugin[method] === 'function') {
+        try {
+          console.log(`Trying ${method}()`);
+          return await this.smsPlugin[method]();
+        } catch (error) {
+          console.log(`Failed with ${method}():`, error.message);
+        }
+      }
+    }
+    
+    console.log('No start method found, SMS might work without explicit start');
+    return Promise.resolve();
   }
 
   async stopWatching() {
-    const pluginReady = await this.ensureInitialized();
+    await this.initializePlugin();
     
-    if (!pluginReady || !this.smsPlugin) {
+    if (!this.smsPlugin) {
       throw new Error('SMS plugin not available');
     }
-    return this.smsPlugin.stopWatch();
+    
+    // Try different stop methods
+    const stopMethods = ['stopWatch', 'stopWatching', 'stop', 'disable'];
+    
+    for (const method of stopMethods) {
+      if (typeof this.smsPlugin[method] === 'function') {
+        try {
+          console.log(`Trying ${method}()`);
+          return await this.smsPlugin[method]();
+        } catch (error) {
+          console.log(`Failed with ${method}():`, error.message);
+        }
+      }
+    }
+    
+    console.log('No stop method found');
+    return Promise.resolve();
   }
 }
 
