@@ -29,7 +29,7 @@ export class SMSPermissionManager {
         return false;
       }
 
-      // First, try to request notification permissions if available (some SMS plugins need this)
+      // First, try to request notification permissions if available
       await this.requestNotificationPermissions();
 
       // Show requesting permission toast
@@ -104,15 +104,22 @@ export class SMSPermissionManager {
 
   private async requestNotificationPermissions(): Promise<void> {
     try {
-      // Try to request notification permissions if Capacitor provides them
-      const { Capacitor } = await import('@capacitor/core');
-      
-      if (Capacitor.Plugins?.LocalNotifications) {
-        console.log('Requesting notification permissions...');
-        const notificationResult = await Capacitor.Plugins.LocalNotifications.requestPermissions();
+      // Try to request notification permissions using different methods
+      if ((window as any).Capacitor && (window as any).Capacitor.Plugins) {
+        const plugins = (window as any).Capacitor.Plugins;
+        if (plugins.LocalNotifications) {
+          console.log('Requesting notification permissions...');
+          const notificationResult = await plugins.LocalNotifications.requestPermissions();
+          console.log('Notification permission result:', notificationResult);
+        } else {
+          console.log('LocalNotifications plugin not available');
+        }
+      } else if ((window as any).LocalNotifications) {
+        console.log('Requesting notification permissions via global LocalNotifications...');
+        const notificationResult = await (window as any).LocalNotifications.requestPermissions();
         console.log('Notification permission result:', notificationResult);
       } else {
-        console.log('LocalNotifications plugin not available');
+        console.log('LocalNotifications plugin not found');
       }
     } catch (error) {
       console.log('Could not request notification permissions:', error.message);
@@ -242,11 +249,15 @@ export class SMSPermissionManager {
     // Strategy 4: System-level permission check (if available)
     console.log('Strategy 4: Attempting system-level permission check');
     try {
-      const { Capacitor } = await import('@capacitor/core');
-      
       // Try to access device info or permissions plugin
-      if (Capacitor.Plugins?.Device) {
-        const deviceInfo = await Capacitor.Plugins.Device.getInfo();
+      if ((window as any).Capacitor && (window as any).Capacitor.Plugins) {
+        const plugins = (window as any).Capacitor.Plugins;
+        if (plugins.Device) {
+          const deviceInfo = await plugins.Device.getInfo();
+          console.log('Device info:', deviceInfo);
+        }
+      } else if ((window as any).Device) {
+        const deviceInfo = await (window as any).Device.getInfo();
         console.log('Device info:', deviceInfo);
       }
       

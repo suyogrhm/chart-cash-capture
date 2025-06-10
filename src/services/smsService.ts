@@ -1,4 +1,3 @@
-
 import { Capacitor } from '@capacitor/core';
 import { TransactionCallback, SmsPlugin } from '@/types/SMSTypes';
 import { SMSPermissionManager } from './sms/SMSPermissionManager';
@@ -29,28 +28,23 @@ class CapacitorSmsWrapper implements SmsPlugin {
     try {
       console.log('Attempting to load SMS plugin...');
       
-      // Try to access the plugin through Capacitor's plugin registry
-      const { Capacitor } = await import('@capacitor/core');
-      
-      // Check if plugin is registered
-      if (Capacitor.Plugins && Capacitor.Plugins.SMS) {
-        this.smsPlugin = Capacitor.Plugins.SMS;
-        console.log('SMS plugin found in Capacitor.Plugins.SMS');
-      } else if (Capacitor.Plugins && Capacitor.Plugins.SmsManager) {
-        this.smsPlugin = Capacitor.Plugins.SmsManager;
-        console.log('SMS plugin found in Capacitor.Plugins.SmsManager');
-      } else {
-        // Try direct global access
-        if ((window as any).SMS) {
-          this.smsPlugin = (window as any).SMS;
-          console.log('SMS plugin found in window.SMS');
-        } else if ((window as any).SmsManager) {
-          this.smsPlugin = (window as any).SmsManager;
-          console.log('SMS plugin found in window.SmsManager');
-        } else {
-          console.warn('SMS plugin not found in any expected location');
-          console.log('Available Capacitor plugins:', Object.keys(Capacitor.Plugins || {}));
-          this.smsPlugin = null;
+      // Try to access the plugin through different methods
+      // Method 1: Check if plugin is registered globally
+      if ((window as any).SMS) {
+        this.smsPlugin = (window as any).SMS;
+        console.log('SMS plugin found in window.SMS');
+      } else if ((window as any).SmsManager) {
+        this.smsPlugin = (window as any).SmsManager;
+        console.log('SMS plugin found in window.SmsManager');
+      } else if ((window as any).Capacitor && (window as any).Capacitor.Plugins) {
+        // Method 2: Try accessing through window.Capacitor.Plugins
+        const plugins = (window as any).Capacitor.Plugins;
+        if (plugins.SMS) {
+          this.smsPlugin = plugins.SMS;
+          console.log('SMS plugin found in window.Capacitor.Plugins.SMS');
+        } else if (plugins.SmsManager) {
+          this.smsPlugin = plugins.SmsManager;
+          console.log('SMS plugin found in window.Capacitor.Plugins.SmsManager');
         }
       }
       
@@ -58,6 +52,13 @@ class CapacitorSmsWrapper implements SmsPlugin {
         console.log('SMS plugin successfully loaded');
         console.log('Available methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(this.smsPlugin || {})));
         console.log('Plugin object:', this.smsPlugin);
+      } else {
+        console.warn('SMS plugin not found in any expected location');
+        // Log available global objects for debugging
+        console.log('Available window properties:', Object.keys(window).filter(key => key.toLowerCase().includes('sms')));
+        if ((window as any).Capacitor) {
+          console.log('Capacitor object exists, plugins:', Object.keys((window as any).Capacitor.Plugins || {}));
+        }
       }
     } catch (error) {
       console.error('Failed to load SMS plugin:', error);
