@@ -36,16 +36,16 @@ export class SMSPluginDetector {
           console.log(`Trying to register plugin with ID: ${pluginId}`);
           const smsPlugin = registerPlugin(pluginId);
           
-          // Test if the plugin actually works
-          if (typeof smsPlugin.checkPermissions === 'function') {
+          // Test if the plugin actually works with proper type checking
+          if (smsPlugin && typeof smsPlugin === 'object' && 'checkPermissions' in smsPlugin && typeof (smsPlugin as any).checkPermissions === 'function') {
             console.log(`✓ Successfully registered plugin with ID: ${pluginId}`);
             return smsPlugin;
           }
-        } catch (error) {
+        } catch (error: any) {
           console.log(`Failed to register plugin ${pluginId}:`, error.message);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log('Strategy 1 failed:', error.message);
     }
 
@@ -67,7 +67,7 @@ export class SMSPluginDetector {
         console.log('✓ Found SMSPluginWeb export');
         return smsModule.SMSPluginWeb;
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log('Strategy 2 failed:', error.message);
     }
 
@@ -137,6 +137,10 @@ export class SMSPluginDetector {
   }
 
   private looksLikeSMSPlugin(obj: any): boolean {
+    if (!obj || typeof obj !== 'object') {
+      return false;
+    }
+
     const smsPluginMethods = [
       'requestPermissions',
       'checkPermissions', 
@@ -148,12 +152,12 @@ export class SMSPluginDetector {
     ];
 
     const hasRelevantMethods = smsPluginMethods.some(method => 
-      typeof obj[method] === 'function'
+      method in obj && typeof obj[method] === 'function'
     );
 
     if (hasRelevantMethods) {
       console.log('Object has SMS plugin methods:', 
-        smsPluginMethods.filter(method => typeof obj[method] === 'function')
+        smsPluginMethods.filter(method => method in obj && typeof obj[method] === 'function')
       );
     }
 
