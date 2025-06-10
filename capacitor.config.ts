@@ -1,3 +1,4 @@
+
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
@@ -23,6 +24,9 @@ const config: CapacitorConfig = {
       splashImmersive: true,
       layoutName: 'launch_screen',
       useDialog: true,
+    },
+    Sms: {
+      enabled: true,
     },
   },
 };
