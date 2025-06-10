@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { MessageSquare, Shield, Smartphone, Monitor, AlertTriangle, CheckCircle } from 'lucide-react';
+import { MessageSquare, Shield, Smartphone, Monitor, AlertTriangle, CheckCircle, Copy, Type } from 'lucide-react';
 import { smsService } from '@/services/smsService';
 import { useToast } from '@/hooks/use-toast';
 import { Capacitor } from '@capacitor/core';
@@ -52,12 +52,13 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
   const requestPermissions = async () => {
     const granted = await smsService.requestPermissions();
     setHasPermission(granted);
-    if (granted) {
-      toast({
-        title: "Permission Granted",
-        description: "You can now enable SMS detection for automatic transaction tracking.",
-      });
-    }
+  };
+
+  const showManualInputTip = () => {
+    toast({
+      title: "Manual Transaction Entry",
+      description: "Copy SMS text and paste it in the message input below, or type transactions like 'spent 500 on food'",
+    });
   };
 
   return (
@@ -65,9 +66,10 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5" />
-          SMS Auto-Detection
+          Transaction Detection
           {!isNative && <Monitor className="h-4 w-4 text-muted-foreground" />}
           {isNative && hasPermission && <CheckCircle className="h-4 w-4 text-green-500" />}
+          {isNative && !hasPermission && <AlertTriangle className="h-4 w-4 text-orange-500" />}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -84,14 +86,26 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
           </div>
         )}
 
-        {isNative && (
+        {isNative && hasPermission && (
           <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg space-y-3">
             <div className="flex items-center gap-2 text-sm">
               <CheckCircle className="h-4 w-4 text-green-500" />
-              <span className="font-medium text-green-900 dark:text-green-100">Production Ready</span>
+              <span className="font-medium text-green-900 dark:text-green-100">SMS Detection Active</span>
             </div>
             <p className="text-xs text-green-700 dark:text-green-300">
-              SMS plugin is installed and configured. The app can detect transactions from SMS messages.
+              The app can automatically detect transactions from your SMS messages.
+            </p>
+          </div>
+        )}
+
+        {isNative && !hasPermission && (
+          <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg space-y-3">
+            <div className="flex items-center gap-2 text-sm">
+              <AlertTriangle className="h-4 w-4 text-orange-500" />
+              <span className="font-medium text-orange-900 dark:text-orange-100">SMS Permission Denied</span>
+            </div>
+            <p className="text-xs text-orange-700 dark:text-orange-300">
+              Don't worry! You can still use all features by manually entering transaction details.
             </p>
           </div>
         )}
@@ -114,52 +128,54 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
         </div>
 
         {isNative && !hasPermission && (
-          <div className="p-4 bg-muted rounded-lg space-y-3">
-            <div className="flex items-center gap-2 text-sm">
-              <Shield className="h-4 w-4 text-orange-500" />
-              <span className="font-medium">SMS Permission Required</span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              To automatically detect transactions from SMS messages, we need permission to read your SMS. 
-              This permission is only used to detect bank and payment notifications.
-            </p>
+          <div className="space-y-3">
             <Button 
               onClick={requestPermissions}
               size="sm"
               variant="outline"
               className="w-full"
             >
-              Grant SMS Permission
+              <Shield className="h-4 w-4 mr-2" />
+              Try Request SMS Permission Again
             </Button>
+            
+            <div className="p-3 bg-muted rounded-lg">
+              <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                <Type className="h-4 w-4" />
+                Alternative: Manual Entry
+              </h4>
+              <p className="text-xs text-muted-foreground mb-2">
+                You can manually add transactions by typing or copy-pasting SMS text in the message input below.
+              </p>
+              <Button 
+                onClick={showManualInputTip}
+                size="sm"
+                variant="ghost"
+                className="w-full"
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                Show Manual Entry Tips
+              </Button>
+            </div>
           </div>
         )}
 
         <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
           <h4 className="text-sm font-medium text-green-900 dark:text-green-100 mb-2">
-            How SMS Detection Works:
+            Manual Entry Examples:
           </h4>
           <ul className="text-xs text-green-700 dark:text-green-300 space-y-1">
-            <li>• Monitors SMS from banks and payment services</li>
-            <li>• Automatically extracts amount and transaction type</li>
-            <li>• Creates transactions with smart category detection</li>
-            <li>• Your SMS data stays private and secure</li>
-            {!isNative && <li>• Test mode available in web browser</li>}
+            <li>• Type: "spent 500 on food" or "earned 2000 salary"</li>
+            <li>• Copy-paste bank SMS: "Debited Rs 150 at McDonald's"</li>
+            <li>• Simple format: "bought groceries 800"</li>
+            <li>• The app will automatically parse and categorize</li>
           </ul>
         </div>
 
         <div className="text-xs text-muted-foreground">
-          <p className="font-medium mb-1">Supported Sources:</p>
-          <p>Bank SMS, UPI notifications (GPay, PhonePe, Paytm), Payment gateways, and other financial services</p>
+          <p className="font-medium mb-1">Privacy Note:</p>
+          <p>All transaction data stays on your device. SMS permissions are only used for parsing bank notifications - no data is sent to external servers.</p>
         </div>
-
-        {!isNative && (
-          <div className="p-4 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
-            <p className="text-xs text-yellow-700 dark:text-yellow-300">
-              <strong>To use in production:</strong> Run 'npx cap sync' after pulling the latest changes, 
-              then build and deploy to your mobile device.
-            </p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
