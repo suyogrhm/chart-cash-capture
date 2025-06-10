@@ -6,8 +6,8 @@ import { SMSProcessor } from './sms/SMSProcessor';
 import { SMSListenerManager } from './sms/SMSListenerManager';
 import { SMSPluginDetector } from './sms/SMSPluginDetector';
 
-// Wrapper for the community SMS plugin
-class CommunitySmsWrapper implements SmsPlugin {
+// Wrapper for SMS plugins to normalize their interfaces
+class SmsPluginWrapper implements SmsPlugin {
   private smsPlugin: any = null;
   private initialized = false;
   private detector: SMSPluginDetector;
@@ -26,15 +26,15 @@ class CommunitySmsWrapper implements SmsPlugin {
     }
     
     try {
-      console.log('=== INITIALIZING COMMUNITY SMS PLUGIN ===');
+      console.log('=== INITIALIZING SMS PLUGIN ===');
       this.detector.logAvailableCapacitorInfo();
       
       this.smsPlugin = await this.detector.detectAndLoadSMSPlugin();
       
       if (this.smsPlugin) {
-        console.log('✓ Community SMS plugin loaded successfully');
+        console.log('✓ SMS plugin loaded successfully');
       } else {
-        console.log('❌ Community SMS plugin not found');
+        console.log('❌ SMS plugin not found');
       }
     } catch (error) {
       console.error('Failed to load SMS plugin:', error);
@@ -83,7 +83,7 @@ class CommunitySmsWrapper implements SmsPlugin {
   private parseResult(result: any): { receive: string; send: string } {
     if (!result) return { receive: 'denied', send: 'denied' };
     
-    // Handle different result formats from the community plugin
+    // Handle different result formats
     if (result.receive !== undefined && result.send !== undefined) {
       return { receive: result.receive, send: result.send };
     }
@@ -100,6 +100,12 @@ class CommunitySmsWrapper implements SmsPlugin {
         receive: result.permissions.receive || 'denied',
         send: result.permissions.send || 'denied'
       };
+    }
+    
+    // For plugins that return different formats
+    if (result.granted !== undefined) {
+      const status = result.granted ? 'granted' : 'denied';
+      return { receive: status, send: status };
     }
     
     return { receive: 'denied', send: 'denied' };
@@ -163,8 +169,8 @@ export class SMSService {
   private async initializeSMSPlugin() {
     if (Capacitor.isNativePlatform()) {
       try {
-        this.smsPlugin = new CommunitySmsWrapper();
-        console.log('Community SMS plugin wrapper created successfully');
+        this.smsPlugin = new SmsPluginWrapper();
+        console.log('SMS plugin wrapper created successfully');
       } catch (error) {
         console.warn('SMS plugin initialization failed:', error);
         this.smsPlugin = undefined;

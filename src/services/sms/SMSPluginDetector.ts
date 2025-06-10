@@ -23,18 +23,18 @@ export class SMSPluginDetector {
     console.log('Platform:', Capacitor.getPlatform());
     console.log('Is native:', Capacitor.isNativePlatform());
 
-    // Strategy 1: Try the new community plugin first
+    // Strategy 1: Try capacitor-sms-inbox plugin
     try {
-      console.log('Strategy 1: Attempting to import @capacitor-community/sms...');
-      const smsModule = await import('@capacitor-community/sms');
+      console.log('Strategy 1: Attempting to import capacitor-sms-inbox...');
+      const smsModule = await import('capacitor-sms-inbox');
       console.log('SMS module imported:', smsModule);
       
-      if (smsModule.Sms) {
-        console.log('✓ Found @capacitor-community/sms plugin');
-        return smsModule.Sms;
+      if (smsModule.SmsInbox) {
+        console.log('✓ Found capacitor-sms-inbox plugin');
+        return smsModule.SmsInbox;
       }
     } catch (error: any) {
-      console.log('Community SMS plugin not available:', error.message);
+      console.log('SMS Inbox plugin not available:', error.message);
     }
 
     // Strategy 2: Try registerPlugin approach
@@ -42,16 +42,20 @@ export class SMSPluginDetector {
       console.log('Strategy 2: Attempting registerPlugin...');
       const { registerPlugin } = await import('@capacitor/core');
       
-      const pluginIds = ['Sms', 'SMS', 'CapacitorSms'];
+      const pluginIds = ['SmsInbox', 'Sms', 'SMS', 'CapacitorSms'];
       
       for (const pluginId of pluginIds) {
         try {
           console.log(`Trying to register plugin with ID: ${pluginId}`);
           const smsPlugin = registerPlugin(pluginId);
           
-          if (smsPlugin && typeof smsPlugin === 'object' && 'checkPermissions' in smsPlugin) {
-            console.log(`✓ Successfully registered plugin with ID: ${pluginId}`);
-            return smsPlugin;
+          if (smsPlugin && typeof smsPlugin === 'object') {
+            // Check if it has SMS-like methods
+            const hasSmsMethod = 'checkPermissions' in smsPlugin || 'requestPermissions' in smsPlugin || 'getMessages' in smsPlugin;
+            if (hasSmsMethod) {
+              console.log(`✓ Successfully registered plugin with ID: ${pluginId}`);
+              return smsPlugin;
+            }
           }
         } catch (error: any) {
           console.log(`Failed to register plugin ${pluginId}:`, error.message);
@@ -63,7 +67,7 @@ export class SMSPluginDetector {
 
     // Strategy 3: Check global window objects
     console.log('Strategy 3: Checking global window objects...');
-    const possibleNames = ['Sms', 'SMS', 'CapacitorSms'];
+    const possibleNames = ['SmsInbox', 'Sms', 'SMS', 'CapacitorSms'];
 
     for (const name of possibleNames) {
       if ((window as any)[name]) {
