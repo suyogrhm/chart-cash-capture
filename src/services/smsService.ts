@@ -1,25 +1,35 @@
 
+
 import { Capacitor } from '@capacitor/core';
 import { TransactionCallback, SmsPlugin } from '@/types/SMSTypes';
 import { SMSPermissionManager } from './sms/SMSPermissionManager';
 import { SMSProcessor } from './sms/SMSProcessor';
 import { SMSListenerManager } from './sms/SMSListenerManager';
 
-// For now, let's create a mock implementation for web and handle the actual plugin loading differently
+// Mock implementation for web and runtime plugin loading for native
 class CapacitorSmsWrapper implements SmsPlugin {
   private smsPlugin: any = null;
+  private initialized = false;
 
   constructor() {
-    this.initializePlugin();
+    // Don't initialize immediately to avoid build issues
   }
 
-  private async initializePlugin() {
+  private async ensureInitialized() {
+    if (this.initialized) return;
+    
+    this.initialized = true;
+    
     if (Capacitor.isNativePlatform()) {
       try {
-        // Dynamic import to avoid build errors
-        const smsModule = await import('capacitor-sms');
-        this.smsPlugin = smsModule.default || smsModule;
-        console.log('SMS plugin loaded:', this.smsPlugin);
+        // Use dynamic import to avoid build issues
+        const smsModule = await import('capacitor-sms').catch(() => null);
+        if (smsModule) {
+          this.smsPlugin = smsModule.default || smsModule.SmsManager || smsModule;
+          console.log('SMS plugin loaded:', !!this.smsPlugin);
+        } else {
+          console.warn('SMS plugin not available');
+        }
       } catch (error) {
         console.warn('Failed to load SMS plugin:', error);
         this.smsPlugin = null;
@@ -28,6 +38,8 @@ class CapacitorSmsWrapper implements SmsPlugin {
   }
 
   async requestPermissions() {
+    await this.ensureInitialized();
+    
     try {
       if (!this.smsPlugin) {
         return { receive: 'denied', send: 'denied' };
@@ -48,6 +60,8 @@ class CapacitorSmsWrapper implements SmsPlugin {
   }
 
   async checkPermissions() {
+    await this.ensureInitialized();
+    
     try {
       if (!this.smsPlugin) {
         return { receive: 'denied', send: 'denied' };
@@ -68,6 +82,8 @@ class CapacitorSmsWrapper implements SmsPlugin {
   }
 
   async addListener(event: string, callback: (message: { body: string; address: string }) => void) {
+    await this.ensureInitialized();
+    
     if (!this.smsPlugin) {
       throw new Error('SMS plugin not available');
     }
@@ -75,6 +91,8 @@ class CapacitorSmsWrapper implements SmsPlugin {
   }
 
   async startWatching() {
+    await this.ensureInitialized();
+    
     if (!this.smsPlugin) {
       throw new Error('SMS plugin not available');
     }
@@ -82,6 +100,8 @@ class CapacitorSmsWrapper implements SmsPlugin {
   }
 
   async stopWatching() {
+    await this.ensureInitialized();
+    
     if (!this.smsPlugin) {
       throw new Error('SMS plugin not available');
     }
@@ -157,3 +177,4 @@ export class SMSService {
 }
 
 export const smsService = SMSService.getInstance();
+
