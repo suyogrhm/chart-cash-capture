@@ -22,9 +22,9 @@ export class SMSPermissionManager {
 
       if (!this.smsPlugin) {
         toast({
-          title: "Manual Entry Available",
-          description: "SMS permissions not available. You can still manually add transactions using the message input.",
-          variant: "default",
+          title: "SMS Plugin Not Available",
+          description: "SMS plugin needs to be installed. Please sync the project with 'npx cap sync'.",
+          variant: "destructive",
         });
         return false;
       }
@@ -39,18 +39,18 @@ export class SMSPermissionManager {
         return true;
       } else {
         toast({
-          title: "SMS Permission Denied",
-          description: "No worries! You can manually copy-paste SMS text or type transactions in the message input below.",
-          variant: "default",
+          title: "SMS Permission Required",
+          description: "Please grant SMS permissions to automatically detect transactions.",
+          variant: "destructive",
         });
         return false;
       }
     } catch (error) {
       console.error('Error requesting SMS permissions:', error);
       toast({
-        title: "Manual Entry Still Works",
-        description: "SMS permissions not available, but you can manually add transactions using the input field.",
-        variant: "default",
+        title: "Permission Error",
+        description: "Failed to request SMS permissions. Please try again.",
+        variant: "destructive",
       });
       return false;
     }
