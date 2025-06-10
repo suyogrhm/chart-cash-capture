@@ -1,4 +1,3 @@
-
 import { Capacitor } from '@capacitor/core';
 import { SmsManager } from 'capacitor-sms';
 import { TransactionCallback, SmsPlugin } from '@/types/SMSTypes';
@@ -6,11 +5,35 @@ import { SMSPermissionManager } from './sms/SMSPermissionManager';
 import { SMSProcessor } from './sms/SMSProcessor';
 import { SMSListenerManager } from './sms/SMSListenerManager';
 
-// Create a wrapper that implements our SmsPlugin interface
+// For now, let's create a mock implementation for web and handle the actual plugin loading differently
 class CapacitorSmsWrapper implements SmsPlugin {
+  private smsPlugin: any = null;
+
+  constructor() {
+    this.initializePlugin();
+  }
+
+  private async initializePlugin() {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        // Dynamic import to avoid build errors
+        const smsModule = await import('capacitor-sms');
+        this.smsPlugin = smsModule.default || smsModule;
+        console.log('SMS plugin loaded:', this.smsPlugin);
+      } catch (error) {
+        console.warn('Failed to load SMS plugin:', error);
+        this.smsPlugin = null;
+      }
+    }
+  }
+
   async requestPermissions() {
     try {
-      const result = await SmsManager.requestPermissions();
+      if (!this.smsPlugin) {
+        return { receive: 'denied', send: 'denied' };
+      }
+      
+      const result = await this.smsPlugin.requestPermissions();
       return {
         receive: result.granted ? 'granted' : 'denied',
         send: result.granted ? 'granted' : 'denied'
@@ -26,7 +49,11 @@ class CapacitorSmsWrapper implements SmsPlugin {
 
   async checkPermissions() {
     try {
-      const result = await SmsManager.checkPermissions();
+      if (!this.smsPlugin) {
+        return { receive: 'denied', send: 'denied' };
+      }
+
+      const result = await this.smsPlugin.checkPermissions();
       return {
         receive: result.granted ? 'granted' : 'denied',
         send: result.granted ? 'granted' : 'denied'
@@ -41,15 +68,24 @@ class CapacitorSmsWrapper implements SmsPlugin {
   }
 
   async addListener(event: string, callback: (message: { body: string; address: string }) => void) {
-    return SmsManager.addListener('smsReceived', callback);
+    if (!this.smsPlugin) {
+      throw new Error('SMS plugin not available');
+    }
+    return this.smsPlugin.addListener('smsReceived', callback);
   }
 
   async startWatching() {
-    return SmsManager.startWatch();
+    if (!this.smsPlugin) {
+      throw new Error('SMS plugin not available');
+    }
+    return this.smsPlugin.startWatch();
   }
 
   async stopWatching() {
-    return SmsManager.stopWatch();
+    if (!this.smsPlugin) {
+      throw new Error('SMS plugin not available');
+    }
+    return this.smsPlugin.stopWatch();
   }
 }
 
