@@ -17,6 +17,7 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
   const [isListening, setIsListening] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
   const [isNative, setIsNative] = useState(false);
+  const [isRequestingPermission, setIsRequestingPermission] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -54,13 +55,28 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
   };
 
   const requestPermissions = async () => {
-    const granted = await smsService.requestPermissions();
-    setHasPermission(granted);
+    if (isRequestingPermission) return;
     
-    // If permissions were granted, also check the current permission status
-    if (granted && isNative) {
-      const currentPermission = await smsService.checkPermissions();
-      setHasPermission(currentPermission);
+    setIsRequestingPermission(true);
+    
+    try {
+      const granted = await smsService.requestPermissions();
+      setHasPermission(granted);
+      
+      // If permissions were granted, also check the current permission status
+      if (granted && isNative) {
+        const currentPermission = await smsService.checkPermissions();
+        setHasPermission(currentPermission);
+      }
+    } catch (error) {
+      console.error('Error requesting permissions:', error);
+      toast({
+        title: "Permission Error",
+        description: "Failed to request SMS permissions. Please try again or check device settings.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRequestingPermission(false);
     }
   };
 
@@ -115,9 +131,10 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
               size="sm"
               variant="outline"
               className="w-full"
+              disabled={isRequestingPermission}
             >
               <Shield className="h-4 w-4 mr-2" />
-              Grant SMS Permission
+              {isRequestingPermission ? 'Requesting Permission...' : 'Grant SMS Permission'}
             </Button>
           </div>
         )}
