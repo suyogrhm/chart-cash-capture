@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     rollupOptions: {
-      external: ['@capacitor/status-bar']
+      external: ['@capacitor/status-bar', 'capacitor-sms']
     }
   }
 }));
