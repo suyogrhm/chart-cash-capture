@@ -26,7 +26,7 @@ export const useChartData = (
 
     console.log('Processing transactions for chart data');
     
-    // Filter for expense transactions only
+    // Filter for expense transactions only - this ensures only expense data is shown
     const expenseTransactions = transactions.filter(t => {
       console.log('Transaction type check:', t.type, t);
       return t.type === 'expense';

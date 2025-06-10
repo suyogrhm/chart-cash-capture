@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Transaction } from '@/types/Transaction';
+import { getCategoryInfo } from '@/utils/categoryUtils';
 
 export const useTransactionFilters = (transactions: Transaction[]) => {
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
@@ -18,10 +19,17 @@ export const useTransactionFilters = (transactions: Transaction[]) => {
     let filtered = transactions;
 
     if (searchTerm) {
-      filtered = filtered.filter(t => 
-        t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.original_message?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      filtered = filtered.filter(t => {
+        // Search in description and original message (existing logic)
+        const descriptionMatch = t.description.toLowerCase().includes(searchTerm.toLowerCase());
+        const messageMatch = t.original_message?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+        
+        // Search in category name (new logic)
+        const categoryInfo = getCategoryInfo(t.category);
+        const categoryMatch = categoryInfo.name.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        return descriptionMatch || messageMatch || categoryMatch;
+      });
     }
 
     if (selectedType !== 'all') {

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { MessageInput } from '@/components/MessageInput';
 import { TransactionsList } from '@/components/TransactionsList';
@@ -13,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ExpenseTrackerLogo } from '@/components/ExpenseTrackerLogo';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { getCategoryInfo } from '@/utils/categoryUtils';
+import { Badge } from '@/components/ui/badge';
 
 interface DashboardTabProps {
   onMessage: (message: string, accountId?: string, paymentMethod?: string) => void;
@@ -72,6 +73,82 @@ export const DashboardTab = ({
   const handleCategoriesClick = () => {
     console.log('Categories button clicked - navigating to categories management');
     navigate('/?tab=categories');
+  };
+
+  // Enhanced mobile transaction card component
+  const EnhancedMobileTransactionCard = ({ transaction }: { transaction: Transaction }) => {
+    const categoryInfo = getCategoryInfo(transaction.category);
+    const getAccountName = (accountId?: string) => {
+      if (!accountId) return 'Default';
+      const account = accounts.find(a => a.id === accountId);
+      return account ? account.name : 'Unknown';
+    };
+
+    const getAccountColor = (accountId?: string) => {
+      if (!accountId) return '#6B7280';
+      const account = accounts.find(a => a.id === accountId);
+      return account ? account.color : '#6B7280';
+    };
+
+    return (
+      <div className="bg-card rounded-xl border border-border/30 p-4 hover:shadow-md transition-all duration-200">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm border border-border/20`}
+                 style={{ 
+                   backgroundColor: transaction.type === 'income' 
+                     ? 'hsl(var(--success)/0.1)' 
+                     : `${categoryInfo.color}15`
+                 }}>
+              <span className="text-lg" style={{ 
+                filter: 'contrast(1.2) brightness(0.9)',
+                color: transaction.type === 'income' ? 'hsl(var(--success))' : categoryInfo.color
+              }}>
+                {categoryInfo.icon}
+              </span>
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-xs px-2 py-0.5 h-5 bg-muted/50 text-muted-foreground border-border/50">
+                  {categoryInfo.name}
+                </Badge>
+              </div>
+              <p className="font-semibold text-card-foreground text-base leading-tight mb-2">
+                {transaction.description}
+              </p>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <div 
+                    className="w-2 h-2 rounded-full" 
+                    style={{ backgroundColor: getAccountColor(transaction.account_id) }}
+                  />
+                  <span>{getAccountName(transaction.account_id)}</span>
+                </div>
+                <span>•</span>
+                <span>{new Date(transaction.date).toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-right flex-shrink-0 ml-3">
+            <p className={`font-bold text-lg ${
+              transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-card-foreground'
+            }`}>
+              {transaction.type === 'income' ? '+' : '-'}₹{transaction.amount.toLocaleString()}
+            </p>
+            {transaction.type === 'income' && (
+              <div className="text-green-600 dark:text-green-400 text-xs flex justify-end mt-1">Income</div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (isMobile) {
@@ -161,13 +238,31 @@ export const DashboardTab = ({
           <MessageInput onMessage={onMessage} accounts={accounts} />
         </div>
 
-        {/* Recent Transactions */}
-        <div className="bg-card rounded-t-3xl min-h-[300px] flex-1">
+        {/* Enhanced Recent Transactions Section */}
+        <div className="bg-card rounded-t-3xl min-h-[400px] flex-1">
           <div className="p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-foreground text-lg">Recent transactions</h3>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-xs text-primary"
+                onClick={() => navigate('/?tab=transactions')}
+              >
+                View all
+              </Button>
             </div>
-            <TransactionsList transactions={recentTransactions.slice(0, 5)} />
+            <div className="space-y-3">
+              {recentTransactions.slice(0, 4).map((transaction) => (
+                <EnhancedMobileTransactionCard key={transaction.id} transaction={transaction} />
+              ))}
+              {recentTransactions.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p className="text-sm">No recent transactions</p>
+                  <p className="text-xs mt-1">Add your first transaction above</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
