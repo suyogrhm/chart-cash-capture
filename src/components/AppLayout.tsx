@@ -26,7 +26,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="mobile-min-vh bg-background">
       {/* Desktop: Sticky Header with Navigation */}
       {!isMobile && (
         <div className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
@@ -62,7 +62,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
       )}
 
       {/* Content Container */}
-      <div className={`container mx-auto ${isMobile ? 'px-2 py-4 pb-20' : 'px-4 py-6'} max-w-7xl`}>
+      <div className={`container mx-auto ${isMobile ? 'px-2 py-4 pb-20 safe-top' : 'px-4 py-6'} max-w-7xl`}>
         {/* Mobile: Header without Navigation */}
         {isMobile && (
           <div className="mb-4 flex justify-between items-center">
@@ -88,7 +88,9 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
       {/* Mobile: Bottom Navigation */}
       {isMobile && (
-        <MobileTabNavigation value={currentTab} onValueChange={handleTabChange} />
+        <div className="safe-bottom">
+          <MobileTabNavigation value={currentTab} onValueChange={handleTabChange} />
+        </div>
       )}
     </div>
   );

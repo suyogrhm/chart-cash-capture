@@ -4,11 +4,13 @@ import { AuthForm } from '@/components/AuthForm'
 import { useAuth } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { Loader2, DollarSign } from 'lucide-react'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 const Auth = () => {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const { user, loading } = useAuth()
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     if (user && !loading) {
@@ -22,14 +24,14 @@ const Auth = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="mobile-min-vh flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 safe-top">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-4">
+    <div className={`mobile-min-vh flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 ${isMobile ? 'safe-top safe-bottom px-4 py-6' : 'p-4'}`}>
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <div className="flex items-center justify-center mb-4">

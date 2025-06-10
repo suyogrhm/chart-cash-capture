@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/hooks/useAuth'
 import { toast } from '@/hooks/use-toast'
 import { Eye, EyeOff, Loader2, Mail, Lock, User } from 'lucide-react'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 interface AuthFormProps {
   mode: 'signin' | 'signup'
@@ -20,6 +21,27 @@ export const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const { signIn, signUp } = useAuth()
+  const isMobile = useIsMobile()
+  
+  // Refs for mobile keyboard handling
+  const formRef = useRef<HTMLFormElement>(null)
+  const emailRef = useRef<HTMLInputElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
+  const fullNameRef = useRef<HTMLInputElement>(null)
+
+  // Handle input focus for mobile keyboard
+  const handleInputFocus = (inputRef: React.RefObject<HTMLInputElement>) => {
+    if (isMobile && inputRef.current) {
+      // Small delay to ensure keyboard is shown
+      setTimeout(() => {
+        inputRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center',
+          inline: 'nearest'
+        })
+      }, 300)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,18 +97,20 @@ export const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
           {mode === 'signup' && (
             <div className="space-y-2">
               <Label htmlFor="fullName" className="text-card-foreground">Full Name</Label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
+                  ref={fullNameRef}
                   id="fullName"
                   type="text"
                   placeholder="Enter your full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
+                  onFocus={() => handleInputFocus(fullNameRef)}
                   className="pl-10 bg-background border-input text-foreground placeholder:text-muted-foreground"
                   required
                 />
@@ -99,13 +123,16 @@ export const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
+                ref={emailRef}
                 id="email"
                 type="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onFocus={() => handleInputFocus(emailRef)}
                 className="pl-10 bg-background border-input text-foreground placeholder:text-muted-foreground"
                 required
+                autoComplete="email"
               />
             </div>
           </div>
@@ -115,14 +142,17 @@ export const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
             <div className="relative">
               <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
+                ref={passwordRef}
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onFocus={() => handleInputFocus(passwordRef)}
                 className="pl-10 pr-10 bg-background border-input text-foreground placeholder:text-muted-foreground"
                 required
                 minLength={6}
+                autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
               />
               <Button
                 type="button"
