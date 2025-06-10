@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { MessageSquare, Shield, Smartphone, Monitor } from 'lucide-react';
+import { MessageSquare, Shield, Smartphone, Monitor, AlertTriangle } from 'lucide-react';
 import { smsService } from '@/services/smsService';
 import { useToast } from '@/hooks/use-toast';
 import { Capacitor } from '@capacitor/core';
@@ -83,6 +83,17 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
           </div>
         )}
 
+        <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg space-y-3">
+          <div className="flex items-center gap-2 text-sm">
+            <AlertTriangle className="h-4 w-4 text-orange-500" />
+            <span className="font-medium text-orange-900 dark:text-orange-100">Development Notice</span>
+          </div>
+          <p className="text-xs text-orange-700 dark:text-orange-300">
+            SMS plugin is not installed in this development environment. For production builds, 
+            you'll need to install a compatible SMS plugin like @capacitor-community/sms.
+          </p>
+        </div>
+
         <div className="flex items-center space-x-2">
           <Smartphone className="h-4 w-4 text-muted-foreground" />
           <div className="flex-1">
@@ -142,8 +153,8 @@ export const SMSSettings = ({ onTransactionDetected }: SMSSettingsProps) => {
         {!isNative && (
           <div className="p-4 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
             <p className="text-xs text-yellow-700 dark:text-yellow-300">
-              <strong>To use on mobile:</strong> Export this project to GitHub, then build and install 
-              the app on your Android/iOS device using the Capacitor CLI.
+              <strong>For production use:</strong> Install a compatible SMS plugin and build the app 
+              for mobile deployment using Capacitor CLI.
             </p>
           </div>
         )}

@@ -22,10 +22,11 @@ export class SMSService {
   private async initializeSMSPlugin() {
     if (Capacitor.isNativePlatform()) {
       try {
-        // Import the SMS plugin from @capacitor-community/sms
-        const { SmsRetriever } = await import('@capacitor-community/sms');
-        this.smsPlugin = SmsRetriever;
-        console.log('SMS plugin initialized successfully');
+        // Note: SMS plugin is not available in this development environment
+        // For production builds, you would need to install a working SMS plugin
+        // such as @capacitor-community/sms or similar
+        console.log('SMS plugin not available - running in development mode');
+        this.smsPlugin = undefined;
       } catch (error) {
         console.warn('SMS plugin not available:', error);
       }
