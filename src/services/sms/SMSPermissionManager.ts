@@ -85,15 +85,14 @@ export class SMSPermissionManager {
       const result = await this.smsPlugin.checkPermissions();
       console.log('Permission check raw result:', result);
       
-      // Try multiple ways to check if permissions are granted
-      const hasReceivePermission = result.receive === 'granted' || result.granted === true;
-      const hasSendPermission = result.send === 'granted' || result.granted === true;
+      // Check if permissions are granted based on the actual type structure
+      const hasReceivePermission = result.receive === 'granted';
+      const hasSendPermission = result.send === 'granted';
       
       console.log('Parsed permissions - receive:', hasReceivePermission, 'send:', hasSendPermission);
       
       // For SMS detection, we primarily need receive permission
-      // Some plugins might only return a single 'granted' property
-      const hasPermission = hasReceivePermission || result.granted === true;
+      const hasPermission = hasReceivePermission;
       
       console.log('Final permission result:', hasPermission);
       
