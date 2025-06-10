@@ -25,9 +25,11 @@ export class SMSService {
   private async initializeSMSPlugin() {
     if (Capacitor.isNativePlatform()) {
       try {
-        // Dynamically import the SMS plugin only when on native platform
-        const { Sms } = await import('@capacitor-community/sms');
-        this.smsPlugin = Sms;
+        // Try to dynamically import SMS plugin - this will fail gracefully if not available
+        // For now, we'll comment this out until we have the correct plugin
+        // const { Sms } = await import('@capacitor-community/sms');
+        // this.smsPlugin = Sms;
+        console.log('SMS plugin initialization skipped - plugin not available');
       } catch (error) {
         console.warn('SMS plugin not available:', error);
       }
@@ -58,8 +60,8 @@ export class SMSService {
 
       if (!this.smsPlugin) {
         toast({
-          title: "SMS Plugin Unavailable",
-          description: "SMS plugin is not installed. Please build the app for mobile devices.",
+          title: "SMS Plugin Setup Required",
+          description: "SMS plugin needs to be configured for mobile builds. Enable test mode for now.",
           variant: "destructive",
         });
         return false;
@@ -139,6 +141,16 @@ export class SMSService {
       return true;
     }
 
+    // For native platforms, check if we have the plugin
+    if (!this.smsPlugin) {
+      toast({
+        title: "SMS Plugin Required",
+        description: "SMS plugin needs to be installed for mobile builds. Contact developer for setup.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     const hasPermission = await this.checkPermissions();
     if (!hasPermission) {
       const granted = await this.requestPermissions();
@@ -146,10 +158,6 @@ export class SMSService {
     }
 
     try {
-      if (!this.smsPlugin) {
-        throw new Error('SMS plugin not available');
-      }
-
       // Set up SMS listener using the plugin
       this.smsListener = await this.smsPlugin.addListener('smsReceived', (message) => {
         console.log('SMS received:', message);
