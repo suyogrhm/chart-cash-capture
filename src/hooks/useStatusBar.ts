@@ -26,17 +26,18 @@ export const useStatusBar = () => {
             
             // Set appropriate status bar style and background based on theme
             if (isDarkMode) {
-              // For dark mode: Force light content (white icons) with dark background
+              // For dark mode: CRITICAL - Force light content (white icons) with dark background
               console.log('Setting LIGHT style for dark mode (white icons)');
               await StatusBar.setStyle({ style: Style.Light });
+              // Use pure black for maximum contrast
               await StatusBar.setBackgroundColor({ color: '#000000' });
-              console.log('Applied dark mode status bar settings');
+              console.log('Applied dark mode status bar settings - white icons on black background');
             } else {
               // For light mode: Dark content (dark icons) with light background
               console.log('Setting DARK style for light mode (dark icons)');
               await StatusBar.setStyle({ style: Style.Dark });
               await StatusBar.setBackgroundColor({ color: '#ffffff' });
-              console.log('Applied light mode status bar settings');
+              console.log('Applied light mode status bar settings - dark icons on white background');
             }
             
             // Listen for theme changes
@@ -50,15 +51,15 @@ export const useStatusBar = () => {
               console.log('New theme setting:', newCurrentTheme);
               
               if (newIsDarkMode) {
-                console.log('Theme change: Setting LIGHT style for dark mode');
+                console.log('Theme change: Setting LIGHT style for dark mode (forcing white icons)');
                 await StatusBar.setStyle({ style: Style.Light });
                 await StatusBar.setBackgroundColor({ color: '#000000' });
-                console.log('Applied dark mode status bar on theme change');
+                console.log('Applied dark mode status bar on theme change - white icons forced');
               } else {
-                console.log('Theme change: Setting DARK style for light mode');
+                console.log('Theme change: Setting DARK style for light mode (dark icons)');
                 await StatusBar.setStyle({ style: Style.Dark });
                 await StatusBar.setBackgroundColor({ color: '#ffffff' });
-                console.log('Applied light mode status bar on theme change');
+                console.log('Applied light mode status bar on theme change - dark icons');
               }
             };
             
