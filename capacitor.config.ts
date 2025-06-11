@@ -6,6 +6,11 @@ const config: CapacitorConfig = {
   appName: 'chart-cash-capture',
   webDir: 'dist',
   plugins: {
+    StatusBar: {
+      style: 'DARK',
+      backgroundColor: '#ffffff',
+      overlaysWebView: false,
+    },
     SplashScreen: {
       launchShowDuration: 3000,
       launchAutoHide: true,

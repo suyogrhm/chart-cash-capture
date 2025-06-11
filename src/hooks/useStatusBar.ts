@@ -43,6 +43,9 @@ export const useStatusBar = () => {
       }
     };
 
-    setStatusBarStyle();
+    // Add a small delay to ensure the theme is fully applied
+    const timeoutId = setTimeout(setStatusBarStyle, 100);
+    
+    return () => clearTimeout(timeoutId);
   }, [theme]); // This effect re-runs whenever the app theme changes
 };
