@@ -27,9 +27,9 @@ export const useStatusBar = () => {
           actualTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
         
-        // For a 'light' theme, we want dark icons (Style.Dark).
-        // For a 'dark' theme, we want light icons (Style.Light).
-        const currentStyle = actualTheme === 'light' ? Style.Dark : Style.Light;
+        // CORRECTED LOGIC: For light theme, use LIGHT style (light icons)
+        // For dark theme, use DARK style (dark icons)
+        const currentStyle = actualTheme === 'light' ? Style.Light : Style.Dark;
         
         // Set the background color to match the theme.
         const backgroundColor = actualTheme === 'light' ? '#ffffff' : '#020817';
