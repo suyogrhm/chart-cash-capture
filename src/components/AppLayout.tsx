@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { UserMenu } from '@/components/UserMenu';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -24,6 +23,33 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   const handleTabChange = (tab: string) => {
     navigate(`/?tab=${tab}`);
   };
+
+  // Debug safe area values
+  useEffect(() => {
+    if (isMobile) {
+      console.log('=== SAFE AREA DEBUG ===');
+      const computedStyle = getComputedStyle(document.documentElement);
+      console.log('Safe area top:', computedStyle.getPropertyValue('--safe-area-inset-top'));
+      console.log('Safe area bottom:', computedStyle.getPropertyValue('--safe-area-inset-bottom'));
+      console.log('Safe area left:', computedStyle.getPropertyValue('--safe-area-inset-left'));
+      console.log('Safe area right:', computedStyle.getPropertyValue('--safe-area-inset-right'));
+      
+      // Check actual CSS values
+      const header = document.querySelector('.mobile-fixed-header');
+      if (header) {
+        const headerStyle = getComputedStyle(header);
+        console.log('Header padding-top:', headerStyle.paddingTop);
+        console.log('Header height:', headerStyle.height);
+      }
+      
+      const content = document.querySelector('.mobile-content-with-fixed-header');
+      if (content) {
+        const contentStyle = getComputedStyle(content);
+        console.log('Content padding-top:', contentStyle.paddingTop);
+      }
+      console.log('=== SAFE AREA DEBUG END ===');
+    }
+  }, [isMobile]);
 
   return (
     <div className="mobile-min-vh bg-background">
