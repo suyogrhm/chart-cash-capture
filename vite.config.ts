@@ -21,7 +21,12 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     rollupOptions: {
-      external: ['@capacitor/status-bar']
+      // Remove external configuration for @capacitor/status-bar to allow bundling
+      external: []
     }
+  },
+  // Ensure proper handling of Capacitor modules
+  optimizeDeps: {
+    include: ['@capacitor/core', '@capacitor/status-bar']
   }
 }));

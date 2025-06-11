@@ -1,7 +1,6 @@
 
 import { useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
-import { StatusBar, Style } from '@capacitor/status-bar';
 import { useTheme } from '@/components/ThemeProvider';
 
 /**
@@ -18,6 +17,9 @@ export const useStatusBar = () => {
 
     const setStatusBarStyle = async () => {
       try {
+        // Dynamically import StatusBar to avoid module resolution issues
+        const { StatusBar, Style } = await import('@capacitor/status-bar');
+        
         // Determine the actual theme being applied
         let actualTheme = theme;
         if (theme === 'system') {
@@ -40,6 +42,7 @@ export const useStatusBar = () => {
 
       } catch (error) {
         console.error("Failed to set status bar style", error);
+        // Gracefully handle the error - app should still work without status bar changes
       }
     };
 
