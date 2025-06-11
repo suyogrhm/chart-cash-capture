@@ -60,16 +60,16 @@ export class SMSPluginDetector {
       console.log('Strategy 2 failed:', error.message);
     }
 
-    // Strategy 3: Try registerPlugin (but handle Promise properly)
+    // Strategy 3: Try registerPlugin (but avoid calling .then() and handle Promise properly)
     try {
       console.log('Strategy 3: Attempting registerPlugin with SMSInboxReader...');
       const { registerPlugin } = await import('@capacitor/core');
       
       const smsPlugin = registerPlugin('SMSInboxReader');
       
-      // Check if it's a Promise (which means it's not implemented)
-      if (smsPlugin && typeof smsPlugin === 'object' && 'then' in smsPlugin && typeof smsPlugin.then === 'function') {
-        console.log('Plugin returned a Promise, which means it\'s not properly implemented');
+      // Check if it's a thenable object (Promise-like) by checking for then method
+      if (smsPlugin && typeof smsPlugin === 'object' && 'then' in smsPlugin) {
+        console.log('Plugin returned a Promise-like object, which means it\'s not properly implemented');
         // Don't return the Promise, continue to other strategies
       } else if (smsPlugin && typeof smsPlugin === 'object') {
         console.log('✓ Successfully registered SMSInboxReader plugin');
