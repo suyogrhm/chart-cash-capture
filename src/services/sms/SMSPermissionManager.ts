@@ -1,3 +1,4 @@
+
 import { Capacitor } from '@capacitor/core';
 import { toast } from '@/hooks/use-toast';
 import { SmsPlugin, SMSPermissionResult } from '@/types/SMSTypes';
@@ -29,11 +30,14 @@ export class SMSPermissionManager {
         return false;
       }
 
-      // First, try to request notification permissions if available
-      await this.requestNotificationPermissions();
-
       console.log('=== Starting SMS permission request ===');
       
+      // Show toast to prepare user for permission dialog
+      toast({
+        title: "Permission Request",
+        description: "Please allow SMS permissions when prompted to enable transaction detection.",
+      });
+
       try {
         const result = await this.smsPlugin.requestPermissions();
         console.log('=== SMS permission request completed ===');
@@ -50,36 +54,45 @@ export class SMSPermissionManager {
           });
           return true;
         } else {
-          // Wait and recheck multiple times with different strategies
-          console.log('Initial check failed, starting comprehensive recheck...');
-          
-          const recheckStrategies = [
-            { delay: 1000, name: 'Quick recheck' },
-            { delay: 3000, name: 'Medium delay recheck' },
-            { delay: 5000, name: 'Long delay recheck' }
-          ];
-          
-          for (const strategy of recheckStrategies) {
-            console.log(`${strategy.name} - waiting ${strategy.delay}ms...`);
-            await new Promise(resolve => setTimeout(resolve, strategy.delay));
+          // Check if user denied the permission
+          if (result.receive === 'denied' || result.send === 'denied') {
+            toast({
+              title: "SMS Permissions Denied",
+              description: "SMS detection requires permission to read SMS messages. You can grant this in your device settings under App Permissions.",
+              variant: "destructive",
+            });
+          } else {
+            // Wait and recheck multiple times with different strategies
+            console.log('Initial check failed, starting comprehensive recheck...');
             
-            const recheckResult = await this.checkPermissions();
-            console.log(`${strategy.name} result:`, recheckResult);
+            const recheckStrategies = [
+              { delay: 1000, name: 'Quick recheck' },
+              { delay: 3000, name: 'Medium delay recheck' },
+              { delay: 5000, name: 'Long delay recheck' }
+            ];
             
-            if (recheckResult) {
-              toast({
-                title: "SMS Permission Granted",
-                description: "The app can now detect transactions from SMS messages.",
-              });
-              return true;
+            for (const strategy of recheckStrategies) {
+              console.log(`${strategy.name} - waiting ${strategy.delay}ms...`);
+              await new Promise(resolve => setTimeout(resolve, strategy.delay));
+              
+              const recheckResult = await this.checkPermissions();
+              console.log(`${strategy.name} result:`, recheckResult);
+              
+              if (recheckResult) {
+                toast({
+                  title: "SMS Permission Granted",
+                  description: "The app can now detect transactions from SMS messages.",
+                });
+                return true;
+              }
             }
+            
+            toast({
+              title: "SMS Permissions Required",
+              description: "Please grant SMS permissions in your device settings to enable transaction detection.",
+              variant: "destructive",
+            });
           }
-          
-          toast({
-            title: "SMS Permissions Required",
-            description: "Please grant SMS permissions in your device settings to enable transaction detection.",
-            variant: "destructive",
-          });
           return false;
         }
       } catch (pluginError) {
@@ -127,30 +140,6 @@ export class SMSPermissionManager {
     }
   }
 
-  private async requestNotificationPermissions(): Promise<void> {
-    try {
-      // Try to request notification permissions using different methods
-      if ((window as any).Capacitor && (window as any).Capacitor.Plugins) {
-        const plugins = (window as any).Capacitor.Plugins;
-        if (plugins.LocalNotifications) {
-          console.log('Requesting notification permissions...');
-          const notificationResult = await plugins.LocalNotifications.requestPermissions();
-          console.log('Notification permission result:', notificationResult);
-        } else {
-          console.log('LocalNotifications plugin not available');
-        }
-      } else if ((window as any).LocalNotifications) {
-        console.log('Requesting notification permissions via global LocalNotifications...');
-        const notificationResult = await (window as any).LocalNotifications.requestPermissions();
-        console.log('Notification permission result:', notificationResult);
-      } else {
-        console.log('LocalNotifications plugin not found');
-      }
-    } catch (error) {
-      console.log('Could not request notification permissions:', error.message);
-    }
-  }
-
   async checkPermissions(): Promise<boolean> {
     try {
       if (!Capacitor.isNativePlatform()) {
@@ -160,11 +149,6 @@ export class SMSPermissionManager {
 
       if (!this.smsPlugin) {
         console.log('❌ SMS plugin not available for permission check');
-        console.log('This indicates the capacitor-sms plugin is not properly loaded');
-        console.log('Please ensure:');
-        console.log('1. Plugin is installed: npm install capacitor-sms');
-        console.log('2. Plugin is synced: npx cap sync');
-        console.log('3. App is rebuilt after plugin installation');
         return false;
       }
       
@@ -191,11 +175,6 @@ export class SMSPermissionManager {
       }
     } catch (error) {
       console.error('Error checking SMS permissions:', error);
-      console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
       return false;
     }
   }
@@ -232,7 +211,6 @@ export class SMSPermissionManager {
     
     if (!this.smsPlugin) {
       console.log('❌ No SMS plugin available for force refresh');
-      console.log('This means the capacitor-sms plugin is not loaded at all');
       
       toast({
         title: "Plugin Setup Required",
@@ -243,58 +221,37 @@ export class SMSPermissionManager {
     }
     
     console.log('✓ SMS plugin is available for force refresh');
-    console.log('Plugin type:', typeof this.smsPlugin);
     
     try {
-      // Strategy 1: Rapid multiple checks
-      console.log('Strategy 1: Rapid multiple checks');
-      for (let i = 0; i < 5; i++) {
-        console.log(`  Attempt ${i + 1}/5...`);
-        const result = await this.checkPermissions();
-        console.log(`  Result ${i + 1}:`, result);
-        
-        if (result) {
-          console.log(`✓ Permission detected on rapid check attempt ${i + 1}`);
-          return true;
-        }
-        
-        if (i < 4) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
+      // Strategy 1: Check current permissions first
+      console.log('Strategy 1: Checking current permissions');
+      const currentPermissions = await this.checkPermissions();
+      console.log('Current permissions:', currentPermissions);
+      
+      if (currentPermissions) {
+        console.log('✓ Permissions already granted');
+        toast({
+          title: "SMS Permissions Already Granted",
+          description: "SMS detection is ready to use.",
+        });
+        return true;
       }
       
-      // Strategy 2: Request permissions again to refresh state
-      console.log('Strategy 2: Re-requesting permissions to refresh state');
-      try {
-        const requestResult = await this.smsPlugin.requestPermissions();
-        console.log('Re-request result:', JSON.stringify(requestResult, null, 2));
-        
-        // Check immediately after request
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const immediateCheck = await this.checkPermissions();
-        console.log('Immediate check after re-request:', immediateCheck);
-        
-        if (immediateCheck) {
-          console.log('✓ Permission detected after re-request');
-          return true;
-        }
-      } catch (error) {
-        console.log('Re-request failed:', error.message);
-        if (error.message && error.message.includes('not implemented')) {
-          toast({
-            title: "Platform Not Supported",
-            description: "SMS detection is not available on this device platform.",
-            variant: "destructive",
-          });
-          return false;
-        }
+      // Strategy 2: Request permissions if not granted
+      console.log('Strategy 2: Requesting permissions since they are not granted');
+      const requestResult = await this.requestPermissions();
+      console.log('Permission request result:', requestResult);
+      
+      if (requestResult) {
+        console.log('✓ Permissions granted after request');
+        return true;
       }
       
       console.log('=== FORCE REFRESH COMPLETED - NO PERMISSIONS DETECTED ===');
       
       toast({
-        title: "No SMS Permissions",
-        description: "Please grant SMS permissions in device settings or check if the plugin is properly installed.",
+        title: "Manual Permission Required",
+        description: "Please go to Settings > Apps > [App Name] > Permissions and manually enable SMS permissions.",
         variant: "destructive",
       });
       
@@ -305,8 +262,8 @@ export class SMSPermissionManager {
       
       if (error.message && error.message.includes('not implemented')) {
         toast({
-          title: "Plugin Not Available",
-          description: "SMS plugin is not implemented for this platform. Check plugin installation.",
+          title: "Platform Not Supported",
+          description: "SMS detection is not available on this device platform.",
           variant: "destructive",
         });
       } else {
