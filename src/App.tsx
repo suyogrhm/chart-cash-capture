@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useStatusBar } from "@/hooks/useStatusBar";
+import { useBackButton } from "@/hooks/useBackButton";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -17,6 +18,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
   useStatusBar();
+  useBackButton();
   
   return (
     <QueryClientProvider client={queryClient}>

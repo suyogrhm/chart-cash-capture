@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { Send, MessageCircle, Wallet, CreditCard, Plus, Lightbulb, ChevronDown }
 import { toast } from '@/hooks/use-toast';
 import { Account } from '@/types/Transaction';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { PaymentMethodDetector } from '@/components/PaymentMethodDetector';
 
 interface MessageInputProps {
   onMessage: (message: string, accountId?: string, paymentMethod?: string) => void;
@@ -17,13 +18,22 @@ interface MessageInputProps {
 
 export const MessageInput = ({ onMessage, accounts }: MessageInputProps) => {
   const [message, setMessage] = useState('');
-  // Find savings account first, then fallback to first account
   const defaultAccount = accounts.find(acc => acc.type === 'savings') || accounts[0];
   const [selectedAccount, setSelectedAccount] = useState(defaultAccount?.id || '');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
   const [isExpanded, setIsExpanded] = useState(false);
   const [isExamplesOpen, setIsExamplesOpen] = useState(false);
   const isMobile = useIsMobile();
+
+  // Auto-expand when payment method is detected
+  useEffect(() => {
+    if (message.trim() && !isExpanded) {
+      const hasPaymentKeywords = /\b(upi|cash|card|debit|credit|paytm|gpay|phonepe)\b/i.test(message);
+      if (hasPaymentKeywords) {
+        setIsExpanded(true);
+      }
+    }
+  }, [message, isExpanded]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +46,13 @@ export const MessageInput = ({ onMessage, accounts }: MessageInputProps) => {
         title: "Transaction recorded!",
         description: "Your message has been processed and added to your transactions.",
       });
+    }
+  };
+
+  const handlePaymentMethodSuggestion = (method: string) => {
+    setSelectedPaymentMethod(method);
+    if (!isExpanded) {
+      setIsExpanded(true);
     }
   };
 
@@ -71,13 +88,13 @@ export const MessageInput = ({ onMessage, accounts }: MessageInputProps) => {
                 <p className="mb-2">Try these example formats:</p>
                 <div className="grid gap-2">
                   <div className="bg-background px-3 py-2 rounded-lg border font-mono text-xs">
-                    "Bought coffee for ₹150"
+                    "Bought coffee for ₹150 via UPI"
                   </div>
                   <div className="bg-background px-3 py-2 rounded-lg border font-mono text-xs">
-                    "Received salary ₹30000"
+                    "Received salary ₹30000 bank transfer"
                   </div>
                   <div className="bg-background px-3 py-2 rounded-lg border font-mono text-xs">
-                    "Paid rent ₹12000"
+                    "Paid rent ₹12000 with card"
                   </div>
                 </div>
               </div>
@@ -117,7 +134,7 @@ export const MessageInput = ({ onMessage, accounts }: MessageInputProps) => {
               <Input
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="e.g., 'Spent ₹150 on coffee' or 'Earned ₹5000 salary'"
+                placeholder="e.g., 'Spent ₹150 on coffee via UPI' or 'Earned ₹5000 salary'"
                 className={`flex-1 ${isMobile ? 'text-base h-12' : 'text-lg h-14'} border-primary/30 focus:border-primary bg-background/80 backdrop-blur-sm shadow-sm`}
               />
               <Button 
@@ -127,6 +144,14 @@ export const MessageInput = ({ onMessage, accounts }: MessageInputProps) => {
                 <Send className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'}`} />
               </Button>
             </div>
+
+            {/* Payment Method Detection */}
+            {message.trim() && (
+              <PaymentMethodDetector 
+                message={message} 
+                onSuggestionSelect={handlePaymentMethodSuggestion}
+              />
+            )}
 
             {/* Expanded Options */}
             {isExpanded && (
