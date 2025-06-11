@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { UserMenu } from '@/components/UserMenu';
@@ -24,30 +25,80 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     navigate(`/?tab=${tab}`);
   };
 
-  // Debug safe area values
+  // Debug safe area values and potential z-index conflicts
   useEffect(() => {
     if (isMobile) {
-      console.log('=== SAFE AREA DEBUG ===');
+      console.log('=== MOBILE LAYOUT DEBUG ===');
       const computedStyle = getComputedStyle(document.documentElement);
       console.log('Safe area top:', computedStyle.getPropertyValue('--safe-area-inset-top'));
       console.log('Safe area bottom:', computedStyle.getPropertyValue('--safe-area-inset-bottom'));
       console.log('Safe area left:', computedStyle.getPropertyValue('--safe-area-inset-left'));
       console.log('Safe area right:', computedStyle.getPropertyValue('--safe-area-inset-right'));
       
-      // Check actual CSS values
-      const header = document.querySelector('.mobile-fixed-header');
-      if (header) {
-        const headerStyle = getComputedStyle(header);
-        console.log('Header padding-top:', headerStyle.paddingTop);
-        console.log('Header height:', headerStyle.height);
-      }
+      // Check viewport and screen dimensions
+      console.log('Viewport dimensions:', {
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight,
+        outerWidth: window.outerWidth,
+        outerHeight: window.outerHeight,
+        screenHeight: window.screen.height,
+        availHeight: window.screen.availHeight
+      });
+      
+      // Check for z-index stacking issues
+      const checkZIndexIssues = () => {
+        const header = document.querySelector('.mobile-fixed-header');
+        if (header) {
+          const headerStyle = getComputedStyle(header);
+          console.log('Header z-index analysis:', {
+            zIndex: headerStyle.zIndex,
+            position: headerStyle.position,
+            top: headerStyle.top,
+            height: headerStyle.height,
+            backgroundColor: headerStyle.backgroundColor,
+            borderBottom: headerStyle.borderBottom
+          });
+          
+          // Check if header is positioned correctly relative to status bar
+          const headerRect = header.getBoundingClientRect();
+          console.log('Header position rect:', {
+            top: headerRect.top,
+            height: headerRect.height,
+            bottom: headerRect.bottom
+          });
+          
+          // Check if header overlaps with potential status bar area
+          if (headerRect.top <= 0) {
+            console.warn('⚠️ Header may be overlapping with status bar area!');
+          }
+        }
+        
+        // Check all fixed/absolute positioned elements
+        const fixedElements = Array.from(document.querySelectorAll('*')).filter(el => {
+          const style = getComputedStyle(el);
+          return style.position === 'fixed' || style.position === 'absolute';
+        });
+        
+        console.log('All fixed/absolute positioned elements:', fixedElements.map(el => ({
+          tagName: el.tagName,
+          className: el.className,
+          position: getComputedStyle(el).position,
+          zIndex: getComputedStyle(el).zIndex,
+          top: getComputedStyle(el).top,
+          backgroundColor: getComputedStyle(el).backgroundColor
+        })));
+      };
+      
+      // Run immediately and after a delay to catch dynamic changes
+      checkZIndexIssues();
+      setTimeout(checkZIndexIssues, 1000);
       
       const content = document.querySelector('.mobile-content-with-fixed-header');
       if (content) {
         const contentStyle = getComputedStyle(content);
         console.log('Content padding-top:', contentStyle.paddingTop);
       }
-      console.log('=== SAFE AREA DEBUG END ===');
+      console.log('=== MOBILE LAYOUT DEBUG END ===');
     }
   }, [isMobile]);
 
@@ -87,9 +138,9 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         </div>
       )}
 
-      {/* Mobile: Fixed Header */}
+      {/* Mobile: Fixed Header - REDUCED Z-INDEX TO TEST */}
       {isMobile && (
-        <div className="mobile-fixed-header">
+        <div className="mobile-fixed-header" style={{ zIndex: 40 }}>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <ExpenseTrackerLogo className="h-10 w-10" />
