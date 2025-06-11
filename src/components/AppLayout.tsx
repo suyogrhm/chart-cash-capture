@@ -61,11 +61,10 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         </div>
       )}
 
-      {/* Content Container with proper safe area handling */}
-      <div className={`container mx-auto ${isMobile ? 'px-2 py-4 pb-20' : 'px-4 py-6'} max-w-7xl`}>
-        {/* Mobile: Header without Navigation - with status bar safe area */}
-        {isMobile && (
-          <div className="mb-4 flex justify-between items-center status-bar-safe">
+      {/* Mobile: Fixed Header */}
+      {isMobile && (
+        <div className="mobile-fixed-header">
+          <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <ExpenseTrackerLogo className="h-10 w-10" />
               <div>
@@ -82,7 +81,11 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
               <UserMenu />
             </div>
           </div>
-        )}
+        </div>
+      )}
+
+      {/* Content Container with proper spacing for fixed header */}
+      <div className={`container mx-auto ${isMobile ? 'px-2 py-4 pb-20 mobile-content-with-fixed-header' : 'px-4 py-6'} max-w-7xl`}>
         {children}
       </div>
 

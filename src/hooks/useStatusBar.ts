@@ -19,14 +19,14 @@ export const useStatusBar = () => {
             
             // Set appropriate status bar style and background based on theme
             if (isDarkMode) {
-              await StatusBar.setStyle({ style: Style.Light }); // Light icons for dark mode
+              await StatusBar.setStyle({ style: Style.Light }); // White icons for dark mode
               await StatusBar.setBackgroundColor({ color: '#0f0f23' }); // Dark background matching app
             } else {
               await StatusBar.setStyle({ style: Style.Dark }); // Dark icons for light mode
               await StatusBar.setBackgroundColor({ color: '#ffffff' }); // Light background matching app
             }
             
-            // Don't overlay the webview - this prevents content overlap
+            // Status bar should not overlay the webview to prevent content overlap
             await StatusBar.setOverlaysWebView({ overlay: false });
             
             // Listen for theme changes
@@ -37,7 +37,7 @@ export const useStatusBar = () => {
               const newIsDarkMode = newCurrentTheme === 'dark' || (newCurrentTheme === 'system' && newPrefersDark);
               
               if (newIsDarkMode) {
-                await StatusBar.setStyle({ style: Style.Light }); // Light icons for dark mode
+                await StatusBar.setStyle({ style: Style.Light }); // White icons for dark mode
                 await StatusBar.setBackgroundColor({ color: '#0f0f23' }); // Dark background
               } else {
                 await StatusBar.setStyle({ style: Style.Dark }); // Dark icons for light mode

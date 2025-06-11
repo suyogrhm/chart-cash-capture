@@ -119,8 +119,7 @@
   body {
     min-height: 100vh;
     min-height: -webkit-fill-available;
-    /* Add padding for status bar on mobile */
-    padding-top: var(--safe-area-inset-top);
+    /* Remove body padding to prevent overlap with status bar */
   }
 
   /* Prevent zoom on input focus on iOS */
@@ -202,12 +201,19 @@
     min-height: -webkit-fill-available;
   }
 
-  /* Status bar safe area utilities */
-  .status-bar-safe {
-    padding-top: max(24px, var(--safe-area-inset-top));
+  /* Fixed header with proper spacing */
+  .mobile-fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: hsl(var(--background));
+    border-bottom: 1px solid hsl(var(--border));
+    padding: 1rem;
   }
   
-  .mobile-header-safe {
-    margin-top: max(24px, var(--safe-area-inset-top));
+  .mobile-content-with-fixed-header {
+    padding-top: 120px; /* Space for fixed header */
   }
 }
