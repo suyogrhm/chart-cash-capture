@@ -20,7 +20,7 @@ export const useStatusBar = () => {
             // Set appropriate status bar style and background based on theme
             if (isDarkMode) {
               await StatusBar.setStyle({ style: Style.Light }); // White icons for dark mode
-              await StatusBar.setBackgroundColor({ color: '#000000' }); // Pure black background for better contrast
+              await StatusBar.setBackgroundColor({ color: '#1a1a1a' }); // Dark gray background for better visibility
             } else {
               await StatusBar.setStyle({ style: Style.Dark }); // Dark icons for light mode
               await StatusBar.setBackgroundColor({ color: '#ffffff' }); // White background
@@ -38,7 +38,7 @@ export const useStatusBar = () => {
               
               if (newIsDarkMode) {
                 await StatusBar.setStyle({ style: Style.Light }); // White icons for dark mode
-                await StatusBar.setBackgroundColor({ color: '#000000' }); // Pure black background
+                await StatusBar.setBackgroundColor({ color: '#1a1a1a' }); // Dark gray background
               } else {
                 await StatusBar.setStyle({ style: Style.Dark }); // Dark icons for light mode
                 await StatusBar.setBackgroundColor({ color: '#ffffff' }); // White background
