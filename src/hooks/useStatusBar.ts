@@ -27,14 +27,14 @@ export const useStatusBar = () => {
           actualTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
         
-        // CORRECTED LOGIC: For light theme, use LIGHT style (light icons)
-        // For dark theme, use DARK style (dark icons)
-        const currentStyle = actualTheme === 'light' ? Style.Light : Style.Dark;
+        // For light theme, use DARK style (dark icons on light background)
+        // For dark theme, use LIGHT style (light icons on dark background)
+        const currentStyle = actualTheme === 'light' ? Style.Dark : Style.Light;
         
-        // Set the background color to match the theme.
+        // Set the background color to match the theme - this is crucial for dark mode
         const backgroundColor = actualTheme === 'light' ? '#ffffff' : '#020817';
 
-        console.log(`Setting status bar for ${actualTheme} theme: ${currentStyle === Style.Light ? 'Light icons' : 'Dark icons'}`);
+        console.log(`Setting status bar for ${actualTheme} theme: ${currentStyle === Style.Light ? 'Light icons' : 'Dark icons'}, bg: ${backgroundColor}`);
 
         await StatusBar.setOverlaysWebView({ overlay: false });
         await StatusBar.setStyle({ style: currentStyle });
