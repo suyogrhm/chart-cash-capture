@@ -13,62 +13,59 @@ export const useStatusBar = () => {
             const { StatusBar, Style } = statusBarModule;
             
             const applyStatusBarTheme = async () => {
-              // Check if system is in dark mode
-              const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-              const currentTheme = localStorage.getItem('vite-ui-theme');
-              const isDarkMode = currentTheme === 'dark' || (currentTheme === 'system' && prefersDark);
+              // Check if dark mode is active by looking at the DOM class
+              const isDarkMode = document.documentElement.classList.contains('dark');
               
               console.log('Applying status bar theme - isDarkMode:', isDarkMode);
-              console.log('Current theme setting:', currentTheme);
-              console.log('System prefers dark:', prefersDark);
+              console.log('HTML classes:', document.documentElement.className);
               
-              // Force status bar to not overlay the webview first
+              // Force status bar to not overlay the webview
               await StatusBar.setOverlaysWebView({ overlay: false });
               
               // Set appropriate status bar style and background based on theme
               if (isDarkMode) {
-                // For dark mode: CRITICAL - Force light content (white icons) with dark background
+                // For dark mode: Force light content (white icons) with dark background
                 console.log('Setting LIGHT style for dark mode (white icons)');
                 await StatusBar.setStyle({ style: Style.Light });
-                // Use pure black for maximum contrast
                 await StatusBar.setBackgroundColor({ color: '#000000' });
-                console.log('Applied dark mode status bar settings - white icons on black background');
+                console.log('Applied dark mode status bar - white icons on black background');
+                
+                // Retry setting the style to ensure it takes effect
+                setTimeout(async () => {
+                  await StatusBar.setStyle({ style: Style.Light });
+                  console.log('Retried setting LIGHT style for dark mode');
+                }, 100);
               } else {
                 // For light mode: Dark content (dark icons) with light background
                 console.log('Setting DARK style for light mode (dark icons)');
                 await StatusBar.setStyle({ style: Style.Dark });
                 await StatusBar.setBackgroundColor({ color: '#ffffff' });
-                console.log('Applied light mode status bar settings - dark icons on white background');
+                console.log('Applied light mode status bar - dark icons on white background');
+                
+                // Retry setting the style to ensure it takes effect
+                setTimeout(async () => {
+                  await StatusBar.setStyle({ style: Style.Dark });
+                  console.log('Retried setting DARK style for light mode');
+                }, 100);
               }
             };
             
-            // Apply initial theme
-            await applyStatusBarTheme();
-            
-            // Listen for system theme changes
-            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-            const handleSystemThemeChange = async () => {
-              console.log('System theme changed, reapplying status bar theme');
+            // Add delay to ensure theme is fully loaded before applying status bar
+            setTimeout(async () => {
               await applyStatusBarTheme();
-            };
+            }, 200);
             
-            // Listen for manual theme changes (from theme toggle)
-            const handleManualThemeChange = async () => {
-              console.log('Manual theme change detected, reapplying status bar theme');
-              // Add a small delay to ensure localStorage is updated
-              setTimeout(async () => {
-                await applyStatusBarTheme();
-              }, 100);
-            };
-            
-            // Listen for theme changes from the DOM (when class changes)
+            // Listen for DOM class changes (when theme changes)
             const observer = new MutationObserver(async (mutations) => {
               for (const mutation of mutations) {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                   const target = mutation.target as HTMLElement;
                   if (target === document.documentElement) {
                     console.log('DOM class changed, reapplying status bar theme');
-                    await applyStatusBarTheme();
+                    // Add small delay to ensure theme change is complete
+                    setTimeout(async () => {
+                      await applyStatusBarTheme();
+                    }, 50);
                     break;
                   }
                 }
@@ -81,13 +78,20 @@ export const useStatusBar = () => {
               attributeFilter: ['class']
             });
             
+            // Listen for system theme changes as backup
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            const handleSystemThemeChange = async () => {
+              console.log('System theme changed, reapplying status bar theme');
+              setTimeout(async () => {
+                await applyStatusBarTheme();
+              }, 100);
+            };
+            
             mediaQuery.addEventListener('change', handleSystemThemeChange);
-            window.addEventListener('storage', handleManualThemeChange);
             
             return () => {
-              mediaQuery.removeEventListener('change', handleSystemThemeChange);
-              window.removeEventListener('storage', handleManualThemeChange);
               observer.disconnect();
+              mediaQuery.removeEventListener('change', handleSystemThemeChange);
             };
           } else {
             console.log('StatusBar plugin not available - this is normal for web builds');
