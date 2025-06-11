@@ -201,7 +201,7 @@
     min-height: -webkit-fill-available;
   }
 
-  /* Fixed header with proper spacing */
+  /* Fixed header with proper spacing for status bar */
   .mobile-fixed-header {
     position: fixed;
     top: 0;
@@ -211,9 +211,12 @@
     background: hsl(var(--background));
     border-bottom: 1px solid hsl(var(--border));
     padding: 1rem;
+    /* Add padding to account for status bar and give breathing room */
+    padding-top: max(1.5rem, calc(var(--safe-area-inset-top) + 0.5rem));
   }
   
   .mobile-content-with-fixed-header {
-    padding-top: 120px; /* Space for fixed header */
+    /* Increased padding to account for larger header with status bar spacing */
+    padding-top: max(140px, calc(var(--safe-area-inset-top) + 120px));
   }
 }

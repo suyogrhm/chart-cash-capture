@@ -20,10 +20,10 @@ export const useStatusBar = () => {
             // Set appropriate status bar style and background based on theme
             if (isDarkMode) {
               await StatusBar.setStyle({ style: Style.Light }); // White icons for dark mode
-              await StatusBar.setBackgroundColor({ color: '#0f0f23' }); // Dark background matching app
+              await StatusBar.setBackgroundColor({ color: '#000000' }); // Pure black background for better contrast
             } else {
               await StatusBar.setStyle({ style: Style.Dark }); // Dark icons for light mode
-              await StatusBar.setBackgroundColor({ color: '#ffffff' }); // Light background matching app
+              await StatusBar.setBackgroundColor({ color: '#ffffff' }); // White background
             }
             
             // Status bar should not overlay the webview to prevent content overlap
@@ -38,10 +38,10 @@ export const useStatusBar = () => {
               
               if (newIsDarkMode) {
                 await StatusBar.setStyle({ style: Style.Light }); // White icons for dark mode
-                await StatusBar.setBackgroundColor({ color: '#0f0f23' }); // Dark background
+                await StatusBar.setBackgroundColor({ color: '#000000' }); // Pure black background
               } else {
                 await StatusBar.setStyle({ style: Style.Dark }); // Dark icons for light mode
-                await StatusBar.setBackgroundColor({ color: '#ffffff' }); // Light background
+                await StatusBar.setBackgroundColor({ color: '#ffffff' }); // White background
               }
             };
             
