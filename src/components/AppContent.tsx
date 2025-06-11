@@ -10,6 +10,7 @@ import Profile from '@/pages/Profile';
 import NotFound from '@/pages/NotFound';
 
 export const AppContent = () => {
+  // Always call hooks in the same order - never conditionally
   useStatusBar();
   useBackButton();
   

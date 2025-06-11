@@ -5,19 +5,22 @@ import { useLocation } from 'react-router-dom';
 
 export const useBackButton = () => {
   const location = useLocation();
-  const isDashboard = location.pathname === '/' && !location.search.includes('tab=');
   const listenerRef = useRef<(() => void) | null>(null);
+  
+  // Always calculate this, never conditionally
+  const isDashboard = location.pathname === '/' && !location.search.includes('tab=');
 
   useEffect(() => {
+    // Always run the effect, but return early if not on native platform
     if (!Capacitor.isNativePlatform()) {
       return;
     }
 
     let isMounted = true;
 
-    const handleBackButton = async () => {
+    const setupBackButton = async () => {
       try {
-        const appModule = await import('@capacitor/app').catch(() => null);
+        const appModule = await import('@capacitor/app');
         
         if (!appModule || !isMounted) return;
         
@@ -29,13 +32,9 @@ export const useBackButton = () => {
           listenerRef.current = null;
         }
         
-        const listener = App.addListener('backButton', ({ canGoBack }) => {
+        const listener = await App.addListener('backButton', ({ canGoBack }) => {
           if (!canGoBack || isDashboard) {
-            // Show exit confirmation dialog
-            const confirmExit = confirm('Do you want to exit the app?');
-            if (confirmExit) {
-              App.exitApp();
-            }
+            App.exitApp();
           } else {
             window.history.back();
           }
@@ -48,7 +47,7 @@ export const useBackButton = () => {
       }
     };
 
-    handleBackButton();
+    setupBackButton();
 
     return () => {
       isMounted = false;
@@ -57,5 +56,5 @@ export const useBackButton = () => {
         listenerRef.current = null;
       }
     };
-  }, [isDashboard]);
+  }, [isDashboard]); // Dependencies are stable
 };
