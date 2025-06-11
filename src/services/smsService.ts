@@ -155,29 +155,29 @@ class SmsPluginWrapper implements SmsPlugin {
 export class SMSService {
   private static instance: SMSService;
   private smsPlugin?: SmsPlugin;
-  private permissionManager: SMSPermissionManager;
-  private processor: SMSProcessor;
-  private listenerManager: SMSListenerManager;
+  private permissionManager?: SMSPermissionManager;
+  private processor?: SMSProcessor;
+  private listenerManager?: SMSListenerManager;
 
   private constructor() {
-    this.initializeSMSPlugin();
-    this.permissionManager = new SMSPermissionManager(this.smsPlugin);
-    this.processor = new SMSProcessor();
-    this.listenerManager = new SMSListenerManager(this.smsPlugin, this.processor);
+    this.initializeServices();
   }
 
-  private async initializeSMSPlugin() {
-    if (Capacitor.isNativePlatform()) {
-      try {
+  private async initializeServices() {
+    try {
+      if (Capacitor.isNativePlatform()) {
         this.smsPlugin = new SmsPluginWrapper();
         console.log('SMS plugin wrapper created successfully');
-      } catch (error) {
-        console.warn('SMS plugin initialization failed:', error);
+      } else {
+        console.log('SMS plugin not available - running in web mode');
         this.smsPlugin = undefined;
       }
-    } else {
-      console.log('SMS plugin not available - running in web mode');
-      this.smsPlugin = undefined;
+
+      this.permissionManager = new SMSPermissionManager(this.smsPlugin);
+      this.processor = new SMSProcessor();
+      this.listenerManager = new SMSListenerManager(this.smsPlugin, this.processor);
+    } catch (error) {
+      console.warn('SMS service initialization failed:', error);
     }
   }
 
@@ -189,37 +189,53 @@ export class SMSService {
   }
 
   async requestPermissions(): Promise<boolean> {
-    return this.permissionManager.requestPermissions();
+    if (!this.permissionManager) {
+      await this.initializeServices();
+    }
+    return this.permissionManager?.requestPermissions() ?? false;
   }
 
   async checkPermissions(): Promise<boolean> {
-    return this.permissionManager.checkPermissions();
+    if (!this.permissionManager) {
+      await this.initializeServices();
+    }
+    return this.permissionManager?.checkPermissions() ?? false;
   }
 
   async forceRefreshPermissions(): Promise<boolean> {
-    return this.permissionManager.forceRefreshPermissions();
+    if (!this.permissionManager) {
+      await this.initializeServices();
+    }
+    return this.permissionManager?.forceRefreshPermissions() ?? false;
   }
 
   setTransactionCallback(callback: TransactionCallback) {
-    this.processor.setTransactionCallback(callback);
+    if (!this.processor) {
+      this.initializeServices();
+    }
+    this.processor?.setTransactionCallback(callback);
   }
 
   async startListening(): Promise<boolean> {
-    const hasPermission = await this.permissionManager.checkPermissions();
+    if (!this.permissionManager || !this.listenerManager) {
+      await this.initializeServices();
+    }
+
+    const hasPermission = await this.permissionManager?.checkPermissions() ?? false;
     if (Capacitor.isNativePlatform() && !hasPermission) {
-      const granted = await this.permissionManager.requestPermissions();
+      const granted = await this.permissionManager?.requestPermissions() ?? false;
       if (!granted) return false;
     }
 
-    return this.listenerManager.startListening();
+    return this.listenerManager?.startListening() ?? false;
   }
 
   stopListening() {
-    this.listenerManager.stopListening();
+    this.listenerManager?.stopListening();
   }
 
   getListeningStatus(): boolean {
-    return this.listenerManager.getListeningStatus();
+    return this.listenerManager?.getListeningStatus() ?? false;
   }
 }
 
