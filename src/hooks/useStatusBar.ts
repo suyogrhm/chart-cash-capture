@@ -17,18 +17,17 @@ export const useStatusBar = () => {
             const currentTheme = localStorage.getItem('vite-ui-theme');
             const isDarkMode = currentTheme === 'dark' || (currentTheme === 'system' && prefersDark);
             
-            // Set appropriate status bar style based on theme
-            // Light style = light icons for dark backgrounds
-            // Dark style = dark icons for light backgrounds
+            // Set appropriate status bar style and background based on theme
             if (isDarkMode) {
               await StatusBar.setStyle({ style: Style.Light }); // Light icons for dark mode
+              await StatusBar.setBackgroundColor({ color: '#0f0f23' }); // Dark background matching app
             } else {
               await StatusBar.setStyle({ style: Style.Dark }); // Dark icons for light mode
+              await StatusBar.setBackgroundColor({ color: '#ffffff' }); // Light background matching app
             }
             
-            // Make status bar transparent
-            await StatusBar.setOverlaysWebView({ overlay: true });
-            await StatusBar.setBackgroundColor({ color: '#00000000' }); // Fully transparent
+            // Don't overlay the webview - this prevents content overlap
+            await StatusBar.setOverlaysWebView({ overlay: false });
             
             // Listen for theme changes
             const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -39,8 +38,10 @@ export const useStatusBar = () => {
               
               if (newIsDarkMode) {
                 await StatusBar.setStyle({ style: Style.Light }); // Light icons for dark mode
+                await StatusBar.setBackgroundColor({ color: '#0f0f23' }); // Dark background
               } else {
                 await StatusBar.setStyle({ style: Style.Dark }); // Dark icons for light mode
+                await StatusBar.setBackgroundColor({ color: '#ffffff' }); // Light background
               }
             };
             
