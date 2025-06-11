@@ -18,10 +18,12 @@ export const useStatusBar = () => {
             const isDarkMode = currentTheme === 'dark' || (currentTheme === 'system' && prefersDark);
             
             // Set appropriate status bar style based on theme
+            // Light style = light icons for dark backgrounds
+            // Dark style = dark icons for light backgrounds
             if (isDarkMode) {
-              await StatusBar.setStyle({ style: Style.Dark }); // Dark icons for dark mode
+              await StatusBar.setStyle({ style: Style.Light }); // Light icons for dark mode
             } else {
-              await StatusBar.setStyle({ style: Style.Light }); // Light icons for light mode
+              await StatusBar.setStyle({ style: Style.Dark }); // Dark icons for light mode
             }
             
             // Make status bar transparent
@@ -36,9 +38,9 @@ export const useStatusBar = () => {
               const newIsDarkMode = newCurrentTheme === 'dark' || (newCurrentTheme === 'system' && newPrefersDark);
               
               if (newIsDarkMode) {
-                await StatusBar.setStyle({ style: Style.Dark });
+                await StatusBar.setStyle({ style: Style.Light }); // Light icons for dark mode
               } else {
-                await StatusBar.setStyle({ style: Style.Light });
+                await StatusBar.setStyle({ style: Style.Dark }); // Dark icons for light mode
               }
             };
             
@@ -49,7 +51,7 @@ export const useStatusBar = () => {
             
             return () => {
               mediaQuery.removeEventListener('change', handleThemeChange);
-              window.addEventListener('storage', handleThemeChange);
+              window.removeEventListener('storage', handleThemeChange);
             };
           } else {
             console.log('StatusBar plugin not available - this is normal for web builds');
