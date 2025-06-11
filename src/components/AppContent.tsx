@@ -2,17 +2,15 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { useStatusBar } from '@/hooks/useStatusBar';
-import { useBackButton } from '@/hooks/useBackButton';
 import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
 import Profile from '@/pages/Profile';
 import NotFound from '@/pages/NotFound';
 
 export const AppContent = () => {
-  // Always call hooks in the same order - never conditionally
-  useStatusBar();
-  useBackButton();
+  // Disabled native hooks to prevent crashes
+  // useStatusBar();
+  // useBackButton();
   
   return (
     <Routes>
