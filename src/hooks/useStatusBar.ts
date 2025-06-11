@@ -13,10 +13,9 @@ export const useStatusBar = () => {
           if (statusBarModule) {
             const { StatusBar, Style } = statusBarModule;
             
-            // Set status bar style for dark theme - use Light style for white text/icons
+            // Set status bar style for dark theme with transparent background
             await StatusBar.setStyle({ style: Style.Light });
-            await StatusBar.setBackgroundColor({ color: '#0f0f23' });
-            await StatusBar.setOverlaysWebView({ overlay: false });
+            await StatusBar.setOverlaysWebView({ overlay: true });
           } else {
             console.log('StatusBar plugin not available - this is normal for web builds');
           }
