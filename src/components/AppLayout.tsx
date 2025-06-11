@@ -25,28 +25,6 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     navigate(`/?tab=${tab}`);
   };
 
-  // Debug safe area values and z-index conflicts
-  useEffect(() => {
-    if (isMobile) {
-      console.log('=== MOBILE LAYOUT DEBUG ===');
-      const computedStyle = getComputedStyle(document.documentElement);
-      console.log('Safe area top:', computedStyle.getPropertyValue('--safe-area-inset-top'));
-      console.log('Safe area bottom:', computedStyle.getPropertyValue('--safe-area-inset-bottom'));
-      
-      // Check viewport dimensions
-      console.log('Viewport dimensions:', {
-        innerWidth: window.innerWidth,
-        innerHeight: window.innerHeight,
-        screenHeight: window.screen.height,
-        availHeight: window.screen.availHeight
-      });
-      
-      // TEMPORARY: Alert to check if this code runs on mobile
-      alert(`Mobile layout loaded. Safe area top: ${computedStyle.getPropertyValue('--safe-area-inset-top')}`);
-      console.log('=== MOBILE LAYOUT DEBUG END ===');
-    }
-  }, [isMobile]);
-
   return (
     <div className="mobile-min-vh bg-background">
       {/* Desktop: Sticky Header with Navigation */}
@@ -83,11 +61,27 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         </div>
       )}
 
-      {/* TEMPORARILY REMOVED MOBILE HEADER TO TEST STATUS BAR */}
-      {/* We'll add it back once status bar works */}
+      {/* Mobile: Fixed Header */}
+      {isMobile && (
+        <div className="mobile-fixed-header">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <ExpenseTrackerLogo className="h-6 w-6" />
+              <h1 className="text-lg font-bold text-foreground">
+                Expense Tracker Pro
+              </h1>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <UserMenu />
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Content Container - no fixed header spacing for now */}
-      <div className={`container mx-auto ${isMobile ? 'px-2 py-4 pb-20' : 'px-4 py-6'} max-w-7xl`}>
+      {/* Content Container */}
+      <div className={`container mx-auto ${isMobile ? 'mobile-content-with-fixed-header px-2 py-4 pb-20' : 'px-4 py-6'} max-w-7xl`}>
         {children}
       </div>
 
