@@ -5,12 +5,23 @@ import { SmsPlugin, SMSPermissionResult } from '@/types/SMSTypes';
 
 export class SMSPermissionManager {
   private smsPlugin?: SmsPlugin;
+  private cachedPermissionStatus?: boolean;
+  private lastPermissionCheck = 0;
+  private readonly CACHE_DURATION = 5000; // 5 seconds
 
   constructor(smsPlugin?: SmsPlugin) {
     this.smsPlugin = smsPlugin;
   }
 
+  // Clear cached permission status to force fresh check
+  private clearPermissionCache() {
+    this.cachedPermissionStatus = undefined;
+    this.lastPermissionCheck = 0;
+  }
+
   async requestPermissions(): Promise<boolean> {
+    this.clearPermissionCache(); // Clear cache before requesting
+    
     try {
       if (!Capacitor.isNativePlatform()) {
         toast({
@@ -48,6 +59,7 @@ export class SMSPermissionManager {
         console.log('Parsed permission status after request:', hasPermission);
         
         if (hasPermission) {
+          this.cachedPermissionStatus = true;
           toast({
             title: "SMS Permission Granted",
             description: "The app can now detect transactions from SMS messages.",
@@ -62,26 +74,29 @@ export class SMSPermissionManager {
               variant: "destructive",
             });
           } else {
-            // Wait and recheck multiple times with different strategies
-            console.log('Initial check failed, starting comprehensive recheck...');
+            // Force multiple fresh checks since permission might have been granted outside the app
+            console.log('Initial check failed, starting fresh permission verification...');
             
-            const recheckStrategies = [
+            const recheckAttempts = [
               { delay: 1000, name: 'Quick recheck' },
-              { delay: 3000, name: 'Medium delay recheck' },
-              { delay: 5000, name: 'Long delay recheck' }
+              { delay: 2000, name: 'Medium delay recheck' },
+              { delay: 3000, name: 'Final recheck' }
             ];
             
-            for (const strategy of recheckStrategies) {
-              console.log(`${strategy.name} - waiting ${strategy.delay}ms...`);
-              await new Promise(resolve => setTimeout(resolve, strategy.delay));
+            for (const attempt of recheckAttempts) {
+              console.log(`${attempt.name} - waiting ${attempt.delay}ms...`);
+              await new Promise(resolve => setTimeout(resolve, attempt.delay));
               
+              // Force fresh check by clearing cache
+              this.clearPermissionCache();
               const recheckResult = await this.checkPermissions();
-              console.log(`${strategy.name} result:`, recheckResult);
+              console.log(`${attempt.name} result:`, recheckResult);
               
               if (recheckResult) {
+                this.cachedPermissionStatus = true;
                 toast({
-                  title: "SMS Permission Granted",
-                  description: "The app can now detect transactions from SMS messages.",
+                  title: "SMS Permission Detected",
+                  description: "SMS permissions are now active! You can start SMS detection.",
                 });
                 return true;
               }
@@ -89,7 +104,7 @@ export class SMSPermissionManager {
             
             toast({
               title: "SMS Permissions Required",
-              description: "Please grant SMS permissions in your device settings to enable transaction detection.",
+              description: "Please ensure SMS permissions are enabled in your device settings, then tap 'Refresh Status'.",
               variant: "destructive",
             });
           }
@@ -97,6 +112,7 @@ export class SMSPermissionManager {
         }
       } catch (pluginError) {
         console.error('SMS plugin method failed:', pluginError);
+        this.clearPermissionCache();
         
         // Check for specific error types
         if (pluginError.message && pluginError.message.includes('not implemented')) {
@@ -116,11 +132,7 @@ export class SMSPermissionManager {
       }
     } catch (error) {
       console.error('Error requesting SMS permissions:', error);
-      console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
+      this.clearPermissionCache();
       
       // Provide specific guidance based on error type
       if (error.message && error.message.includes('not implemented')) {
@@ -141,6 +153,14 @@ export class SMSPermissionManager {
   }
 
   async checkPermissions(): Promise<boolean> {
+    // Use cache if recent and valid
+    const now = Date.now();
+    if (this.cachedPermissionStatus !== undefined && 
+        now - this.lastPermissionCheck < this.CACHE_DURATION) {
+      console.log('Using cached permission status:', this.cachedPermissionStatus);
+      return this.cachedPermissionStatus;
+    }
+
     try {
       if (!Capacitor.isNativePlatform()) {
         console.log('Not on native platform, returning false');
@@ -152,7 +172,7 @@ export class SMSPermissionManager {
         return false;
       }
       
-      console.log('=== Checking SMS permissions ===');
+      console.log('=== Checking SMS permissions (fresh check) ===');
       console.log('Plugin available for check:', !!this.smsPlugin);
       
       try {
@@ -163,9 +183,14 @@ export class SMSPermissionManager {
         const hasPermission = this.parsePermissionStatus(result);
         console.log('Final permission check result:', hasPermission);
         
+        // Cache the result
+        this.cachedPermissionStatus = hasPermission;
+        this.lastPermissionCheck = now;
+        
         return hasPermission;
       } catch (pluginError) {
         console.error('SMS plugin check method failed:', pluginError);
+        this.clearPermissionCache();
         
         if (pluginError.message && pluginError.message.includes('not implemented')) {
           console.log('SMS plugin not implemented on this platform');
@@ -175,6 +200,7 @@ export class SMSPermissionManager {
       }
     } catch (error) {
       console.error('Error checking SMS permissions:', error);
+      this.clearPermissionCache();
       return false;
     }
   }
@@ -205,9 +231,12 @@ export class SMSPermissionManager {
     return finalResult;
   }
 
-  // Enhanced force refresh with better error handling
+  // Enhanced force refresh with cache clearing
   async forceRefreshPermissions(): Promise<boolean> {
     console.log('=== FORCE REFRESH PERMISSIONS STARTING ===');
+    
+    // Clear any cached permission status
+    this.clearPermissionCache();
     
     if (!this.smsPlugin) {
       console.log('❌ No SMS plugin available for force refresh');
@@ -223,22 +252,22 @@ export class SMSPermissionManager {
     console.log('✓ SMS plugin is available for force refresh');
     
     try {
-      // Strategy 1: Check current permissions first
-      console.log('Strategy 1: Checking current permissions');
+      // Strategy 1: Fresh permission check
+      console.log('Strategy 1: Fresh permission check (cache cleared)');
       const currentPermissions = await this.checkPermissions();
-      console.log('Current permissions:', currentPermissions);
+      console.log('Fresh permission check result:', currentPermissions);
       
       if (currentPermissions) {
-        console.log('✓ Permissions already granted');
+        console.log('✓ Permissions detected as granted');
         toast({
-          title: "SMS Permissions Already Granted",
-          description: "SMS detection is ready to use.",
+          title: "SMS Permissions Active",
+          description: "SMS detection is ready to use!",
         });
         return true;
       }
       
-      // Strategy 2: Request permissions if not granted
-      console.log('Strategy 2: Requesting permissions since they are not granted');
+      // Strategy 2: Request permissions if not detected
+      console.log('Strategy 2: Requesting permissions since they are not detected');
       const requestResult = await this.requestPermissions();
       console.log('Permission request result:', requestResult);
       
@@ -250,8 +279,8 @@ export class SMSPermissionManager {
       console.log('=== FORCE REFRESH COMPLETED - NO PERMISSIONS DETECTED ===');
       
       toast({
-        title: "Manual Permission Required",
-        description: "Please go to Settings > Apps > [App Name] > Permissions and manually enable SMS permissions.",
+        title: "Manual Permission Check Required",
+        description: "If you've granted SMS permissions in settings, please restart the app to detect them properly.",
         variant: "destructive",
       });
       
@@ -259,6 +288,7 @@ export class SMSPermissionManager {
       
     } catch (error) {
       console.error('Force refresh error:', error);
+      this.clearPermissionCache();
       
       if (error.message && error.message.includes('not implemented')) {
         toast({
@@ -269,7 +299,7 @@ export class SMSPermissionManager {
       } else {
         toast({
           title: "Permission Check Failed",
-          description: "Unable to check SMS permissions. Plugin may need to be reinstalled.",
+          description: "Unable to check SMS permissions. Try restarting the app.",
           variant: "destructive",
         });
       }
