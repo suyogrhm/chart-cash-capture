@@ -28,8 +28,7 @@ export class SMSPluginDetector {
       console.log('Strategy 1: Attempting registerPlugin with SMSInboxReader...');
       const { registerPlugin } = await import('@capacitor/core');
       
-      // const smsPlugin = registerPlugin('SMSInboxReader');
-      const smsPlugin = registerPlugin('SmsInbox');
+      const smsPlugin = registerPlugin('SMSInboxReader');
       
       if (smsPlugin && typeof smsPlugin === 'object') {
         console.log('✓ Successfully registered SMSInboxReader plugin');
