@@ -68,7 +68,7 @@ export class SMSPluginDetector {
       const smsPlugin = registerPlugin('SMSInboxReader');
       
       // Check if it's a Promise (which means it's not implemented)
-      if (smsPlugin && typeof smsPlugin.then === 'function') {
+      if (smsPlugin && typeof smsPlugin === 'object' && 'then' in smsPlugin && typeof smsPlugin.then === 'function') {
         console.log('Plugin returned a Promise, which means it\'s not properly implemented');
         // Don't return the Promise, continue to other strategies
       } else if (smsPlugin && typeof smsPlugin === 'object') {
