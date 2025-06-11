@@ -18,23 +18,26 @@ export const useStatusBar = () => {
             const isDarkMode = currentTheme === 'dark' || (currentTheme === 'system' && prefersDark);
             
             console.log('Status bar initialization - isDarkMode:', isDarkMode);
+            console.log('Current theme setting:', currentTheme);
+            console.log('System prefers dark:', prefersDark);
+            
+            // Force status bar to not overlay the webview first
+            await StatusBar.setOverlaysWebView({ overlay: false });
             
             // Set appropriate status bar style and background based on theme
             if (isDarkMode) {
-              // Force white icons with light content style
+              // For dark mode: Force light content (white icons) with dark background
+              console.log('Setting LIGHT style for dark mode (white icons)');
               await StatusBar.setStyle({ style: Style.Light });
-              // Try a slightly lighter dark background for better icon visibility
-              await StatusBar.setBackgroundColor({ color: '#121212' });
+              await StatusBar.setBackgroundColor({ color: '#000000' });
               console.log('Applied dark mode status bar settings');
             } else {
-              // Dark icons for light mode
+              // For light mode: Dark content (dark icons) with light background
+              console.log('Setting DARK style for light mode (dark icons)');
               await StatusBar.setStyle({ style: Style.Dark });
               await StatusBar.setBackgroundColor({ color: '#ffffff' });
               console.log('Applied light mode status bar settings');
             }
-            
-            // Status bar should not overlay the webview to prevent content overlap
-            await StatusBar.setOverlaysWebView({ overlay: false });
             
             // Listen for theme changes
             const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -44,12 +47,15 @@ export const useStatusBar = () => {
               const newIsDarkMode = newCurrentTheme === 'dark' || (newCurrentTheme === 'system' && newPrefersDark);
               
               console.log('Theme changed - newIsDarkMode:', newIsDarkMode);
+              console.log('New theme setting:', newCurrentTheme);
               
               if (newIsDarkMode) {
+                console.log('Theme change: Setting LIGHT style for dark mode');
                 await StatusBar.setStyle({ style: Style.Light });
-                await StatusBar.setBackgroundColor({ color: '#121212' });
+                await StatusBar.setBackgroundColor({ color: '#000000' });
                 console.log('Applied dark mode status bar on theme change');
               } else {
+                console.log('Theme change: Setting DARK style for light mode');
                 await StatusBar.setStyle({ style: Style.Dark });
                 await StatusBar.setBackgroundColor({ color: '#ffffff' });
                 console.log('Applied light mode status bar on theme change');
