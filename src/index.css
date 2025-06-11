@@ -212,11 +212,11 @@
     border-bottom: 1px solid hsl(var(--border));
     padding: 1rem;
     /* Reduced padding for less space between status bar and app header */
-    padding-top: max(2rem, calc(var(--safe-area-inset-top) + 1rem));
+    padding-top: max(3rem, calc(var(--safe-area-inset-top) + 1rem));
   }
   
   .mobile-content-with-fixed-header {
     /* Reduced padding to account for smaller header with less status bar spacing */
-    padding-top: max(120px, calc(var(--safe-area-inset-top) + 100px));
+    padding-top: max(110px, calc(var(--safe-area-inset-top) + 100px));
   }
 }
