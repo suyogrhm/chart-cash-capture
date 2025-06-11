@@ -61,11 +61,11 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         </div>
       )}
 
-      {/* Content Container */}
-      <div className={`container mx-auto ${isMobile ? 'px-2 py-4 pb-20 safe-top' : 'px-4 py-6'} max-w-7xl`}>
-        {/* Mobile: Header without Navigation */}
+      {/* Content Container with proper safe area handling */}
+      <div className={`container mx-auto ${isMobile ? 'px-2 py-4 pb-20' : 'px-4 py-6'} max-w-7xl ${isMobile ? 'pt-safe' : ''}`}>
+        {/* Mobile: Header without Navigation - with safe area top padding */}
         {isMobile && (
-          <div className="mb-4 flex justify-between items-center">
+          <div className="mb-4 flex justify-between items-center pt-4">
             <div className="flex items-center gap-2">
               <ExpenseTrackerLogo className="h-10 w-10" />
               <div>

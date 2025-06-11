@@ -186,6 +186,10 @@
     padding-right: max(1rem, var(--safe-area-inset-right));
   }
   
+  .pt-safe {
+    padding-top: max(1rem, var(--safe-area-inset-top));
+  }
+  
   .mobile-vh {
     height: 100vh;
     height: -webkit-fill-available;
