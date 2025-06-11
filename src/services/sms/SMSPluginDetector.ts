@@ -23,37 +23,26 @@ export class SMSPluginDetector {
     console.log('Platform:', Capacitor.getPlatform());
     console.log('Is native:', Capacitor.isNativePlatform());
 
-    // Strategy 1: Try registerPlugin with correct plugin name first (most reliable)
-    try {
-      console.log('Strategy 1: Attempting registerPlugin with SMSInboxReader...');
-      const { registerPlugin } = await import('@capacitor/core');
-      
-      const smsPlugin = registerPlugin('SMSInboxReader');
-      
-      if (smsPlugin && typeof smsPlugin === 'object') {
-        console.log('✓ Successfully registered SMSInboxReader plugin');
-        console.log('Plugin methods:', Object.keys(smsPlugin));
-        return smsPlugin;
-      }
-    } catch (error: any) {
-      console.log('Strategy 1 failed:', error.message);
-    }
-
-    // Strategy 2: Check Capacitor.Plugins directly
-    console.log('Strategy 2: Checking Capacitor.Plugins...');
+    // Strategy 1: Check Capacitor.Plugins directly first (most reliable for capacitor-sms-inbox)
+    console.log('Strategy 1: Checking Capacitor.Plugins...');
     if ((window as any).Capacitor && (window as any).Capacitor.Plugins) {
       const plugins = (window as any).Capacitor.Plugins;
       console.log('Available plugins:', Object.keys(plugins));
       
-      if (plugins.SMSInboxReader) {
-        console.log('✓ Found SMSInboxReader in Capacitor.Plugins');
-        return plugins.SMSInboxReader;
+      // Try different possible plugin names
+      const possibleNames = ['SMSInboxReader', 'SmsInbox', 'CapacitorSmsInbox'];
+      
+      for (const name of possibleNames) {
+        if (plugins[name]) {
+          console.log(`✓ Found ${name} in Capacitor.Plugins`);
+          return plugins[name];
+        }
       }
     }
 
-    // Strategy 3: Try direct import (less reliable on native)
+    // Strategy 2: Try direct import (works for some plugin configurations)
     try {
-      console.log('Strategy 3: Attempting to import capacitor-sms-inbox...');
+      console.log('Strategy 2: Attempting to import capacitor-sms-inbox...');
       const smsModule = await import('capacitor-sms-inbox');
       console.log('SMS module imported:', smsModule);
       
@@ -68,12 +57,32 @@ export class SMSPluginDetector {
         return smsModule.default;
       }
     } catch (error: any) {
+      console.log('Strategy 2 failed:', error.message);
+    }
+
+    // Strategy 3: Try registerPlugin (but handle Promise properly)
+    try {
+      console.log('Strategy 3: Attempting registerPlugin with SMSInboxReader...');
+      const { registerPlugin } = await import('@capacitor/core');
+      
+      const smsPlugin = registerPlugin('SMSInboxReader');
+      
+      // Check if it's a Promise (which means it's not implemented)
+      if (smsPlugin && typeof smsPlugin.then === 'function') {
+        console.log('Plugin returned a Promise, which means it\'s not properly implemented');
+        // Don't return the Promise, continue to other strategies
+      } else if (smsPlugin && typeof smsPlugin === 'object') {
+        console.log('✓ Successfully registered SMSInboxReader plugin');
+        console.log('Plugin methods:', Object.keys(smsPlugin));
+        return smsPlugin;
+      }
+    } catch (error: any) {
       console.log('Strategy 3 failed:', error.message);
     }
 
     // Strategy 4: Check global window objects
     console.log('Strategy 4: Checking global window objects...');
-    const possibleNames = ['SMSInboxReader', 'SmsInbox'];
+    const possibleNames = ['SMSInboxReader', 'SmsInbox', 'CapacitorSmsInbox'];
 
     for (const name of possibleNames) {
       if ((window as any)[name]) {
