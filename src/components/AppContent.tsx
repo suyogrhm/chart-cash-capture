@@ -8,9 +8,8 @@ import Profile from '@/pages/Profile';
 import NotFound from '@/pages/NotFound';
 
 export const AppContent = () => {
-  // Disabled native hooks to prevent crashes
-  // useStatusBar();
-  // useBackButton();
+  // Completely disabled native hooks to prevent crashes
+  console.log('AppContent loaded - native hooks disabled for stability');
   
   return (
     <Routes>
