@@ -119,6 +119,8 @@
   body {
     min-height: 100vh;
     min-height: -webkit-fill-available;
+    /* Add padding for status bar on mobile */
+    padding-top: var(--safe-area-inset-top);
   }
 
   /* Prevent zoom on input focus on iOS */
@@ -198,5 +200,14 @@
   .mobile-min-vh {
     min-height: 100vh;
     min-height: -webkit-fill-available;
+  }
+
+  /* Status bar safe area utilities */
+  .status-bar-safe {
+    padding-top: max(24px, var(--safe-area-inset-top));
+  }
+  
+  .mobile-header-safe {
+    margin-top: max(24px, var(--safe-area-inset-top));
   }
 }
