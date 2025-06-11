@@ -201,7 +201,7 @@
     min-height: -webkit-fill-available;
   }
 
-  /* Fixed header with reduced spacing for less gap between header and content */
+  /* Fixed header with minimal spacing for closer to status bar */
   .mobile-fixed-header {
     position: fixed;
     top: 0;
@@ -210,13 +210,13 @@
     z-index: 50;
     background: hsl(var(--background));
     border-bottom: 1px solid hsl(var(--border));
-    padding: 1rem;
-    /* Reduced padding for less space between status bar and app header */
-    padding-top: max(3rem, calc(var(--safe-area-inset-top) + 1rem));
+    padding: 0.75rem 1rem;
+    /* Minimal padding to bring header closer to status bar */
+    padding-top: max(0.5rem, calc(var(--safe-area-inset-top) + 0.25rem));
   }
   
   .mobile-content-with-fixed-header {
-    /* Reduced padding to account for smaller header with less status bar spacing */
-    padding-top: max(110px, calc(var(--safe-area-inset-top) + 100px));
+    /* Reduced padding to account for smaller header spacing */
+    padding-top: max(80px, calc(var(--safe-area-inset-top) + 70px));
   }
 }
