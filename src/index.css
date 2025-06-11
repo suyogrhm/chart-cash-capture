@@ -201,7 +201,7 @@
     min-height: -webkit-fill-available;
   }
 
-  /* Fixed header with increased spacing for status bar */
+  /* Fixed header with significantly increased spacing for status bar */
   .mobile-fixed-header {
     position: fixed;
     top: 0;
@@ -211,12 +211,12 @@
     background: hsl(var(--background));
     border-bottom: 1px solid hsl(var(--border));
     padding: 1rem;
-    /* Increased padding to give more space between status bar and app header */
-    padding-top: max(2rem, calc(var(--safe-area-inset-top) + 1rem));
+    /* Significantly increased padding for much more space between status bar and app header */
+    padding-top: max(3rem, calc(var(--safe-area-inset-top) + 2rem));
   }
   
   .mobile-content-with-fixed-header {
-    /* Increased padding to account for larger header with more status bar spacing */
-    padding-top: max(160px, calc(var(--safe-area-inset-top) + 140px));
+    /* Increased padding to account for larger header with much more status bar spacing */
+    padding-top: max(180px, calc(var(--safe-area-inset-top) + 160px));
   }
 }

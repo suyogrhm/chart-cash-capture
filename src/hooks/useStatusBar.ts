@@ -17,13 +17,20 @@ export const useStatusBar = () => {
             const currentTheme = localStorage.getItem('vite-ui-theme');
             const isDarkMode = currentTheme === 'dark' || (currentTheme === 'system' && prefersDark);
             
+            console.log('Status bar initialization - isDarkMode:', isDarkMode);
+            
             // Set appropriate status bar style and background based on theme
             if (isDarkMode) {
-              await StatusBar.setStyle({ style: Style.Light }); // White icons for dark mode
-              await StatusBar.setBackgroundColor({ color: '#000000' }); // Pure black background for maximum contrast
+              // Force white icons with light content style
+              await StatusBar.setStyle({ style: Style.Light });
+              // Try a slightly lighter dark background for better icon visibility
+              await StatusBar.setBackgroundColor({ color: '#121212' });
+              console.log('Applied dark mode status bar settings');
             } else {
-              await StatusBar.setStyle({ style: Style.Dark }); // Dark icons for light mode
-              await StatusBar.setBackgroundColor({ color: '#ffffff' }); // White background
+              // Dark icons for light mode
+              await StatusBar.setStyle({ style: Style.Dark });
+              await StatusBar.setBackgroundColor({ color: '#ffffff' });
+              console.log('Applied light mode status bar settings');
             }
             
             // Status bar should not overlay the webview to prevent content overlap
@@ -36,12 +43,16 @@ export const useStatusBar = () => {
               const newCurrentTheme = localStorage.getItem('vite-ui-theme');
               const newIsDarkMode = newCurrentTheme === 'dark' || (newCurrentTheme === 'system' && newPrefersDark);
               
+              console.log('Theme changed - newIsDarkMode:', newIsDarkMode);
+              
               if (newIsDarkMode) {
-                await StatusBar.setStyle({ style: Style.Light }); // White icons for dark mode
-                await StatusBar.setBackgroundColor({ color: '#000000' }); // Pure black background
+                await StatusBar.setStyle({ style: Style.Light });
+                await StatusBar.setBackgroundColor({ color: '#121212' });
+                console.log('Applied dark mode status bar on theme change');
               } else {
-                await StatusBar.setStyle({ style: Style.Dark }); // Dark icons for light mode
-                await StatusBar.setBackgroundColor({ color: '#ffffff' }); // White background
+                await StatusBar.setStyle({ style: Style.Dark });
+                await StatusBar.setBackgroundColor({ color: '#ffffff' });
+                console.log('Applied light mode status bar on theme change');
               }
             };
             
